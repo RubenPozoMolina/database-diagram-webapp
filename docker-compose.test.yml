@@ -1,7 +1,8 @@
 # Containerized test setup for the database-diagram-webapp.
-# Run: docker compose -f docker-compose.test.yml run --rm tests
+# Frontend tests:  docker compose -f docker-compose.test.yml run --rm frontend-tests
+# Backend tests:   docker compose -f docker-compose.test.yml run --rm backend-tests
 services:
-  tests:
+  frontend-tests:
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,6 +15,22 @@ services:
       - /tmp
     volumes:
       - .:/work:ro
+      - qa-artifacts:/artifacts:rw
+    working_dir: /work
+
+  backend-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    command: sh -c "npm ci --ignore-scripts && npm test"
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./backend:/work:ro
       - qa-artifacts:/artifacts:rw
     working_dir: /work
 

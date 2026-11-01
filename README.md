@@ -5,10 +5,8 @@ Supports visual diagramming, JSON import/export, and PostgreSQL integration.
 
 ## Tech Stack
 
-- **Build tool:** Vite
-- **Language:** TypeScript (strict)
-- **Testing:** Vitest + jsdom
-- **Rendering:** HTML5 Canvas 2D API
+- **Frontend:** Vite, TypeScript (strict), Vitest + jsdom, HTML5 Canvas 2D API
+- **Backend:** Express.js, TypeScript (strict), Vitest, node-postgres (`pg`)
 
 ## Project Structure
 
@@ -16,7 +14,7 @@ Supports visual diagramming, JSON import/export, and PostgreSQL integration.
 src/
   main.ts                 # Application entry point
   styles.css              # Base styles for the canvas
-  types.ts                # Domain types (TableNode, RelationshipLine, etc.)
+  types.ts                # Domain types (TableNode, RelationshipNode, etc.)
   canvas/
     DiagramCanvas.ts      # Main canvas component (empty workspace, tables, lines)
     TableNode.ts          # Table node rendering
@@ -25,6 +23,23 @@ src/
     DiagramCanvas.test.ts # Component unit tests
     TableNode.test.ts     # Table node tests
     RelationshipLine.test.ts # Relationship line tests
+backend/
+  package.json            # Backend dependencies
+  tsconfig.json           # TypeScript configuration
+  vitest.config.ts        # Vitest configuration
+  src/
+    index.ts              # Application entry point
+    app.ts                # Express app factory
+    types.ts              # Domain types
+    middleware/
+      validate.ts         # Request validation
+    routes/
+      test-connection.ts  # POST /api/v1/connections/test
+    services/
+      postgres-connection.service.ts  # PostgreSQL connection test service
+    __tests__/
+      test-connection.unit.test.ts   # Unit tests (mocked pg.Client)
+      integration.test.ts            # Integration tests (real PostgreSQL)
 vitest.setup.ts           # jsdom canvas context mock
 Dockerfile                # Containerized test environment
 docker-compose.test.yml   # Compose-based test runner
@@ -83,6 +98,64 @@ docker run --rm \
   sh -c "./node_modules/.bin/tsc --noEmit"
 ```
 
+### Backend tests
+
+The backend lives in `backend/` and has its own `package.json` and `vitest.config.ts`.
+Run its unit tests inside Docker:
+
+```bash
+docker run --rm \
+  --init \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
+  --pids-limit 512 \
+  --memory 2g \
+  --shm-size 1g \
+  --user "$(id -u):$(id -g)" \
+  --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
+  -v "$(pwd)":/work:rw \
+  -w /work/backend \
+  node:20-alpine \
+  sh -c "npx vitest run"
+```
+
+Integration tests require a throwaway PostgreSQL container on a private Docker network
+(see `database/run-verification.sh` for the pattern). Run them with:
+
+```bash
+docker run --rm --init --cap-drop ALL --security-opt no-new-privileges \
+  --network <pg-network> --user "$(id -u):$(id -g)" --memory 1g \
+  --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
+  -v "$(pwd)":/work:rw -w /work/backend \
+  -e PG_HOST=<pg-container> \
+  -e PG_PORT=5432 \
+  -e PG_DATABASE=<db> \
+  -e PG_USER=<user> \
+  -e PG_PASSWORD=<password> \
+  -e PG_BAD_PASSWORD=<bad-password> \
+  -e PG_BAD_HOST=<unreachable-host> \
+  node:20-alpine \
+  sh -c "npx vitest run src/__tests__/integration.test.ts"
+```
+
+### Backend type check
+
+```bash
+docker run --rm \
+  --init \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
+  --pids-limit 512 \
+  --memory 2g \
+  --shm-size 1g \
+  --user "$(id -u):$(id -g)" \
+  --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
+  -v "$(pwd)":/work:rw \
+  -w /work/backend \
+  node:20-alpine \
+  sh -c "./node_modules/.bin/tsc --noEmit"
+```
+
 ## Development
 
 ```bash
@@ -90,6 +163,17 @@ npm run dev       # Start Vite dev server
 npm run build     # Type-check and build for production
 npm run preview   # Preview production build
 npm test          # Run unit tests (Vitest)
+npm run typecheck # Run TypeScript type check
+```
+
+### Backend development
+
+```bash
+cd backend
+npm install       # Install backend dependencies
+npm run dev       # Start Express dev server with tsx watch
+npm run start     # Start Express server
+npm test          # Run backend unit tests (Vitest)
 npm run typecheck # Run TypeScript type check
 ```
 
