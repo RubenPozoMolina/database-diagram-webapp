@@ -1,17 +1,30 @@
 /**
- * HTTP route tests for POST /api/v1/connections/test.
+ * HTTP route tests for POST /api/v1/connections/test and POST /api/test-connection.
  *
- * The connection test service is mocked so these tests exercise the request
- * validation, status-code mapping, and response shape defined by the TASK-051
- * API specification without requiring a live PostgreSQL server.
+ * The TASK-052 suite exercises the service-based handler at
+ * /api/v1/connections/test with the connection test service mocked, covering
+ * validation, status-code mapping, response shape, and password redaction.
+ * The trunk suite exercises the router-based handler at
+ * /api/test-connection with pg.Client mocked.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import supertest from 'supertest';
+import express from 'express';
+import request from 'supertest';
 import { app } from '../app';
+import { testConnectionRouter } from '../routes/test-connection';
 
 vi.mock('../services/connection-test.service', () => ({
   testConnection: vi.fn(),
+}));
+
+vi.mock('pg', () => ({
+  Client: vi.fn().mockImplementation(() => ({
+    connect: vi.fn().mockResolvedValue(undefined),
+    query: vi.fn().mockResolvedValue({ rows: [{ version: 'PostgreSQL 16.0' }] }),
+    end: vi.fn().mockResolvedValue(undefined),
+  })),
 }));
 
 import { testConnection } from '../services/connection-test.service';
@@ -21,6 +34,10 @@ const mockTestConnection = vi.mocked(testConnection);
 const baseUrl = '/api/v1/connections/test';
 
 beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+afterEach(() => {
   vi.clearAllMocks();
 });
 
@@ -201,5 +218,62 @@ describe('POST /api/v1/connections/test', () => {
 
     const body = JSON.stringify(res.body);
     expect(body).not.toContain('super-secret-pw');
+  });
+});
+
+describe('test-connection route (trunk)', () => {
+  let testApp: express.Express;
+
+  beforeEach(() => {
+    testApp = express();
+    testApp.use(express.json());
+    testApp.use('/api/test-connection', testConnectionRouter);
+  });
+
+  it('returns success for valid connection', async () => {
+    const res = await request(testApp)
+      .post('/api/test-connection')
+      .send({
+        host: 'localhost',
+        port: 5432,
+        database: 'testdb',
+        user: 'testuser',
+        password: 'testpass',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('Connection successful');
+  });
+
+  it('returns 400 for missing fields', async () => {
+    const res = await request(testApp)
+      .post('/api/test-connection')
+      .send({ host: '' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid request');
+  });
+
+  it('returns 400 when connection fails', async () => {
+    const { Client } = await import('pg');
+    const mockConnect = vi.fn().mockRejectedValue(new Error('Connection refused'));
+    (Client as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => ({
+      connect: mockConnect,
+      end: vi.fn().mockResolvedValue(undefined),
+    }));
+
+    const res = await request(testApp)
+      .post('/api/test-connection')
+      .send({
+        host: 'localhost',
+        port: 5432,
+        database: 'testdb',
+        user: 'testuser',
+        password: 'testpass',
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
   });
 });

@@ -1,10 +1,10 @@
 # Containerized test setup for the database-diagram-webapp.
-# Run: docker compose -f docker-compose.test.yml run --rm tests
+# Backend tests:  docker compose -f docker-compose.test.yml run --rm backend-tests
 services:
-  tests:
+  backend-tests:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile.test
     command: sh -c "npm ci --ignore-scripts && npm test"
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
@@ -13,9 +13,15 @@ services:
     tmpfs:
       - /tmp
     volumes:
-      - .:/work:ro
+      - ./backend:/work:ro
       - qa-artifacts:/artifacts:rw
     working_dir: /work
+    networks:
+      - qa-network
+
+networks:
+  qa-network:
+    driver: bridge
 
 volumes:
   qa-artifacts:

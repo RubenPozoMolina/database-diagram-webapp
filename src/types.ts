@@ -48,3 +48,23 @@ export interface CanvasBounds {
   width: number;
   height: number;
 }
+
+/**
+ * PostgreSQL connection details entered by the user in the connection form.
+ */
+export interface ConnectionConfig {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+}
+
+/**
+ * Result of submitting a connection to the backend.
+ */
+export interface ConnectionResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}

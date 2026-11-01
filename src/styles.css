@@ -30,3 +30,135 @@ body {
   max-width: 100%;
   max-height: 100%;
 }
+
+/* Connection form panel and styles. */
+
+#app {
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  #app {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+.connection-panel {
+  width: max-content;
+  min-width: 260px;
+  max-width: 100%;
+  padding: 1rem;
+  border-right: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.connection-panel > * {
+  max-width: 100%;
+}
+
+.connection-panel h2 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.connection-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.connection-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.connection-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #111827;
+  background: #ffffff;
+}
+
+.connection-form input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.connection-form input::placeholder {
+  color: #9ca3af;
+}
+
+.connection-form button[type="submit"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.connection-form button[type="submit"]:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.connection-form button[type="submit"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.connection-form button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.connection-status {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.connection-status--error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.connection-status--success {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+/* Ensure the canvas fills remaining space beside the panel. */
+.diagram-canvas {
+  flex: 1;
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+}
