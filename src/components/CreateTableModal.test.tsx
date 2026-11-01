@@ -34,19 +34,19 @@ describe('CreateTableModal', () => {
 
   it('adds a column row when Add column is clicked', () => {
     renderModal();
-    expect(screen.getAllByPlaceholderText('Column name')).toHaveLength(0);
+    expect(screen.queryAllByPlaceholderText('Column name')).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: /add column/i }));
-    expect(screen.getAllByPlaceholderText('Column name')).toHaveLength(1);
+    expect(screen.queryAllByPlaceholderText('Column name')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: /add column/i }));
-    expect(screen.getAllByPlaceholderText('Column name')).toHaveLength(2);
+    expect(screen.queryAllByPlaceholderText('Column name')).toHaveLength(2);
   });
 
   it('removes a column row when Remove is clicked', () => {
     renderModal();
     fireEvent.click(screen.getByRole('button', { name: /add column/i }));
-    expect(screen.getAllByPlaceholderText('Column name')).toHaveLength(1);
+    expect(screen.queryAllByPlaceholderText('Column name')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: /remove/i }));
-    expect(screen.getAllByPlaceholderText('Column name')).toHaveLength(0);
+    expect(screen.queryAllByPlaceholderText('Column name')).toHaveLength(0);
   });
 
   it('calls onCreate with the name and columns on submit', () => {
@@ -77,14 +77,16 @@ describe('CreateTableModal', () => {
 
   it('shows an error and does not call onCreate when the name is empty', () => {
     const onCreate = vi.fn();
-    render(<CreateTableModal isOpen onClose={vi.fn()} onCreate={onCreate} />);
-    fireEvent.click(screen.getByRole('button', { name: /create table/i }));
+    const { container } = render(
+      <CreateTableModal isOpen onClose={vi.fn()} onCreate={onCreate} />,
+    );
+    fireEvent.submit(container.querySelector('form')!);
     expect(screen.getByText(/table name is required/i)).toBeInTheDocument();
     expect(onCreate).not.toHaveBeenCalled();
   });
 
   it('enables the Create Table button only when a name is provided', () => {
-    const { rerender } = render(
+    render(
       <CreateTableModal isOpen onClose={vi.fn()} onCreate={vi.fn()} />,
     );
     expect(
