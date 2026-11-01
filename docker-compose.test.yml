@@ -1,6 +1,7 @@
-# docker-compose.test.yml
+# Containerized test setup for the database-diagram-webapp.
 # Orchestrates app + test containers on a private network.
 # No ports are published on the host; containers reach each other by service name.
+# Run: docker compose -f docker-compose.test.yml run --rm tests
 services:
   app:
     image: nginxinc/nginx-unprivileged:1.27-alpine
@@ -22,16 +23,22 @@ services:
       - .:/work:ro
       - ./qa-artifacts:/artifacts
     working_dir: /work
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
       - HOME=/tmp
       - npm_config_cache=/tmp/.npm
+    tmpfs:
+      - /tmp
     depends_on:
       app:
         condition: service_healthy
     networks:
       - qa-network
-    command: sh -c "cd frontend && npm ci --ignore-scripts && npm test"
+    command: sh -c "npm run test --workspace=frontend && npm run test --workspace=backend && npm run test:root"
 
 networks:
   qa-network:
     driver: bridge
+
+volumes:
+  qa-artifacts:

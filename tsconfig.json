@@ -15,8 +15,13 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["frontend/src", "backend/src"],
+  "include": ["frontend/src", "backend/src", "src/**/*", "vite.config.ts"],
   "exclude": ["node_modules", "dist", "build", "qa-artifacts", "test-results"]
 }
