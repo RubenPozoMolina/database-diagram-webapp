@@ -27,9 +27,6 @@ export interface ConnectionFormOptions {
 
 const DEFAULT_HOST = 'localhost';
 const DEFAULT_PORT = 5432;
-const DEFAULT_DATABASE = '';
-const DEFAULT_USER = '';
-const DEFAULT_PASSWORD = '';
 
 interface FormElements {
   form: HTMLFormElement;

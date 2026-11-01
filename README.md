@@ -2,6 +2,8 @@
 
 A web application for creating, editing, and exchanging database diagrams. Supports visual diagramming, JSON import/export, and direct PostgreSQL schema introspection and DDL application.
 
+Web-based database diagram designer with JSON import/export and PostgreSQL integration.
+
 ## Architecture
 
 | Layer | Technology | Purpose |
@@ -12,8 +14,12 @@ A web application for creating, editing, and exchanging database diagrams. Suppo
 
 ## Tech Stack
 
-- **Frontend:** Vite, TypeScript (strict), Vitest + jsdom, HTML5 Canvas 2D API
-- **Backend:** Express.js, TypeScript (strict), Vitest, node-postgres (`pg`)
+- **Frontend:** React 18 + TypeScript + Vite
+- **Styling:** CSS (custom properties)
+- **Unit tests:** Vitest + React Testing Library + jsdom
+- **E2E tests:** Playwright (Chromium)
+- **Lint:** ESLint + Prettier
+- **Container:** Docker (node:20-alpine, playwright:v1.49.1, nginx-unprivileged:1.27-alpine)
 
 ## Directory Structure
 
@@ -21,38 +27,36 @@ A web application for creating, editing, and exchanging database diagrams. Suppo
 frontend/   # React + TypeScript + Vite application
 backend/    # Express + TypeScript backend (PostgreSQL only)
 src/
-  main.ts                 # Application entry point
-  styles.css              # Base styles for the canvas
-  types.ts                # Domain types (TableNode, RelationshipNode, etc.)
+  main.tsx          # React entry point (STORY-001)
+  App.tsx           # Root component: header + canvas (STORY-001)
+  index.css         # Global styles (STORY-001)
+  main.ts           # Application entry point (trunk canvas app)
+  styles.css        # Base styles for the canvas (trunk)
+  types/diagram.ts  # Diagram data model (STORY-001)
+  types.ts          # Domain types (trunk)
+  hooks/useDiagram.ts  # Diagram state (STORY-001)
   canvas/
-    DiagramCanvas.ts      # Main canvas component (empty workspace, tables, lines)
-    TableNode.ts          # Table node rendering
-    RelationshipLine.ts   # Relationship line rendering
+    DiagramCanvas.ts      # Main canvas component (trunk)
+    TableNode.ts          # Table node rendering (trunk)
+    RelationshipLine.ts   # Relationship line rendering (trunk)
+  components/
+    DiagramCanvas.tsx   # Canvas: tables + relationship lines + empty state (STORY-001)
+    TableNode.tsx       # A table rendered on the canvas (STORY-001)
+    RelationshipLine.tsx # SVG curve connecting two tables (STORY-001)
   __tests__/
-    DiagramCanvas.test.ts # Component unit tests
-    TableNode.test.ts     # Table node tests
-    RelationshipLine.test.ts # Relationship line tests
-backend/
-  package.json            # Backend dependencies
-  tsconfig.json           # TypeScript configuration
-  vitest.config.ts        # Vitest configuration
-  src/
-    index.ts              # Application entry point
-    app.ts                # Express app factory
-    types.ts              # Domain types
-    middleware/
-      validate.ts         # Request validation
-    routes/
-      test-connection.ts  # POST /api/v1/connections/test
-    services/
-      postgres-connection.service.ts  # PostgreSQL connection test service
-    __tests__/
-      test-connection.unit.test.ts   # Unit tests (mocked pg.Client)
-      integration.test.ts            # Integration tests (real PostgreSQL)
-vitest.setup.ts           # jsdom canvas context mock
-Dockerfile                # Containerized test environment
-Dockerfile.test           # Containerized test environment (workspaces)
-docker-compose.test.yml   # Compose-based test runner
+    DiagramCanvas.test.ts # Component unit tests (trunk)
+    TableNode.test.ts     # Table node tests (trunk)
+    RelationshipLine.test.ts # Relationship line tests (trunk)
+    ConnectionForm.test.ts
+    connectionApi.test.ts
+  test/setup.ts     # Vitest setup (jest-dom matchers) (STORY-001)
+e2e/
+  empty-canvas.spec.ts  # Playwright browser tests (STORY-001)
+Dockerfile          # Multi-stage build + nginx serve (STORY-001)
+docker-compose.test.yml  # Compose reference for app + tests (STORY-001)
+playwright.config.ts    # Playwright configuration (STORY-001)
+vitest.config.ts        # Root vitest configuration (trunk)
+vitest.setup.ts         # jsdom canvas context mock (trunk)
 ```
 
 ## Acceptance Criteria (TASK-001)
@@ -61,12 +65,34 @@ docker-compose.test.yml   # Compose-based test runner
 2. **Canvas supports rendering table nodes** — `addTable()` adds table nodes with headers and column lists; `render()` draws them.
 3. **Canvas supports rendering relationship lines between tables** — `addRelationship()` adds connector lines with arrowheads between tables.
 
+## Acceptance criteria (STORY-001)
+
+Given the user opens the application, when they choose to create a new diagram,
+then an empty canvas is displayed where tables and relationships can be added.
+
+- Empty canvas is displayed when the application loads.
+- New Diagram button/action is available in the UI.
+- Clicking New Diagram displays an empty canvas.
+- Canvas supports rendering table nodes.
+- Canvas supports rendering relationship lines between tables.
+
 ## Running the Tests
 
 All tests run inside Docker containers (never on the host), per the
 [docker-test-runner](.opencode/skills/docker-test-runner) skill.
 
 ### Using `docker run` (recommended)
+
+#### Unit tests (Vitest)
+
+```bash
+docker run --rm --init --cap-drop ALL --security-opt no-new-privileges \
+  --pids-limit 512 --memory 2g --shm-size 1g \
+  --user "$(id -u):$(id -g)" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
+  -v "$(pwd)":/work:ro -v "$(pwd)/qa-artifacts":/artifacts -w /work \
+  node:20-alpine \
+  sh -c "npm ci --ignore-scripts && npm test"
+```
 
 #### Frontend tests
 
@@ -119,15 +145,58 @@ docker run --rm \
   --user "$(id -u):$(id -g)" \
   --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
   -v "$(pwd)":/work:rw \
+  -v "$(pwd)/qa-artifacts":/artifacts \
   -w /work \
   node:20-alpine \
   sh -c "./node_modules/.bin/vitest run"
+```
+
+### E2E / browser tests (Playwright)
+
+The app is served by an unprivileged nginx container on a private Docker network;
+the Playwright container reaches it by container name (nothing is published on the host).
+
+```bash
+NETWORK="qa-STORY-001"
+docker network create "$NETWORK"
+
+# Build and serve the app
+docker build -t database-diagram-webapp:st001 -f Dockerfile .
+docker run -d --rm --name "app-STORY-001" --network "$NETWORK" \
+  --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp \
+  database-diagram-webapp:st001
+
+# Wait until the app answers
+docker run --rm --network "$NETWORK" curlimages/curl:8.10.1 \
+  --retry 15 --retry-connrefused --retry-delay 1 -sf "http://app-STORY-001:8080/"
+
+# Run Playwright tests
+docker run --rm --init --cap-drop ALL --security-opt no-new-privileges \
+  --shm-size 1g --user "$(id -u):$(id -g)" --tmpfs /tmp -e HOME=/tmp \
+  -e BASE_URL="http://app-STORY-001:8080/" \
+  -v "$(pwd)":/work:ro -v "$(pwd)/qa-artifacts":/artifacts -w /work \
+  mcr.microsoft.com/playwright:v1.49.1-noble \
+  sh -c "npx playwright@1.49.1 test"
+
+# Cleanup
+docker rm -f "app-STORY-001"
+docker network rm "$NETWORK"
 ```
 
 ### Using Docker Compose
 
 ```bash
 docker compose -f docker-compose.test.yml run --rm tests
+```
+
+### Lint
+
+```bash
+docker run --rm --init --cap-drop ALL --security-opt no-new-privileges \
+  --user "$(id -u):$(id -g)" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
+  -v "$(pwd)":/work:ro -w /work \
+  node:20-alpine \
+  sh -c "npm ci --ignore-scripts && npm run lint"
 ```
 
 ### Type check
@@ -148,27 +217,6 @@ docker run --rm \
   sh -c "./node_modules/.bin/tsc --noEmit"
 ```
 
-### Backend tests
-
-The backend lives in `backend/` and has its own `package.json` and `vitest.config.ts`.
-Run its unit tests inside Docker:
-
-```bash
-docker run --rm \
-  --init \
-  --cap-drop ALL \
-  --security-opt no-new-privileges \
-  --pids-limit 512 \
-  --memory 2g \
-  --shm-size 1g \
-  --user "$(id -u):$(id -g)" \
-  --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
-  -v "$(pwd)":/work:rw \
-  -w /work/backend \
-  node:20-alpine \
-  sh -c "npx vitest run"
-```
-
 Integration tests require a throwaway PostgreSQL container on a private Docker network
 (see `database/run-verification.sh` for the pattern). Run them with:
 
@@ -186,24 +234,6 @@ docker run --rm --init --cap-drop ALL --security-opt no-new-privileges \
   -e PG_BAD_HOST=<unreachable-host> \
   node:20-alpine \
   sh -c "npx vitest run src/__tests__/integration.test.ts"
-```
-
-### Backend type check
-
-```bash
-docker run --rm \
-  --init \
-  --cap-drop ALL \
-  --security-opt no-new-privileges \
-  --pids-limit 512 \
-  --memory 2g \
-  --shm-size 1g \
-  --user "$(id -u):$(id -g)" \
-  --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
-  -v "$(pwd)":/work:rw \
-  -w /work/backend \
-  node:20-alpine \
-  sh -c "./node_modules/.bin/tsc --noEmit"
 ```
 
 ## Development

@@ -1,19 +1,13 @@
-# Containerized test environment for the database-diagram-webapp.
-# Based on the pinned Node image from the docker-test-runner skill.
-FROM node:20-alpine
-
-# Prevent interactive prompts during npm install
-ENV NODE_ENV=development
-ENV npm_config_cache=/tmp/.npm
-
+# Multi-stage Dockerfile: build the frontend and serve it with nginx.
+# Stage 1: build
+FROM node:20-alpine AS builder
 WORKDIR /work
-
-# Install dependencies first (cached layer)
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
-
-# Copy project sources
 COPY . .
+RUN npm run build
 
-# Default command: run the test suite
-CMD ["npm", "test"]
+# Stage 2: serve
+FROM nginxinc/nginx-unprivileged:1.27-alpine
+COPY --from=builder /work/dist /usr/share/nginx/html
+EXPOSE 8080

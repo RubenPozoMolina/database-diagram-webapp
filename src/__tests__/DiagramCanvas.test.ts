@@ -12,7 +12,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DiagramCanvas } from '../canvas/DiagramCanvas';
-import type { Column, TableNode, RelationshipLine } from '../types';
 
 function createCanvas(width = 1200, height = 800): HTMLCanvasElement {
   const canvas = document.createElement('canvas');

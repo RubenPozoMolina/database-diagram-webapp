@@ -1,19 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Database Diagram Web App</title>
-    <meta name="description" content="Visual database diagramming tool" />
+    <title>Database Diagram</title>
   </head>
   <body>
-    <div id="app">
-      <aside id="connection-panel" class="connection-panel">
-        <h2>Connect to PostgreSQL</h2>
-        <div id="connection-form"></div>
-      </aside>
-      <canvas id="diagram-canvas" class="diagram-canvas"></canvas>
-    </div>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
