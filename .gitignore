@@ -1,0 +1,12 @@
+tasks/
+prd.md
+node_modules/
+*.log
+*.pid
+*.deb
+.ticket-*.json
+test-results/
+qa-artifacts/
+dist/
+build/
+coverage/
