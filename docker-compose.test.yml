@@ -1,0 +1,21 @@
+# Containerized test setup for the database-diagram-webapp.
+# Run: docker compose -f docker-compose.test.yml run --rm tests
+services:
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "npm ci --ignore-scripts && npm test"
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
+    tmpfs:
+      - /tmp
+    volumes:
+      - .:/work:ro
+      - qa-artifacts:/artifacts:rw
+    working_dir: /work
+
+volumes:
+  qa-artifacts:

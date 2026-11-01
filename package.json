@@ -1,0 +1,20 @@
+{
+  "name": "database-diagram-webapp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Database diagram web application - visual diagramming for database schemas",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  }
+}

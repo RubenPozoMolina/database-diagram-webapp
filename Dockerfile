@@ -1,0 +1,19 @@
+# Containerized test environment for the database-diagram-webapp.
+# Based on the pinned Node image from the docker-test-runner skill.
+FROM node:20-alpine
+
+# Prevent interactive prompts during npm install
+ENV NODE_ENV=development
+ENV npm_config_cache=/tmp/.npm
+
+WORKDIR /work
+
+# Install dependencies first (cached layer)
+COPY package.json ./
+RUN npm ci --ignore-scripts
+
+# Copy project sources
+COPY . .
+
+# Default command: run the test suite
+CMD ["npm", "test"]
