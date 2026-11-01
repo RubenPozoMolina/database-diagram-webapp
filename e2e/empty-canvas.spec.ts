@@ -7,13 +7,15 @@ test.describe('Create Diagram', () => {
       page.getByText(/Empty diagram canvas/i),
     ).toBeVisible();
     await expect(
-      page.getByRole('button', { name: /new diagram/i }),
+      page.getByRole('button', { name: /create a new empty diagram/i }),
     ).toBeVisible();
   });
 
   test('New Diagram button clears and resets the canvas', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /new diagram/i }).click();
+    await page
+      .getByRole('button', { name: /create a new empty diagram/i })
+      .click();
     await expect(
       page.getByText(/Empty diagram canvas/i),
     ).toBeVisible();
