@@ -34,22 +34,16 @@ vi.mock('pg', () => {
   };
 });
 
-import { Client } from 'pg';
-
 // vi.mock adds connectMock and endMock as named exports of the 'pg' module.
 // TypeScript does not know about them, so we declare them here.
 declare module 'pg' {
-  export const connectMock: any;
-  export const endMock: any;
+  export const connectMock: unknown;
+  export const endMock: unknown;
 }
 
 import { connectMock, endMock } from 'pg';
 import { PostgresConnectionService } from '../services/postgres-connection.service';
 import { validateConnectionParams } from '../middleware/validate';
-
-const MockedClient = Client as unknown as {
-  mock: { implementations: Array<() => unknown> };
-};
 
 describe('validateConnectionParams', () => {
   it('returns valid for a complete request body', () => {
