@@ -20,7 +20,7 @@ function appendContainer(): HTMLElement {
   return el;
 }
 
-function getFieldValue(form: ConnectionForm, name: string): string {
+function getFieldValue(name: string): string {
   const input = document.getElementById(`conn-${name}`) as HTMLInputElement;
   return input ? input.value : '';
 }
@@ -130,11 +130,11 @@ describe('ConnectionForm', () => {
     it('defaults host to localhost and port to 5432', () => {
       new ConnectionForm({ container });
 
-      expect(getFieldValue(new ConnectionForm({ container }), 'host')).toBe(
+      expect(getFieldValue('host')).toBe(
         'localhost',
       );
       expect(
-        getFieldValue(new ConnectionForm({ container }), 'port'),
+        getFieldValue('port'),
       ).toBe('5432');
     });
   });

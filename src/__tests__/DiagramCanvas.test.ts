@@ -20,20 +20,6 @@ function createCanvas(width = 1200, height = 800): HTMLCanvasElement {
   return canvas;
 }
 
-function makeTable(
-  id: string,
-  name: string,
-  columns: Column[] = [],
-): TableNode {
-  return {
-    id,
-    name,
-    position: { x: 100, y: 100 },
-    size: { width: 200, height: 120 },
-    columns,
-  };
-}
-
 describe('DiagramCanvas', () => {
   let canvas: HTMLCanvasElement;
   let clearRectSpy: ReturnType<typeof vi.spyOn>;
