@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from "express";
-import { TestConnectionRequestSchema, type TestConnectionRequest, type TestConnectionResult } from "../types/test-connection";
+import { TestConnectionRequestSchema, type TestConnectionResult } from "../types/test-connection";
 
 export const testConnectionRouter = Router();
 

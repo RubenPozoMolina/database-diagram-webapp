@@ -8,7 +8,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["node_modules/", "dist/", "build/", "qa-artifacts/", "test-results/", "tasks/", "prd.md", ".ticket-*.json"]
+    ignores: ["node_modules/", "dist/", "build/", "qa-artifacts/", "test-results/", "tasks/", "prd.md", ".ticket-*.json", "eslint.config.js", "frontend/vite.config.ts", "backend/vitest.config.ts"]
   },
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx,jsx}"],

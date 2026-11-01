@@ -1,9 +1,9 @@
-import express from "express";
 import cors from "cors";
-import { testConnectionRouter } from "./routes/test-connection";
-import { readSchemaRouter } from "./routes/read-schema";
-import { applySchemaRouter } from "./routes/apply-schema";
+import express from "express";
 import { errorHandler } from "./middleware/error-handler";
+import { applySchemaRouter } from "./routes/apply-schema";
+import { readSchemaRouter } from "./routes/read-schema";
+import { testConnectionRouter } from "./routes/test-connection";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,7 +22,6 @@ app.get("/health", (_req, res) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`Backend listening on port ${PORT}`);
 });
 

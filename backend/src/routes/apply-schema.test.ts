@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { applySchemaRouter } from "../routes/apply-schema";
 import express from "express";
+import request from "supertest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { applySchemaRouter } from "../routes/apply-schema";
 
 vi.mock("pg", () => ({
   Client: vi.fn().mockImplementation(() => ({
@@ -24,7 +25,6 @@ describe("apply-schema route", () => {
   });
 
   it("returns 400 when confirm is false", async () => {
-    const { request } = await import("supertest");
     const res = await request(app)
       .post("/api/apply-schema")
       .send({
@@ -43,7 +43,6 @@ describe("apply-schema route", () => {
   });
 
   it("applies schema when confirm is true", async () => {
-    const { request } = await import("supertest");
     const res = await request(app)
       .post("/api/apply-schema")
       .send({
@@ -61,7 +60,6 @@ describe("apply-schema route", () => {
   });
 
   it("rejects DROP statements", async () => {
-    const { request } = await import("supertest");
     const res = await request(app)
       .post("/api/apply-schema")
       .send({

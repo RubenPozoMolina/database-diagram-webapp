@@ -1,6 +1,7 @@
+import express from "express";
+import request from "supertest";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { testConnectionRouter } from "../routes/test-connection";
-import express from "express";
 
 vi.mock("pg", () => ({
   Client: vi.fn().mockImplementation(() => ({
@@ -24,7 +25,6 @@ describe("test-connection route", () => {
   });
 
   it("returns success for valid connection", async () => {
-    const { request } = await import("supertest");
     const res = await request(app)
       .post("/api/test-connection")
       .send({
@@ -41,7 +41,6 @@ describe("test-connection route", () => {
   });
 
   it("returns 400 for missing fields", async () => {
-    const { request } = await import("supertest");
     const res = await request(app)
       .post("/api/test-connection")
       .send({ host: "" });
@@ -53,12 +52,11 @@ describe("test-connection route", () => {
   it("returns 400 when connection fails", async () => {
     const { Client } = await import("pg");
     const mockConnect = vi.fn().mockRejectedValue(new Error("Connection refused"));
-    (Client as any).mockImplementation(() => ({
+    (Client as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => ({
       connect: mockConnect,
       end: vi.fn().mockResolvedValue(undefined)
     }));
 
-    const { request } = await import("supertest");
     const res = await request(app)
       .post("/api/test-connection")
       .send({

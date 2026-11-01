@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from "express";
-import { ApplySchemaRequestSchema, type ApplySchemaRequest, type ApplySchemaResult } from "../types/apply-schema";
+import { ApplySchemaRequestSchema, type ApplySchemaResult } from "../types/apply-schema";
 
 export const applySchemaRouter = Router();
 
@@ -10,7 +10,7 @@ const handleApplySchema: RequestHandler = async (req, res) => {
     return;
   }
 
-  const { host, port, database, user, password, schema, ddl, confirm } = parseResult.data;
+  const { host, port, database, user, password, ddl, confirm } = parseResult.data;
 
   if (!confirm) {
     res.status(400).json({

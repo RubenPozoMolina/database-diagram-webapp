@@ -1,34 +1,4 @@
-import { useState } from "react";
-
-export type Table = {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-  columns: Column[];
-};
-
-export type Column = {
-  id: string;
-  name: string;
-  type: string;
-  nullable: boolean;
-  primaryKey: boolean;
-  defaultValue: string | null;
-};
-
-export type Relationship = {
-  id: string;
-  sourceTableId: string;
-  sourceColumnId: string;
-  targetTableId: string;
-  targetColumnId: string;
-};
-
-export type Diagram = {
-  tables: Table[];
-  relationships: Relationship[];
-};
+import type { Diagram } from "./types/diagram";
 
 export type AppState = {
   diagram: Diagram;
@@ -36,14 +6,18 @@ export type AppState = {
 
 export const initialState: AppState = {
   diagram: {
+    id: "initial",
+    name: "New Diagram",
     tables: [],
-    relationships: []
+    relationships: [],
+    uniqueConstraints: [],
+    indexes: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 };
 
 function App() {
-  const [state, setState] = useState<AppState>(initialState);
-
   return (
     <div className="app">
       <header className="app-header">

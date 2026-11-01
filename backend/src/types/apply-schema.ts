@@ -8,7 +8,7 @@ export const ApplySchemaRequestSchema = z.object({
   password: z.string().min(1),
   schema: z.string().default("public"),
   ddl: z.string().min(1),
-  confirm: z.boolean().strict()
+  confirm: z.boolean()
 });
 
 export type ApplySchemaRequest = z.infer<typeof ApplySchemaRequestSchema>;
