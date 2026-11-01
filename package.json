@@ -3,18 +3,46 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Database diagram web application - visual diagramming for database schemas",
+  "description": "Database Diagram Web Application - Visual database diagramming with JSON import/export and PostgreSQL integration",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "dev": "vite",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
     "build": "tsc --noEmit && vite build",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
     "preview": "vite preview",
-    "test": "vitest run",
+    "lint": "eslint .",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "lint:backend": "npm run lint --workspace=backend",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test --workspace=frontend && npm run test --workspace=backend && npm run test:root",
+    "test:root": "vitest run",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "eslint": "^9.15.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "prettier": "^3.3.3",
+    "prettier-eslint": "^16.4.1",
     "typescript": "~5.6.3",
     "vite": "^5.4.11",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "globals": "^15.11.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
