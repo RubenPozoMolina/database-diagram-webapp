@@ -10,7 +10,7 @@
  *   - Unexpected errors (500)
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../app';
 
@@ -37,8 +37,8 @@ vi.mock('pg', () => {
 // vi.mock adds connectMock and endMock as named exports of the 'pg' module.
 // TypeScript does not know about them, so we declare them here.
 declare module 'pg' {
-  export const connectMock: unknown;
-  export const endMock: unknown;
+  export const connectMock: Mock;
+  export const endMock: Mock;
 }
 
 import { connectMock, endMock } from 'pg';

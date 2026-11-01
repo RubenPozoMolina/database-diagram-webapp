@@ -31,7 +31,7 @@ function mockClient(connectImpl: () => Promise<unknown>): void {
   vi.mocked(Client).mockImplementation(() => ({
     connect,
     end,
-  } as { connect: () => Promise<unknown>; end: () => Promise<undefined> }));
+  } as unknown as Client));
 }
 
 beforeEach(() => {
@@ -60,7 +60,7 @@ describe('testConnection', () => {
     vi.mocked(Client).mockImplementation(() => ({
       connect,
       end,
-    } as { connect: () => Promise<unknown>; end: () => Promise<undefined> }));
+    } as unknown as Client));
 
     await testConnection(params, 10_000);
 
