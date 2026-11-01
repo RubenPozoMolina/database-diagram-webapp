@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - qa-st001-network
+
+  tests:
+    image: mcr.microsoft.com/playwright:v1.49.1-noble
+    depends_on:
+      app:
+        condition: service_started
+    environment:
+      - BASE_URL=http://app:8080
+    networks:
+      - qa-st001-network
+    volumes:
+      - .:/work:ro
+      - ./qa-artifacts:/artifacts
+    working_dir: /work
+    command: sh -c "npx playwright@1.49.1 test"
+
+networks:
+  qa-st001-network:
+    driver: bridge
