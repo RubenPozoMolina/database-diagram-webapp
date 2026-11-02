@@ -101,19 +101,19 @@ pgDescribe("Introspection service integration (real PostgreSQL)", () => {
     const employeeTable = result.tables.find((t) => t.name === "employee");
     expect(employeeTable).toBeDefined();
 
-    const idCol = employeeTable!.columns.find((c) => c.column_name === "employee_id");
+    const idCol = employeeTable!.columns.find((c) => c.column_name === "employee_id")!;
     expect(idCol.data_type).toBe("integer");
     expect(idCol.is_nullable).toBe("NO");
 
-    const hireCol = employeeTable!.columns.find((c) => c.column_name === "hire_date");
+    const hireCol = employeeTable!.columns.find((c) => c.column_name === "hire_date")!;
     expect(hireCol.data_type).toBe("timestamp with time zone");
     expect(hireCol.is_nullable).toBe("NO");
 
-    const uuidCol = employeeTable!.columns.find((c) => c.column_name === "employee_uuid");
+    const uuidCol = employeeTable!.columns.find((c) => c.column_name === "employee_uuid")!;
     expect(uuidCol.data_type).toBe("uuid");
     expect(uuidCol.is_nullable).toBe("YES");
 
-    const salaryCol = employeeTable!.columns.find((c) => c.column_name === "salary");
+    const salaryCol = employeeTable!.columns.find((c) => c.column_name === "salary")!;
     expect(salaryCol.data_type).toBe("numeric");
     expect(salaryCol.numeric_precision).toBe(10);
     expect(salaryCol.numeric_scale).toBe(2);
@@ -145,21 +145,21 @@ pgDescribe("Introspection service integration (real PostgreSQL)", () => {
     // employee.department_id -> department.department_id
     const empDeptFK = byTable("employee").foreignKeys.find(
       (fk) => fk.column_name === "department_id" && fk.foreign_table_name === "department",
-    );
+    )!;
     expect(empDeptFK).toBeDefined();
     expect(empDeptFK.foreign_column_name).toBe("department_id");
 
     // Self-referencing: employee.manager_id -> employee.employee_id
     const empMgrFK = byTable("employee").foreignKeys.find(
       (fk) => fk.column_name === "manager_id" && fk.foreign_table_name === "employee",
-    );
+    )!;
     expect(empMgrFK).toBeDefined();
     expect(empMgrFK.foreign_column_name).toBe("employee_id");
 
     // Circular: department.head_employee_id -> employee.employee_id
     const deptHeadFK = byTable("department").foreignKeys.find(
       (fk) => fk.column_name === "head_employee_id" && fk.foreign_table_name === "employee",
-    );
+    )!;
     expect(deptHeadFK).toBeDefined();
     expect(deptHeadFK.foreign_column_name).toBe("employee_id");
 
@@ -177,7 +177,7 @@ pgDescribe("Introspection service integration (real PostgreSQL)", () => {
       (uc) => uc.constraint_name === "project_code_unique",
     );
     expect(projUKs.length).toBe(1);
-    expect(projUKs[0].column_name).toBe("code");
+    expect(projUKs[0]!.column_name).toBe("code");
 
     // Composite unique constraint on employee_project (employee_id, project_id)
     // is backed by the primary key, so it won't appear as a separate UNIQUE
@@ -192,14 +192,14 @@ pgDescribe("Introspection service integration (real PostgreSQL)", () => {
     // employee.department_id has a plain index idx_employee_department.
     const deptIdx = byTable("employee").indexes.find(
       (i) => i.index_name === "idx_employee_department",
-    );
+    )!;
     expect(deptIdx).toBeDefined();
     expect(deptIdx.column_name).toBe("department_id");
     expect(deptIdx.is_unique).toBe(false);
     expect(deptIdx.is_primary).toBe(false);
 
     // project.name has a plain index idx_project_name.
-    const nameIdx = byTable("project").indexes.find((i) => i.index_name === "idx_project_name");
+    const nameIdx = byTable("project").indexes.find((i) => i.index_name === "idx_project_name")!;
     expect(nameIdx).toBeDefined();
     expect(nameIdx.column_name).toBe("name");
 
@@ -207,7 +207,7 @@ pgDescribe("Introspection service integration (real PostgreSQL)", () => {
     const orderTable = byTable("order");
     const orderIdx = orderTable.indexes.find(
       (i) => i.index_name === "idx_order_customer_date",
-    );
+    )!;
     expect(orderIdx).toBeDefined();
     expect(orderIdx.is_unique).toBe(true);
     expect(orderIdx.column_name).toBe("customer_id");

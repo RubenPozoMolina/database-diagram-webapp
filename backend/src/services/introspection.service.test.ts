@@ -36,7 +36,7 @@ function createMockClient(): {
   const connect = vi.fn().mockResolvedValue(undefined);
   const end = vi.fn().mockResolvedValue(undefined);
   const query = vi.fn();
-  vi.mocked(Client).mockImplementation(() => ({ connect, end, query }));
+  vi.mocked(Client).mockImplementation(() => ({ connect, end, query }) as unknown as Client);
   return { connect, end, query };
 }
 
@@ -103,16 +103,17 @@ describe("IntrospectionService", () => {
     const result = await service.introspectSchema(client, schema);
 
     expect(result.tables).toHaveLength(1);
-    expect(result.tables[0].name).toBe("employee");
-    expect(result.tables[0].columns).toHaveLength(2);
-    expect(result.tables[0].columns[0]).toMatchObject({
+    const t0 = result.tables[0]!;
+    expect(t0.name).toBe("employee");
+    expect(t0.columns).toHaveLength(2);
+    expect(t0.columns[0]).toMatchObject({
       column_name: "employee_id",
       data_type: "integer",
       is_nullable: "NO",
       numeric_precision: 32,
       numeric_scale: 0,
     });
-    expect(result.tables[0].columns[1]).toMatchObject({
+    expect(t0.columns[1]).toMatchObject({
       column_name: "name",
       data_type: "text",
     });
@@ -141,11 +142,12 @@ describe("IntrospectionService", () => {
 
     // The service returns one row per column; grouping by constraint name
     // happens in the route layer (groupByConstraint).
-    expect(result.tables[0].primaryKeys).toHaveLength(2);
-    expect(result.tables[0].primaryKeys[0].constraint_name).toBe("employee_project_pkey");
-    expect(result.tables[0].primaryKeys[0].column_name).toBe("employee_id");
-    expect(result.tables[0].primaryKeys[1].constraint_name).toBe("employee_project_pkey");
-    expect(result.tables[0].primaryKeys[1].column_name).toBe("project_id");
+    const t0 = result.tables[0]!;
+    expect(t0.primaryKeys).toHaveLength(2);
+    expect(t0.primaryKeys[0]!.constraint_name).toBe("employee_project_pkey");
+    expect(t0.primaryKeys[0]!.column_name).toBe("employee_id");
+    expect(t0.primaryKeys[1]!.constraint_name).toBe("employee_project_pkey");
+    expect(t0.primaryKeys[1]!.column_name).toBe("project_id");
   });
 
   it("returns self-referencing and circular foreign keys", async () => {

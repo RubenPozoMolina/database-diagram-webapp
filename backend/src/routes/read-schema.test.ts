@@ -13,31 +13,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import { app } from "../app";
 
-vi.mock("pg", () => {
-  const connectMock = vi.fn().mockResolvedValue(undefined);
-  const endMock = vi.fn().mockResolvedValue(undefined);
-  const queryMock = vi.fn();
-  const clientMock = vi.fn().mockImplementation(() => ({
-    connect: connectMock,
-    end: endMock,
-    query: queryMock,
-  }));
-  return {
-    Client: clientMock,
-    clientMock,
-    connectMock,
-    endMock,
-    queryMock,
-  };
-});
-
-declare module "pg" {
-  export const clientMock: ReturnType<typeof vi.fn>;
-  export const connectMock: ReturnType<typeof vi.fn>;
-  export const endMock: ReturnType<typeof vi.fn>;
-  export const queryMock: ReturnType<typeof vi.fn>;
-}
-import { clientMock, connectMock, endMock, queryMock } from "pg";
+vi.mock("pg", () => ({
+  Client: vi.fn(),
+}));
 
 vi.mock("../services/introspection.service", () => ({
   IntrospectionService: vi.fn().mockImplementation(() => ({
@@ -53,6 +31,7 @@ vi.mock("../services/introspection.service", () => ({
   },
 }));
 
+import { Client } from "pg";
 import { IntrospectionService } from "../services/introspection.service";
 
 // The route module creates `const introspectionService = new IntrospectionService()`
@@ -75,14 +54,12 @@ const basePayload = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  clientMock.mockImplementation(() => ({
-    connect: connectMock,
-    end: endMock,
-    query: queryMock,
-  }));
-  connectMock.mockResolvedValue(undefined);
-  endMock.mockResolvedValue(undefined);
-  queryMock.mockResolvedValue({ rows: [] });
+  const mockClientClass = vi.mocked(Client);
+  mockClientClass.mockImplementation(() => ({
+    connect: vi.fn().mockResolvedValue(undefined),
+    end: vi.fn().mockResolvedValue(undefined),
+    query: vi.fn().mockResolvedValue({ rows: [] }),
+  }) as unknown as Client);
   mockIntrospectSchema.mockResolvedValue({ tables: [] });
 });
 

@@ -57,10 +57,7 @@ const handleReadSchema: RequestHandler = async (req, res) => {
           datetimePrecision: col.datetime_precision ?? null,
           intervalType: col.interval_type ?? null,
         })) as ColumnInfo[],
-        primaryKeys: groupByConstraint(table.primaryKeys, (pk) => ({
-          constraintName: pk.constraint_name,
-          columns: [pk.column_name],
-        })) as PrimaryKey[],
+        primaryKeys: groupByConstraint(table.primaryKeys) as PrimaryKey[],
         foreignKeys: table.foreignKeys.map((fk) => ({
           constraintName: fk.constraint_name,
           column: fk.column_name,
@@ -69,10 +66,7 @@ const handleReadSchema: RequestHandler = async (req, res) => {
           updateRule: fk.update_rule,
           deleteRule: fk.delete_rule,
         })) as ForeignKey[],
-        uniqueConstraints: groupByConstraint(table.uniqueConstraints, (uk) => ({
-          constraintName: uk.constraint_name,
-          columns: [uk.column_name],
-        })) as UniqueConstraint[],
+        uniqueConstraints: groupByConstraint(table.uniqueConstraints) as UniqueConstraint[],
         indexes: groupByIndex(table.indexes) as IndexInfo[],
       })),
     };
