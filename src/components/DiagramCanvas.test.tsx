@@ -9,6 +9,7 @@ describe('DiagramCanvas', () => {
       <DiagramCanvas
         diagram={createEmptyDiagram()}
         onTablePositionUpdate={() => {}}
+        onTableUpdate={() => {}}
       />,
     );
     const message = screen.getByText(
@@ -34,6 +35,7 @@ describe('DiagramCanvas', () => {
       <DiagramCanvas
         diagram={diagram}
         onTablePositionUpdate={() => {}}
+        onTableUpdate={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();
@@ -55,6 +57,7 @@ describe('DiagramCanvas', () => {
       <DiagramCanvas
         diagram={diagram}
         onTablePositionUpdate={() => {}}
+        onTableUpdate={() => {}}
       />,
     );
     expect(screen.queryByText(/Empty diagram canvas/i)).not.toBeInTheDocument();
@@ -91,6 +94,7 @@ describe('DiagramCanvas', () => {
       <DiagramCanvas
         diagram={diagram}
         onTablePositionUpdate={() => {}}
+        onTableUpdate={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();
