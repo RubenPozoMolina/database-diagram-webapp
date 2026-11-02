@@ -1,4 +1,5 @@
-import { Router, RequestHandler } from "express";
+import { Router } from "express";
+import type { RequestHandler } from "express";
 import { ApplySchemaRequestSchema, type ApplySchemaResult } from "../types/apply-schema";
 
 export const applySchemaRouter = Router();

@@ -88,7 +88,8 @@ describe('POST /api/v1/connections/test (integration)', () => {
   }, 15000);
 
   it('returns 400 for missing required field', async () => {
-    const { password: _p, ...withoutPassword } = VALID;
+    const { password: _unusedPassword, ...withoutPassword } = VALID;
+    void _unusedPassword;
     const res = await request(app)
       .post('/api/v1/connections/test')
       .send(withoutPassword)

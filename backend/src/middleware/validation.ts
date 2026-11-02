@@ -5,8 +5,6 @@
  * when validation fails (§4.2).
  */
 
-import type { TestConnectionRequest } from '../types/connection';
-
 /**
  * Validates the connection request body.
  *
@@ -58,9 +56,9 @@ export function validateTestConnectionRequest(
     return null;
   }
 
-  const fieldWord = invalid.length === 1 ? 'field' : 'fields';
   const quoted = invalid.map((f) => `"${f}"`).join(', ');
-  const verb = invalid.length === 1 ? 'is required' : 'are required';
-  const article = invalid.length === 1 ? 'field' : 'fields';
+  const isSingle = invalid.length === 1;
+  const article = isSingle ? 'field' : 'fields';
+  const verb = isSingle ? 'is required' : 'are required';
   return `Validation error: ${article} ${quoted} ${verb}.`;
 }

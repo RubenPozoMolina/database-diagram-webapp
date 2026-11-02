@@ -28,7 +28,10 @@ const params = {
 function mockClient(connectImpl: () => Promise<unknown>): void {
   const connect = vi.fn(connectImpl);
   const end = vi.fn().mockResolvedValue(undefined);
-  vi.mocked(Client).mockImplementation(() => ({ connect, end } as any));
+  vi.mocked(Client).mockImplementation(() => ({
+    connect,
+    end,
+  } as unknown as Client));
 }
 
 beforeEach(() => {
@@ -54,7 +57,10 @@ describe('testConnection', () => {
   it('closes the connection after a successful test', async () => {
     const end = vi.fn().mockResolvedValue(undefined);
     const connect = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(Client).mockImplementation(() => ({ connect, end } as any));
+    vi.mocked(Client).mockImplementation(() => ({
+      connect,
+      end,
+    } as unknown as Client));
 
     await testConnection(params, 10_000);
 

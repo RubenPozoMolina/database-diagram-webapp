@@ -9,7 +9,6 @@
  */
 
 import { Client } from 'pg';
-import type { ConnectionParams, ConnectionResult } from './types/connection';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -77,7 +76,7 @@ function categorizeError(
   const code = (err as { code?: string })?.code;
 
   // Network unreachable / connection refused / DNS failure -> 502
-  if (NETWORK_ERROR_CODES.has(code)) {
+  if (code !== undefined && NETWORK_ERROR_CODES.has(code)) {
     return {
       success: false,
       error: `Unable to reach PostgreSQL server at ${params.host}:${params.port}: ${message}.`,
@@ -86,7 +85,7 @@ function categorizeError(
   }
 
   // PostgreSQL authentication errors -> 401 (password redacted)
-  if (AUTH_ERROR_CODES.has(code)) {
+  if (code !== undefined && AUTH_ERROR_CODES.has(code)) {
     return {
       success: false,
       error: `Authentication failed: ${sanitizeErrorMessage(message, params.password)}.`,
