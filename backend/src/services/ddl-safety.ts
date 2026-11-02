@@ -51,7 +51,8 @@ function normalise(stmt: string): string {
  */
 function startsWith(normalised: string, keyword: string): boolean {
   return normalised.startsWith(keyword) &&
-    (normalised.length === keyword.length || /[\s(]/.test(normalised[keyword.length]));
+    (normalised.length === keyword.length ||
+      /[\s(]/.test(normalised[keyword.length] ?? ""));
 }
 
 /**
