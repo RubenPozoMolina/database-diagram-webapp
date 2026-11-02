@@ -1,0 +1,11 @@
+
+ RUN  v2.1.9 /work
+
+ ✓ src/components/App.test.tsx > App > displays the New Diagram button
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 6 skipped (7)
+   Start at  17:03:23
+   Duration  711ms (transform 128ms, setup 41ms, collect 170ms, tests 63ms, environment 251ms, prepare 52ms)
+
+vitest_exit=0

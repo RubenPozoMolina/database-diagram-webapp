@@ -1,0 +1,16 @@
+
+ RUN  v2.1.9 /work
+
+stdout | src/__tests__/__tmp_app_probe.test.tsx > App probe > reports crypto availability
+PROBE crypto: object
+PROBE randomUUID: function
+
+ ✓ src/__tests__/__tmp_app_probe.test.tsx > App probe > reports crypto availability
+ ✓ src/__tests__/__tmp_app_probe.test.tsx > App probe > renders App
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  16:56:43
+   Duration  693ms (transform 92ms, setup 41ms, collect 131ms, tests 62ms, environment 254ms, prepare 58ms)
+
+vitest_exit=0
