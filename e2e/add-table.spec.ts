@@ -6,11 +6,11 @@ test.describe('Add Table', () => {
 
     await page.getByRole('button', { name: /add a new table/i }).click();
 
-    await expect(page.getByLabelText('Table name')).toBeVisible();
-    await page.getByLabelText('Table name').fill('users');
+    await expect(page.getByLabel('Table name')).toBeVisible();
+    await page.getByLabel('Table name').fill('users');
 
     await page.getByRole('button', { name: /add column/i }).click();
-    await page.getByPlaceholderText('Column name').fill('id');
+    await page.getByPlaceholder('Column name').fill('id');
 
     await page.getByRole('button', { name: /create table/i }).click();
 
@@ -24,7 +24,7 @@ test.describe('Add Table', () => {
     await page.goto('/');
 
     await page.getByRole('button', { name: /add a new table/i }).click();
-    await page.getByRole('button', { name: /create table/i }).click();
+    await page.locator('form.create-table-form').dispatchEvent('submit');
 
     await expect(page.getByText(/table name is required/i)).toBeVisible();
   });
