@@ -3,6 +3,7 @@ import { useDiagram } from './hooks/useDiagram';
 import { useConnection } from './hooks/useConnection';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import { ExportButton } from './components/ExportButton';
+import { DdlPreview } from './components/DdlPreview';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
 import type { Column, Table } from './types/diagram';
@@ -35,6 +36,7 @@ export function App() {
   const connectionFormRef = useRef<HTMLDivElement | null>(null);
   const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
+  const [isDdlPreviewOpen, setIsDdlPreviewOpen] = useState(false);
 
   const handleConnect = async (
     connectionConfig: ConnectionConfig,
@@ -123,6 +125,16 @@ export function App() {
             New Diagram
           </button>
           <ExportButton diagram={diagram} />
+          {isConnected && config && (
+            <button
+              type="button"
+              className="export-button"
+              onClick={() => setIsDdlPreviewOpen(true)}
+              aria-label="Export diagram to PostgreSQL with DDL preview"
+            >
+              Export to PostgreSQL
+            </button>
+          )}
         </div>
         {status === 'connecting' && (
           <div className="connection-status connection-status--info" role="status" aria-live="polite">
@@ -170,6 +182,14 @@ export function App() {
               isOpen
               onClose={() => setIsAddTableModalOpen(false)}
               onCreate={handleCreateTable}
+            />
+          )}
+          {isDdlPreviewOpen && (
+            <DdlPreview
+              diagram={diagram}
+              connection={config}
+              isOpen={isDdlPreviewOpen}
+              onClose={() => setIsDdlPreviewOpen(false)}
             />
           )}
         </div>
