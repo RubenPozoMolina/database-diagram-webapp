@@ -1,11 +1,12 @@
 import React from 'react';
-import type { Diagram } from '../types/diagram';
+import type { Diagram, Table } from '../types/diagram';
 import { TableNode } from './TableNode';
 import { RelationshipLine } from './RelationshipLine';
 
 interface DiagramCanvasProps {
   diagram: Diagram;
   onTablePositionUpdate: (id: string, x: number, y: number) => void;
+  onTableUpdate: (table: Table) => void;
   style?: React.CSSProperties;
 }
 
@@ -15,6 +16,7 @@ const TABLE_DEFAULT_HEIGHT = 120;
 export function DiagramCanvas({
   diagram,
   onTablePositionUpdate,
+  onTableUpdate,
   style,
 }: DiagramCanvasProps) {
   const lineEndpoints = React.useMemo(() => {
@@ -58,6 +60,7 @@ export function DiagramCanvas({
           key={table.id}
           table={table}
           onUpdatePosition={onTablePositionUpdate}
+          onTableUpdate={onTableUpdate}
         />
       ))}
       {diagram.tables.length === 0 && (

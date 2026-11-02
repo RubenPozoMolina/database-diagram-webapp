@@ -11,6 +11,10 @@ interface UseDiagramReturn {
   createNewDiagram: (name?: string) => void;
   addTable: (table: Omit<Table, 'id'>) => void;
   removeTable: (tableId: string) => void;
+  updateTable: (
+    tableId: string,
+    updates: Partial<Omit<Table, 'id'>>,
+  ) => void;
   addRelationship: (relationship: Omit<Relationship, 'id'>) => void;
   removeRelationship: (relationshipId: string) => void;
   updateTablePosition: (
@@ -34,6 +38,18 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
       setDiagram((prev) => ({
         ...prev,
         tables: [...prev.tables, newTable],
+      }));
+    },
+    [],
+  );
+
+  const updateTable = useCallback(
+    (tableId: string, updates: Partial<Omit<Table, 'id'>>) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId ? { ...t, ...updates } : t,
+        ),
       }));
     },
     [],
@@ -86,6 +102,7 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     diagram,
     createNewDiagram,
     addTable,
+    updateTable,
     removeTable,
     addRelationship,
     removeRelationship,

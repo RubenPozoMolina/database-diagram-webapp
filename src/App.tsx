@@ -1,5 +1,6 @@
 import { useDiagram } from './hooks/useDiagram';
 import { DiagramCanvas } from './components/DiagramCanvas';
+import type { Table } from './types/diagram';
 
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 800;
@@ -8,11 +9,25 @@ export function App() {
   const {
     diagram,
     createNewDiagram,
+    addTable,
     updateTablePosition,
+    updateTable,
   } = useDiagram();
 
   const handleNewDiagram = () => {
     createNewDiagram();
+  };
+
+  const handleAddTable = () => {
+    const offset = diagram.tables.length * 40;
+    addTable({
+      name: `Table ${diagram.tables.length + 1}`,
+      x: 50 + offset,
+      y: 50 + offset,
+      width: CANVAS_WIDTH / 6,
+      height: 120,
+      columns: [],
+    });
   };
 
   const handleTablePositionUpdate = (
@@ -21,6 +36,14 @@ export function App() {
     y: number,
   ) => {
     updateTablePosition(id, { x, y });
+  };
+
+  const handleTableUpdate = (table: Table) => {
+    updateTable(table.id, {
+      name: table.name,
+      columns: table.columns,
+      height: table.height,
+    });
   };
 
   return (
@@ -36,6 +59,14 @@ export function App() {
           >
             New Diagram
           </button>
+          <button
+            type="button"
+            className="add-table-button"
+            onClick={handleAddTable}
+            aria-label="Add a new table to the canvas"
+          >
+            Add Table
+          </button>
         </div>
       </header>
       <main className="app-main">
@@ -43,6 +74,7 @@ export function App() {
           <DiagramCanvas
             diagram={diagram}
             onTablePositionUpdate={handleTablePositionUpdate}
+            onTableUpdate={handleTableUpdate}
             style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           />
         </div>
