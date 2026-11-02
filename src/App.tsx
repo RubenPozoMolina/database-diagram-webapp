@@ -1,5 +1,6 @@
 import { useDiagram } from './hooks/useDiagram';
 import { DiagramCanvas } from './components/DiagramCanvas';
+import { ExportButton } from './components/ExportButton';
 
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 800;
@@ -36,6 +37,7 @@ export function App() {
           >
             New Diagram
           </button>
+          <ExportButton diagram={diagram} />
         </div>
       </header>
       <main className="app-main">
