@@ -27,7 +27,15 @@ export function App() {
       y: 50 + offset,
       width: CANVAS_WIDTH / 6,
       height: 120,
-      columns: [],
+      columns: [
+        {
+          id: crypto.randomUUID(),
+          name: 'new_column',
+          dataType: 'text',
+          nullable: true,
+          primaryKey: false,
+        },
+      ],
     });
   };
 
