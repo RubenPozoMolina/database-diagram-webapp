@@ -121,17 +121,79 @@ describe("apply-schema route", () => {
     );
   });
 
-  it("rolls back and returns 400 when a DROP statement is rejected", async () => {
+  it("rejects DROP statements before connecting (fail fast, no DB access)", async () => {
     const res = await request(app)
       .post("/api/apply-schema")
       .send({ ...baseRequest, ddl: "DROP TABLE test;", confirm: true });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("Rejected");
-    // Transaction is rolled back before the connection is closed.
+    expect(res.body.message).toContain("destructive");
+    expect(res.body.details).toBeDefined();
+    expect(Array.isArray(res.body.details)).toBe(true);
+    expect(res.body.details.some((e: string) => e.includes("DROP"))).toBe(true);
+    // No connection is attempted for unsafe DDL.
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+    expect(sharedQueryMock).not.toHaveBeenCalled();
+    expect(sharedEndMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects ALTER statements that modify existing objects before connecting", async () => {
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({
+        ...baseRequest,
+        ddl: 'ALTER TABLE "employee" DROP COLUMN "salary";',
+        confirm: true
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Rejected");
+    expect(res.body.details.some((e: string) =>
+      e.includes("ALTER statement that may modify existing objects")
+    )).toBe(true);
+    // No connection is attempted for unsafe DDL.
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+    expect(sharedQueryMock).not.toHaveBeenCalled();
+    expect(sharedEndMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects TRUNCATE statements before connecting", async () => {
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, ddl: "TRUNCATE TABLE test;", confirm: true });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Rejected");
+    expect(res.body.details.some((e: string) => e.includes("TRUNCATE"))).toBe(true);
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects DELETE statements before connecting", async () => {
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, ddl: "DELETE FROM test;", confirm: true });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Rejected");
+    expect(res.body.details.some((e: string) => e.includes("DELETE"))).toBe(true);
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+  });
+
+  it("allows ALTER TABLE ... ADD CONSTRAINT and executes normally", async () => {
+    const ddl =
+      'CREATE TABLE "employee_project" ("employee_id" INTEGER NOT NULL, "project_id" INTEGER NOT NULL); ' +
+      'ALTER TABLE "employee_project" ADD CONSTRAINT "pk_employee_project" PRIMARY KEY ("employee_id", "project_id");';
+
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, ddl, confirm: true });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(sharedConnectMock).toHaveBeenCalledTimes(1);
     expect(sharedQueryMock).toHaveBeenCalledWith("BEGIN");
-    expect(sharedQueryMock).toHaveBeenCalledWith("ROLLBACK");
-    expect(sharedQueryMock).not.toHaveBeenCalledWith("COMMIT");
+    expect(sharedQueryMock).toHaveBeenCalledWith("COMMIT");
     expect(sharedEndMock).toHaveBeenCalledTimes(1);
   });
 

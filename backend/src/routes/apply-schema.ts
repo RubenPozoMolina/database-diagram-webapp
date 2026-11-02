@@ -1,5 +1,6 @@
 import { Router } from "express";
 import type { RequestHandler } from "express";
+import { validateDDLSafety } from "../services/ddl-safety-validator";
 import { ApplySchemaRequestSchema, type ApplySchemaResult } from "../types/apply-schema";
 
 /**
@@ -24,6 +25,21 @@ const handleApplySchema: RequestHandler = async (req, res) => {
     res.status(400).json({
       error: "Confirmation required",
       message: "DDL must be explicitly confirmed before execution.",
+      ddlPreview: ddl
+    });
+    return;
+  }
+
+  // Safety validation: reject any DDL that contains destructive statements
+  // (DROP, TRUNCATE, DELETE, or ALTER that modifies existing objects) before
+  // connecting to the database. Fail fast — no connection is attempted for
+  // unsafe DDL.
+  const validation = validateDDLSafety(ddl);
+  if (!validation.valid) {
+    res.status(400).json({
+      error: "Rejected",
+      message: "DDL contains destructive statements. Existing objects are never dropped or altered.",
+      details: validation.errors,
       ddlPreview: ddl
     });
     return;
@@ -56,31 +72,15 @@ const handleApplySchema: RequestHandler = async (req, res) => {
       // into SQL (defence against SQL injection).
       await client.query("SELECT set_config('search_path', $1, false)", [schema]);
 
-      // Never drop existing objects: only execute CREATE statements.
       // Split DDL by semicolons and execute each statement against the schema.
+      // All statements have already passed validateDDLSafety(), so only CREATE
+      // and ALTER TABLE ... ADD CONSTRAINT statements reach the database.
       const statements = ddl
         .split(";")
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
       for (const stmt of statements) {
-        // Guard: reject any DROP/TRUNCATE/ALTER that would remove objects
-        const upper = stmt.toUpperCase();
-        if (
-          upper.startsWith("DROP") ||
-          upper.startsWith("TRUNCATE") ||
-          upper.includes("DROP TABLE") ||
-          upper.includes("DROP COLUMN") ||
-          upper.includes("DROP CONSTRAINT")
-        ) {
-          await client.query("ROLLBACK");
-          // Connection is closed by the finally block below.
-          res.status(400).json({
-            error: "Rejected",
-            message: "DROP/TRUNCATE operations are not allowed. Existing objects are never dropped."
-          });
-          return;
-        }
         await client.query(stmt);
       }
 
