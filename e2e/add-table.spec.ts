@@ -1,42 +1,31 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Add Table', () => {
-  test('adds a table with a name and editable columns', async ({ page }) => {
+  test('adds a table with a name and columns to the canvas', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /Add a new table to the canvas/i }).click();
+    await page.getByRole('button', { name: /add a new table/i }).click();
 
-    // The table appears on the canvas with a name.
-    await expect(page.getByText('Table 1')).toBeVisible();
+    await expect(page.getByLabel('Table name')).toBeVisible();
+    await page.getByLabel('Table name').fill('users');
 
-    // The table exposes an editable list of columns.
-    await expect(page.getByLabelText('Add column')).toBeVisible();
-    await expect(page.getByLabelText('Column name')).toBeVisible();
-    await expect(page.getByLabelText('Data type')).toBeVisible();
+    await page.getByRole('button', { name: /add column/i }).click();
+    await page.getByPlaceholder('Column name').fill('id');
+
+    await page.getByRole('button', { name: /create table/i }).click();
+
+    await expect(page.getByText('users')).toBeVisible();
+    await expect(page.getByText(/id: text/)).toBeVisible();
   });
 
-  test('editing a column name persists on the canvas', async ({ page }) => {
+  test('shows an error when submitting without a table name', async ({
+    page,
+  }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /Add a new table to the canvas/i }).click();
+    await page.getByRole('button', { name: /add a new table/i }).click();
+    await page.locator('form.create-table-form').dispatchEvent('submit');
 
-    const nameInput = page.getByLabelText('Column name').first();
-    await nameInput.fill('identifier');
-
-    await expect(nameInput).toHaveValue('identifier');
-    await expect(page.getByText('Table 1')).toBeVisible();
-  });
-
-  test('can add multiple tables', async ({ page }) => {
-    await page.goto('/');
-
-    const addTableButton = page.getByRole('button', {
-      name: /Add a new table to the canvas/i,
-    });
-    await addTableButton.click();
-    await addTableButton.click();
-
-    await expect(page.getByText('Table 1')).toBeVisible();
-    await expect(page.getByText('Table 2')).toBeVisible();
+    await expect(page.getByText(/table name is required/i)).toBeVisible();
   });
 });

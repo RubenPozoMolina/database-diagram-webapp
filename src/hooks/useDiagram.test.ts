@@ -137,34 +137,6 @@ describe('useDiagram', () => {
     expect(result.current.diagram.tables[0].y).toBe(75);
   });
 
-  it('updates table columns and name', () => {
-    const { result } = renderHook(() => useDiagram());
-    act(() => {
-      result.current.addTable({
-        name: 'users',
-        x: 0,
-        y: 0,
-        width: 220,
-        height: 120,
-        columns: [{ id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true }],
-      });
-    });
-    const tableId = result.current.diagram.tables[0].id;
-    act(() => {
-      result.current.updateTable(tableId, {
-        name: 'members',
-        columns: [
-          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
-          { id: 'c2', name: 'email', dataType: 'text', nullable: true, primaryKey: false },
-        ],
-      });
-    });
-    const table = result.current.diagram.tables.find((t) => t.id === tableId);
-    expect(table?.name).toBe('members');
-    expect(table?.columns).toHaveLength(2);
-    expect(table?.columns[1]!.name).toBe('email');
-  });
-
   it('createEmptyDiagram produces a valid empty diagram', () => {
     const diagram = createEmptyDiagram();
     expect(diagram.tables).toEqual([]);

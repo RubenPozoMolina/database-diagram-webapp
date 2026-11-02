@@ -20,7 +20,7 @@ function appendContainer(): HTMLElement {
   return el;
 }
 
-function getFieldValue(form: ConnectionForm, name: string): string {
+function getFieldValue(_form: ConnectionForm, name: string): string {
   const input = document.getElementById(`conn-${name}`) as HTMLInputElement;
   return input ? input.value : '';
 }

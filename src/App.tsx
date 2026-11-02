@@ -1,57 +1,74 @@
-import { useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDiagram } from './hooks/useDiagram';
 import { DiagramCanvas } from './components/DiagramCanvas';
-import type { Table } from './types/diagram';
+import { ConnectionForm } from './connection/ConnectionForm';
+import { CreateTableModal } from './components/CreateTableModal';
+import type { Column, Table } from './types/diagram';
 
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 800;
+const TABLE_DEFAULT_WIDTH = 240;
 
 export function App() {
   const {
     diagram,
     createNewDiagram,
     addTable,
-    updateTablePosition,
     updateTable,
+    updateTablePosition,
   } = useDiagram();
+
+  const connectionFormRef = useRef<HTMLDivElement | null>(null);
+  const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
+  const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
+
+  useEffect(() => {
+    const container = connectionFormRef.current;
+    if (!container) return;
+
+    const form = new ConnectionForm({ container });
+    connectionFormRefInstance.current = form;
+
+    return () => {
+      form.destroy();
+      connectionFormRefInstance.current = null;
+    };
+  }, []);
 
   const handleNewDiagram = () => {
     createNewDiagram();
   };
 
-  const handleAddTable = () => {
-    const offset = diagram.tables.length * 40;
-    addTable({
-      name: `Table ${diagram.tables.length + 1}`,
-      x: 50 + offset,
-      y: 50 + offset,
-      width: CANVAS_WIDTH / 6,
-      height: 120,
-      columns: [
-        {
-          id: crypto.randomUUID(),
-          name: 'new_column',
-          dataType: 'text',
-          nullable: true,
-          primaryKey: false,
-        },
-      ],
-    });
+  const handleTablePositionUpdate = (
+    id: string,
+    x: number,
+    y: number,
+  ) => {
+    updateTablePosition(id, { x, y });
   };
 
-  const handleTablePositionUpdate = useCallback(
-    (id: string, x: number, y: number) => {
-      updateTablePosition(id, { x, y });
-    },
-    [updateTablePosition],
-  );
+  const handleAddTable = () => {
+    setIsAddTableModalOpen(true);
+  };
 
-  const handleTableUpdate = (table: Table) => {
-    updateTable(table.id, {
+  const handleCreateTable = (table: { name: string; columns: Column[] }) => {
+    const offset = diagram.tables.length * 30;
+    addTable({
       name: table.name,
+      x: 100 + offset,
+      y: 100 + offset,
+      width: TABLE_DEFAULT_WIDTH,
+      height: Math.max(120, 48 + table.columns.length * 26),
       columns: table.columns,
-      height: table.height,
     });
+    setIsAddTableModalOpen(false);
+  };
+
+  const handleTableUpdate = (
+    id: string,
+    updates: Partial<Omit<Table, 'id'>>,
+  ) => {
+    updateTable(id, updates);
   };
 
   return (
@@ -61,23 +78,26 @@ export function App() {
         <div className="app-actions">
           <button
             type="button"
-            className="new-diagram-button"
-            onClick={handleNewDiagram}
-            aria-label="Create a new empty diagram"
-          >
-            New Diagram
-          </button>
-          <button
-            type="button"
             className="add-table-button"
             onClick={handleAddTable}
             aria-label="Add a new table to the canvas"
           >
             Add Table
           </button>
+          <button
+            type="button"
+            className="new-diagram-button"
+            onClick={handleNewDiagram}
+            aria-label="Create a new empty diagram"
+          >
+            New Diagram
+          </button>
         </div>
       </header>
       <main className="app-main">
+        <section className="connection-panel">
+          <div ref={connectionFormRef} id="connection-form" />
+        </section>
         <div className="diagram-canvas-container">
           <DiagramCanvas
             diagram={diagram}
@@ -85,6 +105,13 @@ export function App() {
             onTableUpdate={handleTableUpdate}
             style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           />
+          {isAddTableModalOpen && (
+            <CreateTableModal
+              isOpen
+              onClose={() => setIsAddTableModalOpen(false)}
+              onCreate={handleCreateTable}
+            />
+          )}
         </div>
       </main>
     </div>

@@ -6,7 +6,7 @@ import { RelationshipLine } from './RelationshipLine';
 interface DiagramCanvasProps {
   diagram: Diagram;
   onTablePositionUpdate: (id: string, x: number, y: number) => void;
-  onTableUpdate: (table: Table) => void;
+  onTableUpdate: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
   style?: React.CSSProperties;
 }
 
@@ -60,7 +60,7 @@ export function DiagramCanvas({
           key={table.id}
           table={table}
           onUpdatePosition={onTablePositionUpdate}
-          onTableUpdate={onTableUpdate}
+          onUpdateTable={onTableUpdate}
         />
       ))}
       {diagram.tables.length === 0 && (
