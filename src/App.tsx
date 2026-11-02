@@ -1,4 +1,4 @@
-import { useDiagram } from './hooks/useDiagram';
+import { useCallback, useDiagram } from './hooks/useDiagram';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import type { Table } from './types/diagram';
 
@@ -30,13 +30,12 @@ export function App() {
     });
   };
 
-  const handleTablePositionUpdate = (
-    id: string,
-    x: number,
-    y: number,
-  ) => {
-    updateTablePosition(id, { x, y });
-  };
+  const handleTablePositionUpdate = useCallback(
+    (id: string, x: number, y: number) => {
+      updateTablePosition(id, { x, y });
+    },
+    [updateTablePosition],
+  );
 
   const handleTableUpdate = (table: Table) => {
     updateTable(table.id, {
