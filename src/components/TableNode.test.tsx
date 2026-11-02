@@ -118,4 +118,152 @@ describe('TableNode', () => {
       ]),
     });
   });
+
+  it('toggles a column nullable flag via the checkbox', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+    fireEvent.blur(screen.getAllByRole('textbox')[0]);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({
+          name: 'id',
+          dataType: 'integer',
+          nullable: true,
+        }),
+      ]),
+    });
+  });
+
+  it('edits a column default value', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const defaultInput = screen.getByPlaceholderText('default value');
+    fireEvent.change(defaultInput, {
+      target: { value: 'CURRENT_TIMESTAMP' },
+    });
+    fireEvent.blur(screen.getAllByRole('textbox')[0]);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({
+          name: 'id',
+          dataType: 'integer',
+          defaultValue: 'CURRENT_TIMESTAMP',
+        }),
+      ]),
+    });
+  });
+
+  it('clears a column default value when the input is emptied', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({
+                name: 'created_at',
+                dataType: 'timestamp',
+                nullable: false,
+                defaultValue: 'CURRENT_TIMESTAMP',
+              }),
+            ],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/created_at: timestamp/));
+    const defaultInput = screen.getByPlaceholderText('default value');
+    fireEvent.change(defaultInput, { target: { value: '' } });
+    fireEvent.blur(screen.getAllByRole('textbox')[0]);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({
+          name: 'created_at',
+          dataType: 'timestamp',
+          defaultValue: undefined,
+        }),
+      ]),
+    });
+  });
+
+  it('adds a new column to the table and opens it for editing', () => {
+    const globalCrypto = globalThis as {
+      crypto?: { randomUUID?: () => string };
+    };
+    if (!globalCrypto.crypto?.randomUUID) {
+      globalCrypto.crypto = { randomUUID: () => 'test-column-uuid' };
+    }
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add a new column to this table/i,
+      }),
+    );
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({
+          id: 'test-column-uuid',
+          name: 'new_column',
+          dataType: 'text',
+          nullable: true,
+          primaryKey: false,
+        }),
+      ]),
+    });
+  });
+
+  it('removes a column from the table', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    fireEvent.click(screen.getByRole('button', { name: /Remove column id/i }));
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.not.arrayContaining([
+        expect.objectContaining({ name: 'id', dataType: 'integer' }),
+      ]),
+    });
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'email', dataType: 'varchar' }),
+      ]),
+    });
+  });
 });
