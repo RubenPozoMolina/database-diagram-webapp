@@ -13,7 +13,9 @@
 
 import { describe, it, expect } from 'vitest';
 import {
+  createColumn,
   createEmptyDiagram,
+  createTable,
   findTableById,
   findRelationshipById,
   type Column,
@@ -164,6 +166,88 @@ describe('Diagram data model (TASK-005)', () => {
 
       expect(findRelationshipById(diagram, 'rel-1')!.id).toBe('rel-1');
       expect(findRelationshipById(diagram, 'missing')).toBeUndefined();
+    });
+  });
+
+  describe('createColumn factory (TASK-005)', () => {
+    it('creates a column with all required fields', () => {
+      const column = createColumn(
+        'col-1',
+        'email',
+        'varchar',
+        false,
+        undefined,
+        false,
+      );
+
+      expect(column.id).toBe('col-1');
+      expect(column.name).toBe('email');
+      expect(column.dataType).toBe('varchar');
+      expect(column.nullable).toBe(false);
+      expect(column.primaryKey).toBe(false);
+    });
+
+    it('creates a column with an optional default value', () => {
+      const column = createColumn(
+        'col-2',
+        'created_at',
+        'timestamp',
+        false,
+        'CURRENT_TIMESTAMP',
+        false,
+      );
+
+      expect(column.defaultValue).toBe('CURRENT_TIMESTAMP');
+    });
+
+    it('creates a nullable column without a default value', () => {
+      const column = createColumn('col-3', 'notes', 'text', true);
+
+      expect(column.nullable).toBe(true);
+      expect(column.defaultValue).toBeUndefined();
+    });
+  });
+
+  describe('createTable factory (TASK-005)', () => {
+    it('creates a table with name and empty column list', () => {
+      const table = createTable(
+        'table-1',
+        'users',
+        100,
+        100,
+        240,
+        200,
+      );
+
+      expect(table.id).toBe('table-1');
+      expect(table.name).toBe('users');
+      expect(table.x).toBe(100);
+      expect(table.y).toBe(100);
+      expect(table.width).toBe(240);
+      expect(table.height).toBe(200);
+      expect(table.columns).toEqual([]);
+    });
+
+    it('creates a table with columns', () => {
+      const columns = [
+        createColumn('col-1', 'id', 'integer', false, undefined, true),
+        createColumn('col-2', 'name', 'varchar', false),
+      ];
+      const table = createTable(
+        'table-1',
+        'users',
+        0,
+        0,
+        220,
+        120,
+        columns,
+      );
+
+      expect(table.columns).toHaveLength(2);
+      expect(table.columns[0].name).toBe('id');
+      expect(table.columns[0].dataType).toBe('integer');
+      expect(table.columns[1].name).toBe('name');
+      expect(table.columns[1].dataType).toBe('varchar');
     });
   });
 });
