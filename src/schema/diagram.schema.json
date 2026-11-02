@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rubenpoziomolina.github.io/database-diagram-webapp/schema/diagram.schema.json",
+  "title": "Database Diagram Serialization Schema",
+  "description": "JSON schema for serializing and deserializing database diagram models. Defines tables, columns, data types, primary keys, foreign keys, unique constraints, indexes, and relationships.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["version", "diagram"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version following semantic versioning. Must match the serializer's DIAGRAM_JSON_VERSION.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "diagram": {
+      "$ref": "#/$defs/Diagram"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "Diagram": {
+      "type": "object",
+      "required": ["id", "name", "tables", "relationships", "uniqueConstraints", "indexes", "createdAt", "updatedAt"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the diagram (UUID).",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the diagram.",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "tables": {
+          "type": "array",
+          "description": "List of database tables (entities) in the diagram.",
+          "items": { "$ref": "#/$defs/Table" },
+          "uniqueItems": true
+        },
+        "relationships": {
+          "type": "array",
+          "description": "List of foreign key relationships between tables.",
+          "items": { "$ref": "#/$defs/Relationship" },
+          "uniqueItems": true
+        },
+        "uniqueConstraints": {
+          "type": "array",
+          "description": "List of unique constraints defined on tables.",
+          "items": { "$ref": "#/$defs/UniqueConstraint" },
+          "uniqueItems": true
+        },
+        "indexes": {
+          "type": "array",
+          "description": "List of indexes defined on tables.",
+          "items": { "$ref": "#/$defs/Index" },
+          "uniqueItems": true
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the diagram was created (ISO 8601).",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the diagram was last modified (ISO 8601).",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Table": {
+      "type": "object",
+      "required": ["id", "name", "x", "y", "width", "height", "columns"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the table (UUID).",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the database table.",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        },
+        "x": {
+          "type": "number",
+          "description": "Horizontal position on the canvas (pixels).",
+          "minimum": 0
+        },
+        "y": {
+          "type": "number",
+          "description": "Vertical position on the canvas (pixels).",
+          "minimum": 0
+        },
+        "width": {
+          "type": "number",
+          "description": "Width of the table node on the canvas (pixels).",
+          "minimum": 1
+        },
+        "height": {
+          "type": "number",
+          "description": "Height of the table node on the canvas (pixels).",
+          "minimum": 1
+        },
+        "columns": {
+          "type": "array",
+          "description": "List of columns defined on the table.",
+          "items": { "$ref": "#/$defs/Column" },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "Column": {
+      "type": "object",
+      "required": ["id", "name", "type", "nullable", "primaryKey"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the column (UUID).",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the database column.",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        },
+        "type": {
+          "type": "string",
+          "description": "SQL data type of the column (e.g. 'serial', 'integer', 'varchar', 'text', 'boolean', 'timestamp', 'numeric').",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "length": {
+          "type": ["integer", "null"],
+          "description": "Maximum length for character-based types (e.g. varchar(255)). Null for types without length.",
+          "minimum": 1
+        },
+        "nullable": {
+          "type": "boolean",
+          "description": "Whether the column accepts NULL values."
+        },
+        "primaryKey": {
+          "type": "boolean",
+          "description": "Whether the column is part of the table's primary key."
+        },
+        "unique": {
+          "type": "boolean",
+          "description": "Whether the column has a unique constraint (shortcut for single-column unique constraints)."
+        },
+        "defaultValue": {
+          "type": ["string", "null"],
+          "description": "Default value for the column (SQL expression or literal). Null means no default."
+        },
+        "comment": {
+          "type": ["string", "null"],
+          "description": "Optional comment/description for the column."
+        }
+      },
+      "additionalProperties": false
+    },
+    "Relationship": {
+      "type": "object",
+      "required": ["id", "sourceTableId", "targetTableId"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the relationship (UUID).",
+          "format": "uuid"
+        },
+        "sourceTableId": {
+          "type": "string",
+          "description": "ID of the table containing the foreign key column.",
+          "format": "uuid"
+        },
+        "sourceColumnId": {
+          "type": ["string", "null"],
+          "description": "ID of the source column (foreign key column). Null for table-level relationships without explicit column mapping.",
+          "format": "uuid"
+        },
+        "targetTableId": {
+          "type": "string",
+          "description": "ID of the referenced (parent) table.",
+          "format": "uuid"
+        },
+        "targetColumnId": {
+          "type": ["string", "null"],
+          "description": "ID of the target column (primary key column). Null for table-level relationships without explicit column mapping.",
+          "format": "uuid"
+        },
+        "onDelete": {
+          "type": "string",
+          "description": "Referential action on delete (e.g. 'cascade', 'set null', 'set default', 'restrict', 'no action').",
+          "enum": ["cascade", "set null", "set default", "restrict", "no action"],
+          "default": "no action"
+        },
+        "onUpdate": {
+          "type": "string",
+          "description": "Referential action on update (e.g. 'cascade', 'set null', 'set default', 'restrict', 'no action').",
+          "enum": ["cascade", "set null", "set default", "restrict", "no action"],
+          "default": "no action"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UniqueConstraint": {
+      "type": "object",
+      "required": ["id", "tableId", "columnIds"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the constraint (UUID).",
+          "format": "uuid"
+        },
+        "tableId": {
+          "type": "string",
+          "description": "ID of the table the constraint belongs to.",
+          "format": "uuid"
+        },
+        "columnIds": {
+          "type": "array",
+          "description": "IDs of the columns included in the unique constraint (supports composite constraints).",
+          "items": { "type": "string", "format": "uuid" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Optional name for the unique constraint. Auto-generated if null."
+        }
+      },
+      "additionalProperties": false
+    },
+    "Index": {
+      "type": "object",
+      "required": ["id", "tableId", "columnIds"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the index (UUID).",
+          "format": "uuid"
+        },
+        "tableId": {
+          "type": "string",
+          "description": "ID of the table the index belongs to.",
+          "format": "uuid"
+        },
+        "columnIds": {
+          "type": "array",
+          "description": "IDs of the columns included in the index (supports composite indexes).",
+          "items": { "type": "string", "format": "uuid" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "unique": {
+          "type": "boolean",
+          "description": "Whether the index enforces uniqueness."
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Optional name for the index. Auto-generated if null."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
