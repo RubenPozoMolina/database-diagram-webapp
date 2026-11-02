@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { RequestHandler } from "express";
 import { ApplySchemaRequestSchema, type ApplySchemaResult } from "../types/apply-schema";
+import { validateDdlSafety } from "../services/ddl-safety";
 
 export const applySchemaRouter = Router();
 
@@ -22,6 +23,17 @@ const handleApplySchema: RequestHandler = async (req, res) => {
     return;
   }
 
+  // Safety validation: reject any DDL that would modify or drop existing objects.
+  const safety = validateDdlSafety(ddl);
+  if (!safety.safe) {
+    res.status(400).json({
+      error: "Rejected",
+      message: safety.error ?? "DDL failed safety validation.",
+      statement: safety.statement
+    });
+    return;
+  }
+
   try {
     const { Client } = await import("pg");
     const client = new Client({
@@ -35,30 +47,14 @@ const handleApplySchema: RequestHandler = async (req, res) => {
 
     await client.connect();
 
-    // Never drop existing objects: only execute CREATE statements
-    // Split DDL by semicolons and execute each statement
+    // Split DDL by semicolons and execute each statement.
+    // All statements have already passed the safety check above.
     const statements = ddl
       .split(";")
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
     for (const stmt of statements) {
-      // Guard: reject any DROP/TRUNCATE/ALTER that would remove objects
-      const upper = stmt.toUpperCase();
-      if (
-        upper.startsWith("DROP") ||
-        upper.startsWith("TRUNCATE") ||
-        upper.includes("DROP TABLE") ||
-        upper.includes("DROP COLUMN") ||
-        upper.includes("DROP CONSTRAINT")
-      ) {
-        await client.end();
-        res.status(400).json({
-          error: "Rejected",
-          message: "DROP/TRUNCATE operations are not allowed. Existing objects are never dropped."
-        });
-        return;
-      }
       await client.query(stmt);
     }
 
