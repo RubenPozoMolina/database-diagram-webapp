@@ -1,4 +1,5 @@
-import { useCallback, useDiagram } from './hooks/useDiagram';
+import { useCallback } from 'react';
+import { useDiagram } from './hooks/useDiagram';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import type { Table } from './types/diagram';
 
