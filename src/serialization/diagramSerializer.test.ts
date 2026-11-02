@@ -1,0 +1,184 @@
+import { describe, it, expect } from 'vitest';
+import { createEmptyDiagram } from '../types/diagram';
+import {
+  DIAGRAM_JSON_VERSION,
+  serializeDiagram,
+  type SerializedExport,
+} from './diagramSerializer';
+
+const buildDiagram = (): import('../types/diagram').Diagram => {
+  const diagram = createEmptyDiagram('E-commerce Schema');
+  diagram.tables.push({
+    id: 'table-users',
+    name: 'users',
+    x: 100,
+    y: 100,
+    width: 240,
+    height: 200,
+    columns: [
+      {
+        id: 'col-users-id',
+        name: 'id',
+        dataType: 'serial',
+        nullable: false,
+        primaryKey: true,
+      },
+      {
+        id: 'col-users-email',
+        name: 'email',
+        dataType: 'varchar',
+        nullable: false,
+        primaryKey: false,
+      },
+      {
+        id: 'col-users-created-at',
+        name: 'created_at',
+        dataType: 'timestamp',
+        nullable: false,
+        primaryKey: false,
+        defaultValue: 'CURRENT_TIMESTAMP',
+      },
+    ],
+  });
+  diagram.tables.push({
+    id: 'table-orders',
+    name: 'orders',
+    x: 450,
+    y: 100,
+    width: 240,
+    height: 200,
+    columns: [
+      {
+        id: 'col-orders-id',
+        name: 'id',
+        dataType: 'serial',
+        nullable: false,
+        primaryKey: true,
+      },
+      {
+        id: 'col-orders-user-id',
+        name: 'user_id',
+        dataType: 'integer',
+        nullable: false,
+        primaryKey: false,
+      },
+      {
+        id: 'col-orders-total',
+        name: 'total',
+        dataType: 'numeric',
+        nullable: false,
+        primaryKey: false,
+        defaultValue: '0.00',
+      },
+    ],
+  });
+  diagram.relationships.push({
+    id: 'rel-orders-users',
+    sourceTableId: 'table-orders',
+    sourceColumnId: 'col-orders-user-id',
+    targetTableId: 'table-users',
+    targetColumnId: 'col-users-id',
+  });
+  return diagram;
+};
+
+describe('serializeDiagram', () => {
+  it('produces a payload with the schema version and diagram root', () => {
+    const result = serializeDiagram(createEmptyDiagram());
+    expect(result.version).toBe(DIAGRAM_JSON_VERSION);
+    expect(result.diagram).toBeDefined();
+  });
+
+  it('includes the diagram id and name', () => {
+    const diagram = createEmptyDiagram('My Diagram');
+    const result = serializeDiagram(diagram);
+    expect(result.diagram.id).toBe(diagram.id);
+    expect(result.diagram.name).toBe('My Diagram');
+  });
+
+  it('serializes all tables with position and size', () => {
+    const diagram = buildDiagram();
+    const result = serializeDiagram(diagram);
+    expect(result.diagram.tables).toHaveLength(2);
+    const users = result.diagram.tables.find((t) => t.name === 'users');
+    expect(users).toBeDefined();
+    expect(users!.x).toBe(100);
+    expect(users!.y).toBe(100);
+    expect(users!.width).toBe(240);
+    expect(users!.height).toBe(200);
+  });
+
+  it('serializes all columns with data types and keys', () => {
+    const diagram = buildDiagram();
+    const result = serializeDiagram(diagram);
+    const users = result.diagram.tables.find((t) => t.name === 'users')!;
+    expect(users.columns).toHaveLength(3);
+    const idCol = users.columns.find((c) => c.name === 'id')!;
+    expect(idCol.type).toBe('serial');
+    expect(idCol.primaryKey).toBe(true);
+    expect(idCol.nullable).toBe(false);
+    const emailCol = users.columns.find((c) => c.name === 'email')!;
+    expect(emailCol.type).toBe('varchar');
+    expect(emailCol.primaryKey).toBe(false);
+    const createdAtCol = users.columns.find((c) => c.name === 'created_at')!;
+    expect(createdAtCol.type).toBe('timestamp');
+    expect(createdAtCol.defaultValue).toBe('CURRENT_TIMESTAMP');
+  });
+
+  it('serializes all relationships between tables', () => {
+    const diagram = buildDiagram();
+    const result = serializeDiagram(diagram);
+    expect(result.diagram.relationships).toHaveLength(1);
+    const rel = result.diagram.relationships[0];
+    expect(rel.sourceTableId).toBe('table-orders');
+    expect(rel.sourceColumnId).toBe('col-orders-user-id');
+    expect(rel.targetTableId).toBe('table-users');
+    expect(rel.targetColumnId).toBe('col-users-id');
+    expect(rel.onDelete).toBe('no action');
+    expect(rel.onUpdate).toBe('no action');
+  });
+
+  it('includes empty constraints and indexes arrays', () => {
+    const result = serializeDiagram(createEmptyDiagram());
+    expect(result.diagram.uniqueConstraints).toEqual([]);
+    expect(result.diagram.indexes).toEqual([]);
+  });
+
+  it('includes creation and update timestamps in ISO 8601 format', () => {
+    const result = serializeDiagram(createEmptyDiagram());
+    expect(result.diagram.createdAt).toMatch(/\d{4}-\d{2}-\d{2}T/);
+    expect(result.diagram.updatedAt).toMatch(/\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it('produces JSON that round-trips through JSON.stringify/parse', () => {
+    const diagram = buildDiagram();
+    const result = serializeDiagram(diagram);
+    const json = JSON.stringify(result);
+    const parsed = JSON.parse(json) as SerializedExport;
+    expect(parsed.version).toBe(DIAGRAM_JSON_VERSION);
+    expect(parsed.diagram.tables).toHaveLength(2);
+    expect(parsed.diagram.relationships).toHaveLength(1);
+  });
+
+  it('contains no database credentials (host, port, database, user, password)', () => {
+    const diagram = buildDiagram();
+    const result = serializeDiagram(diagram);
+    const serialized = JSON.stringify(result).toLowerCase();
+    for (const credential of [
+      'host',
+      'port',
+      'database',
+      '"user"',
+      'password',
+    ]) {
+      expect(serialized).not.toContain(credential);
+    }
+  });
+
+  it('serializes an empty diagram to valid well-formed JSON', () => {
+    const result = serializeDiagram(createEmptyDiagram());
+    expect(() => JSON.stringify(result)).not.toThrow();
+    expect(result.diagram.tables).toEqual([]);
+    expect(result.diagram.relationships).toEqual([]);
+  });
+});
