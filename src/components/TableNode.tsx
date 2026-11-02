@@ -1,13 +1,20 @@
-import React from 'react';
-import type { Table } from '../types/diagram';
+import React, { useCallback, useState } from 'react';
+import type { Column, Table } from '../types/diagram';
+
+/* Common SQL data types offered when editing a column inline. */
+const DATA_TYPES = ['integer', 'varchar', 'text', 'boolean', 'date', 'timestamp', 'decimal'];
 
 interface TableNodeProps {
   table: Table;
   onUpdatePosition: (id: string, x: number, y: number) => void;
+  onUpdateTable: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
 }
 
-export function TableNode({ table, onUpdatePosition }: TableNodeProps) {
+export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeProps) {
   const ref = React.useRef<HTMLDivElement>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(table.name);
+  const [editingColumn, setEditingColumn] = useState<string | null>(null);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -15,6 +22,25 @@ export function TableNode({ table, onUpdatePosition }: TableNodeProps) {
     const rect = el.getBoundingClientRect();
     onUpdatePosition(table.id, rect.left, rect.top);
   }, [table.id, table.width, table.height, onUpdatePosition]);
+
+  const saveName = () => {
+    const trimmed = nameInput.trim();
+    if (trimmed && trimmed !== table.name) {
+      onUpdateTable(table.id, { name: trimmed });
+    }
+    setEditingName(false);
+  };
+
+  const updateColumnField = useCallback(
+    (columnId: string, field: keyof Column, value: string) => {
+      onUpdateTable(table.id, {
+        columns: table.columns.map((column) =>
+          column.id === columnId ? { ...column, [field]: value } : column,
+        ),
+      });
+    },
+    [table.id, table.columns, onUpdateTable],
+  );
 
   return (
     <div
@@ -26,16 +52,81 @@ export function TableNode({ table, onUpdatePosition }: TableNodeProps) {
         width: table.width,
         height: table.height,
       }}
+      role="region"
+      aria-label={`Table ${table.name}`}
     >
-      <div className="table-header">{table.name}</div>
+      <div className="table-header" onDoubleClick={() => setEditingName(true)}>
+        {editingName ? (
+          <input
+            className="table-name-input"
+            autoFocus
+            value={nameInput}
+            onChange={(event) => setNameInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                saveName();
+              }
+              if (event.key === 'Escape') {
+                setNameInput(table.name);
+                setEditingName(false);
+              }
+            }}
+            onBlur={saveName}
+          />
+        ) : (
+          <span className="table-name">{table.name}</span>
+        )}
+      </div>
       <div className="table-columns">
         {table.columns.map((column) => (
           <div
             key={column.id}
-            className="table-column"
+            className={`table-column ${editingColumn === column.id ? 'editing' : ''}`}
             title={column.primaryKey ? 'PK' : ''}
           >
-            {column.name}: {column.dataType}
+            {editingColumn === column.id ? (
+              <div className="column-edit-row">
+                <input
+                  className="column-name-input"
+                  autoFocus
+                  value={column.name}
+                  onChange={(event) =>
+                    updateColumnField(column.id, 'name', event.target.value)
+                  }
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      setEditingColumn(null);
+                    }
+                    if (event.key === 'Escape') {
+                      setEditingColumn(null);
+                    }
+                  }}
+                  onBlur={() => setEditingColumn(null)}
+                />
+                <select
+                  className="column-type-select"
+                  value={column.dataType}
+                  onChange={(event) =>
+                    updateColumnField(column.id, 'dataType', event.target.value)
+                  }
+                >
+                  {DATA_TYPES.map((dataType) => (
+                    <option key={dataType} value={dataType}>
+                      {dataType}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <span
+                className="column-text"
+                onDoubleClick={() => setEditingColumn(column.id)}
+              >
+                {column.name}: {column.dataType}
+              </span>
+            )}
           </div>
         ))}
       </div>

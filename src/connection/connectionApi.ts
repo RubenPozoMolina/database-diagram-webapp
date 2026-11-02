@@ -8,7 +8,7 @@
 
 import type { ConnectionConfig, ConnectionResult } from '../types';
 
-const DEFAULT_API_URL = '/api/connections';
+const DEFAULT_API_URL = '/api/v1/connections/test';
 
 let fetchImpl: typeof fetch = fetch;
 
