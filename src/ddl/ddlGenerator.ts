@@ -156,6 +156,8 @@ function renderDefault(defaultValue: string | null): string | null {
     upper === 'TRUE' ||
     upper === 'FALSE' ||
     upper === 'NULL' ||
+    upper === 'CURRENT_TIMESTAMP' ||
+    upper === 'CURRENT_DATE' ||
     /^-?\d+(\.\d+)?$/.test(trimmed)
   ) {
     return trimmed;

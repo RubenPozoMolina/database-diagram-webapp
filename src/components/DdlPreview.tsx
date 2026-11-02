@@ -30,7 +30,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import type { Diagram } from '../types/diagram';
 import type { ConnectionConfig } from '../types';
 import { generateDDL } from '../ddl/ddlGenerator';
-import { applyDDL } from '../connection/ddlApi';
+import { applyDDL, DEFAULT_API_URL } from '../connection/ddlApi';
 
 interface DdlPreviewProps {
   diagram: Diagram;
@@ -65,12 +65,6 @@ export function DdlPreview({
 }: DdlPreviewProps) {
   const [state, setState] = useState<DdlPreviewState>(DEFAULT_STATE);
 
-  // Generate DDL when the modal opens.
-  useEffect(() => {
-    if (!isOpen) return;
-    generate();
-  }, [isOpen, generate]);
-
   const generate = useCallback((): void => {
     try {
       const ddl = generateDDLFn(diagram);
@@ -81,11 +75,17 @@ export function DdlPreview({
         ddl: null,
         result: {
           success: false,
-          message: err instanceof Error ? err.message : 'Failed to generate DDL',
+          message: `Failed to generate DDL: ${err instanceof Error ? err.message : String(err)}`,
         },
       }));
     }
   }, [diagram, generateDDLFn]);
+
+  // Generate DDL when the modal opens.
+  useEffect(() => {
+    if (!isOpen) return;
+    generate();
+  }, [isOpen, generate]);
 
   const toggleConfirm = useCallback((): void => {
     setState((prev) => ({ ...prev, confirmed: !prev.confirmed }));
@@ -98,7 +98,7 @@ export function DdlPreview({
     setState((prev) => ({ ...prev, executing: true }));
 
     try {
-      const result = await applyDDL(state.ddl, connection, true);
+      const result = await applyDDL(state.ddl, connection, true, DEFAULT_API_URL);
       setState((prev) => ({
         ...prev,
         executing: false,

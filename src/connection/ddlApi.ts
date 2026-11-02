@@ -12,7 +12,7 @@
 
 import type { ConnectionConfig } from '../types';
 
-const DEFAULT_API_URL = '/api/apply-schema';
+export const DEFAULT_API_URL = '/api/apply-schema';
 
 let fetchImpl: typeof fetch = fetch;
 

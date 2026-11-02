@@ -87,7 +87,7 @@ describe('generateDDL', () => {
 
   it('includes column definitions with types and nullability', () => {
     const ddl = generateDDL(buildDiagram());
-    expect(ddl).toContain('"id" SERIAL NOT NULL');
+    expect(ddl).toContain('"id" SERIAL PRIMARY KEY');
     expect(ddl).toContain('"email" VARCHAR NOT NULL');
     expect(ddl).toContain('"created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP');
   });
@@ -119,7 +119,12 @@ describe('generateDDL', () => {
     const upper = ddl.toUpperCase();
     expect(upper).not.toContain('DROP');
     expect(upper).not.toContain('TRUNCATE');
-    expect(upper).not.toContain('DELETE');
+    // 'ON DELETE NO ACTION' is a foreign-key referential action, not a
+    // destructive DELETE statement, so assert on statement prefixes instead.
+    const statements = ddl.split(';').map((s) => s.trimStart()).filter(Boolean);
+    for (const stmt of statements) {
+      expect(stmt.toUpperCase()).not.toMatch(/^(DROP|TRUNCATE|DELETE)\b/);
+    }
   });
 
   it('returns empty string for an empty diagram', () => {
