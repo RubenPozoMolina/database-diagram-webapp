@@ -17,20 +17,27 @@ vi.mock("pg", () => {
   const connectMock = vi.fn().mockResolvedValue(undefined);
   const endMock = vi.fn().mockResolvedValue(undefined);
   const queryMock = vi.fn();
+  const clientMock = vi.fn().mockImplementation(() => ({
+    connect: connectMock,
+    end: endMock,
+    query: queryMock,
+  }));
   return {
-    Client: vi.fn().mockImplementation(() => ({
-      connect: connectMock,
-      end: endMock,
-      query: queryMock,
-    })),
+    Client: clientMock,
+    clientMock,
+    connectMock,
+    endMock,
     queryMock,
   };
 });
 
 declare module "pg" {
+  export const clientMock: ReturnType<typeof vi.fn>;
+  export const connectMock: ReturnType<typeof vi.fn>;
+  export const endMock: ReturnType<typeof vi.fn>;
   export const queryMock: ReturnType<typeof vi.fn>;
 }
-import { queryMock } from "pg";
+import { clientMock, connectMock, endMock, queryMock } from "pg";
 
 vi.mock("../services/introspection.service", () => ({
   IntrospectionService: vi.fn().mockImplementation(() => ({
@@ -68,6 +75,13 @@ const basePayload = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  clientMock.mockImplementation(() => ({
+    connect: connectMock,
+    end: endMock,
+    query: queryMock,
+  }));
+  connectMock.mockResolvedValue(undefined);
+  endMock.mockResolvedValue(undefined);
   queryMock.mockResolvedValue({ rows: [] });
   mockIntrospectSchema.mockResolvedValue({ tables: [] });
 });

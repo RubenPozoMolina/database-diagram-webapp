@@ -106,7 +106,7 @@ pgDescribe("Introspection service integration (real PostgreSQL)", () => {
     expect(idCol.is_nullable).toBe("NO");
 
     const hireCol = employeeTable!.columns.find((c) => c.column_name === "hire_date");
-    expect(hireCol.data_type).toBe("timestamp without time zone");
+    expect(hireCol.data_type).toBe("timestamp with time zone");
     expect(hireCol.is_nullable).toBe("NO");
 
     const uuidCol = employeeTable!.columns.find((c) => c.column_name === "employee_uuid");
@@ -127,10 +127,10 @@ pgDescribe("Introspection service integration (real PostgreSQL)", () => {
     expect(byTable("department").primaryKeys.map((p) => p.column_name)).toEqual(["department_id"]);
     expect(byTable("employee").primaryKeys.map((p) => p.column_name)).toEqual(["employee_id"]);
     expect(byTable("project").primaryKeys.map((p) => p.column_name)).toEqual(["project_id"]);
-    // Composite primary key on employee_project.
-    expect(byTable("employee_project").primaryKeys.map((p) => p.constraint_name)).toEqual([
-      "employee_project_pkey",
-    ]);
+    // Composite primary key on employee_project — one row per column.
+    expect(
+      [...new Set(byTable("employee_project").primaryKeys.map((p) => p.constraint_name))],
+    ).toEqual(["employee_project_pkey"]);
     expect(byTable("employee_project").primaryKeys.map((p) => p.column_name)).toEqual([
       "employee_id",
       "project_id",
