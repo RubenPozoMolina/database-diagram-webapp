@@ -39,11 +39,7 @@ export function App() {
   const handleConnect = async (
     connectionConfig: ConnectionConfig,
   ): Promise<ConnectionResult> => {
-    await connect(connectionConfig);
-    if (isConnected) {
-      return { success: true, message: message ?? 'Connection established' };
-    }
-    return { success: false, error: error ?? 'Connection failed' };
+    return connect(connectionConfig);
   };
 
   useEffect(() => {

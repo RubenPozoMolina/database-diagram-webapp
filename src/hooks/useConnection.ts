@@ -31,8 +31,10 @@ export interface UseConnectionReturn {
   /**
    * Attempts to connect to PostgreSQL with the given config.
    * Credentials are held in memory only for the current session.
+   * Returns the connection result (success/failure) so callers can
+   * react to the outcome without reading stale closure state.
    */
-  connect: (config: ConnectionConfig) => Promise<void>;
+  connect: (config: ConnectionConfig) => Promise<ConnectionResult>;
   /** Disconnects and clears credentials from memory */
   disconnect: () => void;
   /** Clears any error or success message */
@@ -68,7 +70,7 @@ export function useConnection(): UseConnectionReturn {
   );
 
   const connect = useCallback(
-    async (connectionConfig: ConnectionConfig): Promise<void> => {
+    async (connectionConfig: ConnectionConfig): Promise<ConnectionResult> => {
       setStatus('connecting');
       setError(null);
       setMessage(null);
@@ -85,19 +87,22 @@ export function useConnection(): UseConnectionReturn {
           setStatus('connected');
           setMessage(result.message ?? 'Connection established');
           setError(null);
+          return result;
         } else {
           setStatus('error');
           setError(result.error ?? 'Connection failed');
           setMessage(null);
           // Credentials remain in memory but connection is not established;
           // user can retry without re-entering.
+          return result;
         }
       } catch (err) {
         setStatus('error');
-        setError(
-          err instanceof Error ? err.message : 'Unexpected connection error',
-        );
+        const errorMsg =
+          err instanceof Error ? err.message : 'Unexpected connection error';
+        setError(errorMsg);
         setMessage(null);
+        return { success: false, error: errorMsg };
       }
     },
     [],
