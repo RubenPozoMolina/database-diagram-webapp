@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDiagram } from './hooks/useDiagram';
 import { useConnection } from './hooks/useConnection';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import { ExportButton } from './components/ExportButton';
+import { ImportButton } from './components/ImportButton';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
-import type { Column, Table } from './types/diagram';
+import type { Column, Diagram, Table } from './types/diagram';
 import type { ConnectionConfig, ConnectionResult } from './types';
 
 const CANVAS_WIDTH = 1200;
@@ -16,6 +17,7 @@ export function App() {
   const {
     diagram,
     createNewDiagram,
+    setDiagram,
     addTable,
     updateTable,
     updateTablePosition,
@@ -35,6 +37,11 @@ export function App() {
   const connectionFormRef = useRef<HTMLDivElement | null>(null);
   const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
+  const [importError, setImportErrorState] = useState<string | null>(null);
+
+  const handleImportError = useCallback((message: string) => {
+    setImportErrorState(message);
+  }, []);
 
   const handleConnect = async (
     connectionConfig: ConnectionConfig,
@@ -57,6 +64,12 @@ export function App() {
 
   const handleNewDiagram = () => {
     createNewDiagram();
+    setImportErrorState(null);
+  };
+
+  const handleImport = (importedDiagram: Diagram) => {
+    setDiagram(importedDiagram);
+    setImportError(null);
   };
 
   const handleTablePositionUpdate = (
@@ -123,6 +136,7 @@ export function App() {
             New Diagram
           </button>
           <ExportButton diagram={diagram} />
+          <ImportButton onImport={handleImport} onError={handleImportError} />
         </div>
         {status === 'connecting' && (
           <div className="connection-status connection-status--info" role="status" aria-live="polite">
@@ -142,6 +156,19 @@ export function App() {
               onClick={clearMessage}
               className="connection-status-dismiss"
               aria-label="Dismiss error message"
+            >
+              ×
+            </button>
+          </div>
+        )}
+        {importError && (
+          <div className="connection-status connection-status--error" role="status" aria-live="polite">
+            {importError}
+            <button
+              type="button"
+              onClick={() => setImportErrorState(null)}
+              className="connection-status-dismiss"
+              aria-label="Dismiss import error"
             >
               ×
             </button>

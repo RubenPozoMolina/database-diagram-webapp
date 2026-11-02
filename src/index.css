@@ -306,6 +306,30 @@ body {
   outline-offset: 2px;
 }
 
+.import-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.import-button:hover {
+  background: var(--color-primary-hover);
+}
+
+.import-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .add-table-button:hover {
   background: var(--color-primary-hover);
 }

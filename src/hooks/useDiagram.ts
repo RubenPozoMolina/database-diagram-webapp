@@ -9,6 +9,7 @@ import {
 interface UseDiagramReturn {
   diagram: Diagram;
   createNewDiagram: (name?: string) => void;
+  setDiagram: (diagram: Diagram) => void;
   addTable: (table: Omit<Table, 'id'>) => void;
   removeTable: (tableId: string) => void;
   updateTable: (
@@ -30,6 +31,10 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
 
   const createNewDiagram = useCallback((name?: string) => {
     setDiagram(createEmptyDiagram(name));
+  }, []);
+
+  const loadDiagram = useCallback((next: Diagram) => {
+    setDiagram(next);
   }, []);
 
   const addTable = useCallback(
@@ -101,6 +106,7 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
   return {
     diagram,
     createNewDiagram,
+    setDiagram: loadDiagram,
     addTable,
     removeTable,
     updateTable,
