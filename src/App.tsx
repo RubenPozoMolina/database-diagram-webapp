@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { useDiagram } from './hooks/useDiagram';
 import { DiagramCanvas } from './components/DiagramCanvas';
+import { ConnectionForm } from './connection/ConnectionForm';
 
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 800;
@@ -10,6 +12,22 @@ export function App() {
     createNewDiagram,
     updateTablePosition,
   } = useDiagram();
+
+  const connectionFormRef = useRef<HTMLDivElement | null>(null);
+  const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
+
+  useEffect(() => {
+    const container = connectionFormRef.current;
+    if (!container) return;
+
+    const form = new ConnectionForm({ container });
+    connectionFormRefInstance.current = form;
+
+    return () => {
+      form.destroy();
+      connectionFormRefInstance.current = null;
+    };
+  }, []);
 
   const handleNewDiagram = () => {
     createNewDiagram();
@@ -39,6 +57,9 @@ export function App() {
         </div>
       </header>
       <main className="app-main">
+        <section className="connection-panel">
+          <div ref={connectionFormRef} id="connection-form" />
+        </section>
         <div className="diagram-canvas-container">
           <DiagramCanvas
             diagram={diagram}
