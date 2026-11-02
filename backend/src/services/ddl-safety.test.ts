@@ -198,6 +198,62 @@ describe("validateDdlSafety", () => {
   });
 
   // ------------------------------------------------------------------
+  // Combined clauses: a destructive clause after an additive clause
+  // must still be rejected (security bypass fix)
+  // ------------------------------------------------------------------
+  it("rejects ALTER TABLE with ADD COLUMN followed by DROP COLUMN", () => {
+    expectRejected(
+      validateDdlSafety(
+        'ALTER TABLE "employee" ADD COLUMN "nickname" TEXT, DROP COLUMN "age";'
+      ),
+      "DROP COLUMN"
+    );
+  });
+
+  it("rejects ALTER TABLE with ADD CONSTRAINT followed by DROP COLUMN", () => {
+    expectRejected(
+      validateDdlSafety(
+        'ALTER TABLE "t" ADD CONSTRAINT "c" UNIQUE ("a"), DROP COLUMN "b";'
+      ),
+      "DROP COLUMN"
+    );
+  });
+
+  it("rejects ALTER TABLE with DROP COLUMN followed by ADD COLUMN", () => {
+    expectRejected(
+      validateDdlSafety(
+        'ALTER TABLE "t" DROP COLUMN "a", ADD COLUMN "b" INTEGER;'
+      ),
+      "DROP COLUMN"
+    );
+  });
+
+  it("rejects ALTER TABLE with ADD COLUMN followed by DROP CONSTRAINT", () => {
+    expectRejected(
+      validateDdlSafety(
+        'ALTER TABLE "t" ADD COLUMN "x" INTEGER, DROP CONSTRAINT "c";'
+      ),
+      "DROP CONSTRAINT"
+    );
+  });
+
+  it("allows ALTER TABLE with multiple additive clauses only", () => {
+    expectSafe(
+      validateDdlSafety(
+        'ALTER TABLE "employee" ADD COLUMN "nickname" TEXT, ADD COLUMN "bio" TEXT;'
+      )
+    );
+  });
+
+  it("allows ALTER TABLE with ADD CONSTRAINT and ADD COLUMN combined", () => {
+    expectSafe(
+      validateDdlSafety(
+        'ALTER TABLE "employee" ADD CONSTRAINT "chk_age" CHECK ("age" > 0), ADD COLUMN "nickname" TEXT;'
+      )
+    );
+  });
+
+  // ------------------------------------------------------------------
   // ON DELETE / ON UPDATE referential actions are NOT treated as destructive
   // ------------------------------------------------------------------
   it("allows ALTER TABLE with ON DELETE CASCADE (referential action, not destructive)", () => {

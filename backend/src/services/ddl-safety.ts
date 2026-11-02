@@ -65,6 +65,21 @@ function containsKeyword(normalised: string, keyword: string): boolean {
 }
 
 /**
+ * Checks whether a normalised statement contains a multi-word phrase as
+ * consecutive whole words (for example "ADD CONSTRAINT" or "DROP COLUMN").
+ * The normalised string already has collapsed whitespace and upper case,
+ * so the phrase is matched with word boundaries on each word.
+ */
+function containsPhrase(normalised: string, phrase: string): boolean {
+  const pattern = phrase
+    .toUpperCase()
+    .split(/\s+/)
+    .map((w) => `\\b${w}\\b`)
+    .join("\\s+");
+  return new RegExp(pattern).test(normalised);
+}
+
+/**
  * Validates a complete DDL script. Returns the first unsafe statement found.
  *
  * Allowed:
@@ -133,16 +148,13 @@ export function validateDdlSafety(ddl: string): DdlSafetyResult {
 
     // --- ALTER statements ------------------------------------------------
     if (startsWith(stmt, "ALTER")) {
-      // ALTER TABLE ... ADD CONSTRAINT creates a new constraint object.
-      if (containsKeyword(stmt, "ADD") && containsKeyword(stmt, "CONSTRAINT")) {
-        continue;
-      }
-      // ALTER TABLE ... ADD COLUMN creates a new column object.
-      if (containsKeyword(stmt, "ADD") && containsKeyword(stmt, "COLUMN")) {
-        continue;
-      }
+      // Destructive/modifying checks are evaluated FIRST, before any
+      // additive allow-checks. This prevents a destructive clause hidden
+      // after an additive clause (e.g. "ADD COLUMN ..., DROP COLUMN ...")
+      // from being wrongly allowed by a short-circuit `continue`.
+
       // ALTER TABLE ... DROP COLUMN removes an existing column.
-      if (containsKeyword(stmt, "DROP") && containsKeyword(stmt, "COLUMN")) {
+      if (containsPhrase(stmt, "DROP COLUMN")) {
         return {
           safe: false,
           error:
@@ -151,7 +163,7 @@ export function validateDdlSafety(ddl: string): DdlSafetyResult {
         };
       }
       // ALTER TABLE ... DROP CONSTRAINT removes an existing constraint.
-      if (containsKeyword(stmt, "DROP") && containsKeyword(stmt, "CONSTRAINT")) {
+      if (containsPhrase(stmt, "DROP CONSTRAINT")) {
         return {
           safe: false,
           error:
@@ -159,8 +171,17 @@ export function validateDdlSafety(ddl: string): DdlSafetyResult {
           statement: rawStmt,
         };
       }
+      // ALTER TABLE ... ALTER COLUMN modifies an existing column.
+      if (containsPhrase(stmt, "ALTER COLUMN")) {
+        return {
+          safe: false,
+          error:
+            "Rejected: ALTER COLUMN is not allowed. Existing columns are never modified.",
+          statement: rawStmt,
+        };
+      }
       // ALTER TABLE ... MODIFY COLUMN modifies an existing column.
-      if (containsKeyword(stmt, "MODIFY") && containsKeyword(stmt, "COLUMN")) {
+      if (containsPhrase(stmt, "MODIFY COLUMN")) {
         return {
           safe: false,
           error:
@@ -177,18 +198,17 @@ export function validateDdlSafety(ddl: string): DdlSafetyResult {
           statement: rawStmt,
         };
       }
-      // ALTER TABLE ... ALTER COLUMN modifies an existing column.
-      if (
-        containsKeyword(stmt, "ALTER") &&
-        containsKeyword(stmt, "COLUMN")
-      ) {
-        return {
-          safe: false,
-          error:
-            "Rejected: ALTER COLUMN is not allowed. Existing columns are never modified.",
-          statement: rawStmt,
-        };
+
+      // Additive allow-checks (only reached when no destructive clause is present).
+      // ALTER TABLE ... ADD CONSTRAINT creates a new constraint object.
+      if (containsPhrase(stmt, "ADD CONSTRAINT")) {
+        continue;
       }
+      // ALTER TABLE ... ADD COLUMN creates a new column object.
+      if (containsPhrase(stmt, "ADD COLUMN")) {
+        continue;
+      }
+
       // Any other ALTER statement modifies existing objects.
       return {
         safe: false,
