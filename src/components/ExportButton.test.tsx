@@ -104,6 +104,7 @@ describe('ExportButton', () => {
           primaryKey: false,
         },
       ],
+      indexes: [],
     });
     diagram.relationships.push({
       id: 'rel-1',

@@ -136,6 +136,180 @@ body {
   border-bottom: none;
 }
 
+.index-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--color-primary);
+  border-radius: 3px;
+  padding: 0.05rem 0.35rem;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Indexes section. */
+.table-indexes {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+
+.indexes-title {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.index-edit-row {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.index-edit-row .index-name-input,
+.index-edit-row .index-column-select {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.index-edit-row .index-name-input {
+  min-width: 110px;
+}
+
+.index-edit-row .index-column-select {
+  min-width: 130px;
+}
+
+.index-edit-row button.save-index,
+.index-edit-row button.cancel-index {
+  padding: 0.22rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.index-edit-row button.save-index {
+  color: #ffffff;
+  background: var(--color-primary);
+}
+
+.index-edit-row button.save-index:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.index-edit-row button.save-index:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.index-edit-row button.cancel-index {
+  color: var(--color-text);
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.index-edit-row button.cancel-index:hover {
+  background: #e5e7eb;
+}
+
+.index-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.index-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.index-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.index-column {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.index-item button.edit-index,
+.index-item button.remove-index {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  margin-left: auto;
+}
+
+.index-item button.edit-index {
+  color: var(--color-text);
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  margin-right: 0.25rem;
+}
+
+.index-item button.edit-index:hover {
+  background: #e5e7eb;
+}
+
+.index-item button.remove-index {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.index-item button.remove-index:hover {
+  background: #fee2e2;
+}
+
+button.add-index {
+  margin-top: 0.4rem;
+  width: max-content;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.add-index:hover {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+button.add-index:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .table-column:global([title]) {
   font-weight: 600;
   color: var(--color-primary);

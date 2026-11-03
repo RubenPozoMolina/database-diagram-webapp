@@ -39,6 +39,7 @@ const buildDiagram = (): import('../types/diagram').Diagram => {
         defaultValue: 'CURRENT_TIMESTAMP',
       },
     ],
+    indexes: [],
   });
   diagram.tables.push({
     id: 'table-orders',
@@ -71,6 +72,7 @@ const buildDiagram = (): import('../types/diagram').Diagram => {
         defaultValue: '0.00',
       },
     ],
+    indexes: [],
   });
   diagram.relationships.push({
     id: 'rel-orders-users',

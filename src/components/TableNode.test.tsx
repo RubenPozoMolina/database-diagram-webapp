@@ -20,6 +20,7 @@ const makeTable = (overrides: Partial<Table> = {}): Table => ({
   width: 220,
   height: 120,
   columns: [makeColumn()],
+  indexes: [],
   ...overrides,
 });
 
@@ -329,5 +330,179 @@ describe('TableNode', () => {
         expect.objectContaining({ name: 'email', dataType: 'varchar' }),
       ]),
     });
+  });
+
+  it('shows an IX badge on indexed columns', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
+            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.getByTitle('IX')).toBeInTheDocument();
+    expect(screen.getByText(/id: integer/)).toBeInTheDocument();
+  });
+
+  it('renders the indexes section when indexes exist', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
+            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.getByText('Indexes')).toBeInTheDocument();
+    expect(screen.getByText('idx_id')).toBeInTheDocument();
+    expect(screen.getByText(/on id/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Remove index idx_id/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('does not render the indexes section when there are no indexes', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.queryByText('Indexes')).toBeNull();
+  });
+
+  it('adds a new index when Add index is clicked and form is submitted', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-index-uuid' },
+    });
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /add a new index to this table/i }));
+    const nameInput = screen.getByPlaceholderText('Index name');
+    fireEvent.change(nameInput, { target: { value: 'idx_email' } });
+    const select = screen.getByRole('combobox', { name: /column to index/i });
+    fireEvent.change(select, { target: { value: 'c2' } });
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id' }),
+        expect.objectContaining({ name: 'email' }),
+      ]),
+      indexes: expect.arrayContaining([
+        expect.objectContaining({
+          id: 'test-index-uuid',
+          name: 'idx_email',
+          columnId: 'c2',
+        }),
+      ]),
+    });
+  });
+
+  it('removes an index when Remove is clicked', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
+            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Remove index idx_id/i }));
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id' }),
+      ]),
+      indexes: [],
+    });
+  });
+
+  it('edits an index when Edit is clicked and Save is submitted', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Edit index idx_id/i }));
+    const nameInput = screen.getByPlaceholderText('Index name');
+    expect(nameInput).toHaveValue('idx_id');
+    fireEvent.change(nameInput, { target: { value: 'idx_user_id' } });
+    const select = screen.getByRole('combobox', { name: /column to index/i });
+    fireEvent.change(select, { target: { value: 'c1' } });
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id' }),
+        expect.objectContaining({ name: 'email' }),
+      ]),
+      indexes: expect.arrayContaining([
+        expect.objectContaining({
+          id: 'i1',
+          name: 'idx_user_id',
+          columnId: 'c1',
+        }),
+      ]),
+    });
+  });
+
+  it('cancels index editing without calling onUpdateTable', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
+            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Edit index idx_id/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onUpdateTable).not.toHaveBeenCalled();
   });
 });

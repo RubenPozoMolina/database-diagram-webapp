@@ -41,6 +41,7 @@ function buildDiagram() {
         primaryKey: false,
       },
     ],
+    indexes: [],
   });
   return diagram;
 }

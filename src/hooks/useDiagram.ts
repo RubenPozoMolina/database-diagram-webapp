@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react';
 import {
   createEmptyDiagram,
+  createIndex,
   Diagram,
+  Index,
   Relationship,
   Table,
 } from '../types/diagram';
@@ -20,6 +22,13 @@ interface UseDiagramReturn {
   updateTablePosition: (
     tableId: string,
     position: { x: number; y: number },
+  ) => void;
+  addIndex: (tableId: string, index: Omit<Index, 'id'>) => void;
+  removeIndex: (tableId: string, indexId: string) => void;
+  updateIndex: (
+    tableId: string,
+    indexId: string,
+    updates: Partial<Omit<Index, 'id'>>,
   ) => void;
 }
 
@@ -98,6 +107,58 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     [],
   );
 
+  const addIndex = useCallback(
+    (tableId: string, index: Omit<Index, 'id'>) => {
+      const newIndex: Index = createIndex(crypto.randomUUID(), index.name, index.columnId);
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? { ...t, indexes: [...t.indexes, newIndex] }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const removeIndex = useCallback(
+    (tableId: string, indexId: string) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? { ...t, indexes: t.indexes.filter((i) => i.id !== indexId) }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const updateIndex = useCallback(
+    (
+      tableId: string,
+      indexId: string,
+      updates: Partial<Omit<Index, 'id'>>,
+    ) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? {
+                ...t,
+                indexes: t.indexes.map((i) =>
+                  i.id === indexId ? { ...i, ...updates } : i,
+                ),
+              }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
   return {
     diagram,
     createNewDiagram,
@@ -107,5 +168,8 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     addRelationship,
     removeRelationship,
     updateTablePosition,
+    addIndex,
+    removeIndex,
+    updateIndex,
   };
 }

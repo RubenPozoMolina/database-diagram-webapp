@@ -90,6 +90,7 @@ export function App() {
       width: TABLE_DEFAULT_WIDTH,
       height: Math.max(120, 48 + table.columns.length * 26),
       columns: table.columns,
+      indexes: [],
     });
     setIsAddTableModalOpen(false);
   };

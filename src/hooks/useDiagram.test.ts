@@ -21,6 +21,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     expect(result.current.diagram.tables).toHaveLength(1);
@@ -38,6 +39,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
       result.current.addTable({
         name: 'orders',
@@ -46,6 +48,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     const userId = result.current.diagram.tables[0].id;
@@ -74,6 +77,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
       result.current.addTable({
         name: 'orders',
@@ -82,6 +86,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     const userId = result.current.diagram.tables[0].id;
@@ -108,6 +113,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
       result.current.createNewDiagram('Second');
     });
@@ -127,6 +133,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -149,6 +156,7 @@ describe('useDiagram', () => {
         columns: [
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
         ],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -171,5 +179,94 @@ describe('useDiagram', () => {
     expect(diagram.tables).toEqual([]);
     expect(diagram.relationships).toEqual([]);
     expect(diagram.id).toBeDefined();
+  });
+
+  it('adds an index to a table column', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.indexes).toHaveLength(1);
+    expect(table?.indexes[0].name).toBe('idx_email');
+    expect(table?.indexes[0].columnId).toBe('c2');
+    expect(table?.indexes[0].id).toBeDefined();
+  });
+
+  it('removes an index from a table', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+    });
+    const indexId = result.current.diagram.tables[0].indexes[0].id;
+    act(() => {
+      result.current.removeIndex(tableId, indexId);
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.indexes).toHaveLength(0);
+  });
+
+  it('updates an index name and column', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true },
+          { id: 'c3', name: 'name', dataType: 'text', nullable: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+    });
+    const indexId = result.current.diagram.tables[0].indexes[0].id;
+    act(() => {
+      result.current.updateIndex(tableId, indexId, {
+        name: 'idx_user_email',
+        columnId: 'c3',
+      });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.indexes).toHaveLength(1);
+    expect(table?.indexes[0].name).toBe('idx_user_email');
+    expect(table?.indexes[0].columnId).toBe('c3');
   });
 });
