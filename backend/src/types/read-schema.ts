@@ -17,21 +17,59 @@ export type ColumnInfo = {
   isNullable: boolean;
   columnDefault: string | null;
   maxLength: number | null;
+  numericPrecision: number | null;
+  numericScale: number | null;
+  datetimePrecision: number | null;
+  intervalType: string | null;
+};
+
+export type PrimaryKey = {
+  constraintName: string;
+  columns: string[];
+};
+
+export type ForeignKey = {
+  constraintName: string;
+  column: string;
+  foreignTable: string;
+  foreignColumn: string;
+  updateRule: string;
+  deleteRule: string;
+};
+
+export type UniqueConstraint = {
+  constraintName: string;
+  columns: string[];
+};
+
+export type IndexInfo = {
+  name: string;
+  columns: string[];
+  isUnique: boolean;
+  isPrimary: boolean;
+  isValid: boolean;
+  indexType: string;
+  definition: string;
 };
 
 export type TableInfo = {
   name: string;
   columns: ColumnInfo[];
-  primaryKeys: string[];
-  foreignKeys: {
-    column: string;
-    foreignTable: string;
-    foreignColumn: string;
-  }[];
-  uniqueConstraints: string[];
-  indexes: string[];
+  primaryKeys: PrimaryKey[];
+  foreignKeys: ForeignKey[];
+  uniqueConstraints: UniqueConstraint[];
+  indexes: IndexInfo[];
 };
 
-export type SchemaInfo = {
+export type ReadSchemaResponse = {
+  success: true;
+  schema: string;
   tables: TableInfo[];
 };
+
+export type ReadSchemaError = {
+  success: false;
+  error: string;
+};
+
+export type ReadSchemaResult = ReadSchemaResponse | ReadSchemaError;

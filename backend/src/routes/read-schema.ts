@@ -1,113 +1,175 @@
 import { Router } from "express";
 import type { RequestHandler } from "express";
-import { ReadSchemaRequestSchema, type SchemaInfo } from "../types/read-schema";
+import {
+  ReadSchemaRequestSchema,
+  type ReadSchemaRequest,
+  type ReadSchemaResponse,
+  type ReadSchemaError,
+  type ColumnInfo,
+  type PrimaryKey,
+  type ForeignKey,
+  type UniqueConstraint,
+  type IndexInfo,
+} from "../types/read-schema";
+import { IntrospectionService, IntrospectionError } from "../services/introspection.service";
 
 export const readSchemaRouter = Router();
+
+const introspectionService = new IntrospectionService();
 
 const handleReadSchema: RequestHandler = async (req, res) => {
   const parseResult = ReadSchemaRequestSchema.safeParse(req.body);
   if (!parseResult.success) {
-    res.status(400).json({ error: "Invalid request", issues: parseResult.error.issues });
+    res.status(400).json({ success: false, error: "Invalid request", issues: parseResult.error.issues } as ReadSchemaError);
     return;
   }
 
   const { host, port, database, user, password, schema } = parseResult.data;
 
-  try {
-    const { Client } = await import("pg");
-    const client = new Client({
-      host,
-      port,
-      database,
-      user,
-      password,
-      connectionTimeoutMillis: 5000
-    });
+  const { Client } = await import("pg");
+  const client = new Client({
+    host,
+    port,
+    database,
+    user,
+    password,
+    connectionTimeoutMillis: 5000,
+  });
 
+  try {
     await client.connect();
 
-    const tablesResult = await client.query(
-      `
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = $1 AND table_type = 'BASE TABLE'
-      ORDER BY table_name
-    `,
-      [schema]
-    );
+    const { tables } = await introspectionService.introspectSchema(client, schema);
 
-    const schemaInfo: SchemaInfo = { tables: [] };
-
-    for (const row of tablesResult.rows) {
-      const tableName = row.table_name;
-
-      const columnsResult = await client.query(
-        `
-        SELECT column_name, data_type, is_nullable, column_default, character_maximum_length
-        FROM information_schema.columns
-        WHERE table_schema = $1 AND table_name = $2
-        ORDER BY ordinal_position
-      `,
-        [schema, tableName]
-      );
-
-      const pkResult = await client.query(
-        `
-        SELECT kcu.column_name
-        FROM information_schema.table_constraints tc
-        JOIN information_schema.key_column_usage kcu
-          ON tc.constraint_name = kcu.constraint_name
-        WHERE tc.constraint_type = 'PRIMARY KEY'
-          AND tc.table_schema = $1
-          AND tc.table_name = $2
-      `,
-        [schema, tableName]
-      );
-
-      const fkResult = await client.query(
-        `
-        SELECT kcu.column_name, ccu.table_name AS foreign_table, ccu.column_name AS foreign_column
-        FROM information_schema.table_constraints tc
-        JOIN information_schema.key_column_usage kcu
-          ON tc.constraint_name = kcu.constraint_name
-        JOIN information_schema.constraint_column_usage ccu
-          ON ccu.constraint_name = tc.constraint_name
-        WHERE tc.constraint_type = 'FOREIGN KEY'
-          AND tc.table_schema = $1
-          AND tc.table_name = $2
-      `,
-        [schema, tableName]
-      );
-
-      schemaInfo.tables.push({
-        name: tableName,
-        columns: columnsResult.rows.map((col) => ({
+    const response: ReadSchemaResponse = {
+      success: true,
+      schema,
+      tables: tables.map((table) => ({
+        name: table.name,
+        columns: table.columns.map((col) => ({
           name: col.column_name,
           dataType: col.data_type,
           isNullable: col.is_nullable === "YES",
           columnDefault: col.column_default ?? null,
-          maxLength: col.character_maximum_length ?? null
-        })),
-        primaryKeys: pkResult.rows.map((row) => row.column_name),
-        foreignKeys: fkResult.rows.map((row) => ({
-          column: row.column_name,
-          foreignTable: row.foreign_table,
-          foreignColumn: row.foreign_column
-        })),
-        uniqueConstraints: [],
-        indexes: []
-      });
-    }
+          maxLength: col.character_maximum_length ?? null,
+          numericPrecision: col.numeric_precision ?? null,
+          numericScale: col.numeric_scale ?? null,
+          datetimePrecision: col.datetime_precision ?? null,
+          intervalType: col.interval_type ?? null,
+        })) as ColumnInfo[],
+        primaryKeys: groupByConstraint(table.primaryKeys) as PrimaryKey[],
+        foreignKeys: table.foreignKeys.map((fk) => ({
+          constraintName: fk.constraint_name,
+          column: fk.column_name,
+          foreignTable: fk.foreign_table_name,
+          foreignColumn: fk.foreign_column_name,
+          updateRule: fk.update_rule,
+          deleteRule: fk.delete_rule,
+        })) as ForeignKey[],
+        uniqueConstraints: groupByConstraint(table.uniqueConstraints) as UniqueConstraint[],
+        indexes: groupByIndex(table.indexes) as IndexInfo[],
+      })),
+    };
 
     await client.end();
 
-    res.json(schemaInfo);
+    res.json(response);
   } catch (err) {
-    res.status(400).json({
-      error: "Schema introspection failed",
-      message: err instanceof Error ? err.message : "Unknown error"
+    await client.end().catch(() => {
+      // Ignore errors during cleanup.
     });
+
+    if (err instanceof IntrospectionError) {
+      res.status(err.statusCode).json({ success: false, error: err.message } as ReadSchemaError);
+      return;
+    }
+
+    res.status(500).json({ success: false, error: "Internal server error while introspecting the schema." } as ReadSchemaError);
   }
 };
 
 readSchemaRouter.post("/", handleReadSchema);
+
+// ---------------------------------------------------------------------------
+// Grouping helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Groups raw constraint rows (primary keys or unique constraints) by
+ * constraint name, merging their columns into a single entry per constraint.
+ * Composite keys produce one entry with multiple columns.
+ * Rows are expected to be ordered by constraint_name, column_position.
+ */
+function groupByConstraint<T extends { constraint_name: string; column_name: string }>(
+  rows: T[],
+): Array<{ constraintName: string; columns: string[] }> {
+  const groups = new Map<string, { constraintName: string; columns: string[] }>();
+  const order: string[] = [];
+
+  for (const row of rows) {
+    if (!groups.has(row.constraint_name)) {
+      groups.set(row.constraint_name, {
+        constraintName: row.constraint_name,
+        columns: [],
+      });
+      order.push(row.constraint_name);
+    }
+    groups.get(row.constraint_name)!.columns.push(row.column_name);
+  }
+
+  return order.map((name) => groups.get(name)!);
+}
+
+/**
+ * Groups raw index rows by index name, merging their columns into a single
+ * entry per index. Composite indexes produce one entry with multiple columns.
+ * Rows are expected to be ordered by index_name, column_position.
+ */
+function groupByIndex(
+  rows: Array<{
+    index_name: string;
+    column_name: string;
+    is_unique: boolean;
+    is_primary: boolean;
+    is_valid: boolean;
+    index_type: string;
+    index_definition: string;
+  }>,
+): Array<{
+  name: string;
+  columns: string[];
+  isUnique: boolean;
+  isPrimary: boolean;
+  isValid: boolean;
+  indexType: string;
+  definition: string;
+}> {
+  const groups = new Map<string, {
+    name: string;
+    columns: string[];
+    isUnique: boolean;
+    isPrimary: boolean;
+    isValid: boolean;
+    indexType: string;
+    definition: string;
+  }>();
+  const order: string[] = [];
+
+  for (const row of rows) {
+    if (!groups.has(row.index_name)) {
+      groups.set(row.index_name, {
+        name: row.index_name,
+        columns: [],
+        isUnique: row.is_unique,
+        isPrimary: row.is_primary,
+        isValid: row.is_valid,
+        indexType: row.index_type,
+        definition: row.index_definition,
+      });
+      order.push(row.index_name);
+    }
+    groups.get(row.index_name)!.columns.push(row.column_name);
+  }
+
+  return order.map((name) => groups.get(name)!);
+}

@@ -1,15 +1,32 @@
 import express from "express";
 import request from "supertest";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
 import { applySchemaRouter } from "../routes/apply-schema";
+
+// The connection/query/end mocks are shared across every Client instance so
+// tests can observe the statements sent to PostgreSQL and pre-configure
+// failure behaviour (e.g. reject the first query call).
+const sharedConnectMock: Mock = vi.fn().mockResolvedValue(undefined);
+const sharedQueryMock: Mock = vi.fn().mockResolvedValue(undefined);
+const sharedEndMock: Mock = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("pg", () => ({
   Client: vi.fn().mockImplementation(() => ({
-    connect: vi.fn().mockResolvedValue(undefined),
-    query: vi.fn().mockResolvedValue(undefined),
-    end: vi.fn().mockResolvedValue(undefined)
+    connect: sharedConnectMock,
+    query: sharedQueryMock,
+    end: sharedEndMock
   }))
 }));
+
+const baseRequest = {
+  host: "localhost",
+  port: 5432,
+  database: "testdb",
+  user: "testuser",
+  password: "testpass",
+  ddl: "CREATE TABLE test (id serial PRIMARY KEY);",
+  confirm: true
+};
 
 describe("apply-schema route", () => {
   let app: express.Express;
@@ -18,6 +35,15 @@ describe("apply-schema route", () => {
     app = express();
     app.use(express.json());
     app.use("/api/apply-schema", applySchemaRouter);
+    // Restore default implementations before each test so failure setups
+    // (mockRejectedValueOnce) do not leak between tests.
+    sharedConnectMock.mockReset();
+    sharedQueryMock.mockReset();
+    sharedEndMock.mockReset();
+    sharedConnectMock.mockResolvedValue(undefined);
+    sharedQueryMock.mockResolvedValue(undefined);
+    sharedEndMock.mockResolvedValue(undefined);
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -27,52 +53,163 @@ describe("apply-schema route", () => {
   it("returns 400 when confirm is false", async () => {
     const res = await request(app)
       .post("/api/apply-schema")
-      .send({
-        host: "localhost",
-        port: 5432,
-        database: "testdb",
-        user: "testuser",
-        password: "testpass",
-        ddl: "CREATE TABLE test (id serial PRIMARY KEY);",
-        confirm: false
-      });
+      .send({ ...baseRequest, confirm: false });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("Confirmation required");
     expect(res.body.ddlPreview).toBe("CREATE TABLE test (id serial PRIMARY KEY);");
+    // No connection attempt when confirmation is missing.
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+    expect(sharedQueryMock).not.toHaveBeenCalled();
   });
 
   it("applies schema when confirm is true", async () => {
     const res = await request(app)
       .post("/api/apply-schema")
-      .send({
-        host: "localhost",
-        port: 5432,
-        database: "testdb",
-        user: "testuser",
-        password: "testpass",
-        ddl: "CREATE TABLE test (id serial PRIMARY KEY);",
-        confirm: true
-      });
+      .send(baseRequest);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
+    expect(sharedConnectMock).toHaveBeenCalledTimes(1);
+    expect(sharedEndMock).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects DROP statements", async () => {
+  it("executes DDL within a transaction (BEGIN / COMMIT)", async () => {
+    await request(app).post("/api/apply-schema").send(baseRequest);
+
+    expect(sharedQueryMock).toHaveBeenCalledWith("BEGIN");
+    expect(sharedQueryMock).toHaveBeenCalledWith("COMMIT");
+  });
+
+  it("sets statement_timeout to the default execution timeout", async () => {
+    await request(app).post("/api/apply-schema").send(baseRequest);
+
+    expect(sharedQueryMock).toHaveBeenCalledWith(
+      expect.stringMatching(/^SET statement_timeout = 30000$/)
+    );
+  });
+
+  it("sets search_path to the chosen schema before executing DDL", async () => {
+    await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, schema: "my_schema" });
+
+    // set_config('search_path', 'my_schema', false) runs with the schema value.
+    expect(sharedQueryMock).toHaveBeenCalledWith(
+      "SELECT set_config('search_path', $1, false)",
+      ["my_schema"]
+    );
+
+    // The DDL statement runs after search_path is set.
+    const calls = sharedQueryMock.mock.calls as Array<[string, unknown[]]>;
+    const setConfigIndex = calls.findIndex(([sql]) =>
+      typeof sql === "string" && sql.includes("set_config('search_path'")
+    );
+    const ddlIndex = calls.findIndex(([sql]) =>
+      typeof sql === "string" && sql.startsWith("CREATE TABLE")
+    );
+    expect(setConfigIndex).toBeGreaterThanOrEqual(0);
+    expect(ddlIndex).toBeGreaterThan(setConfigIndex);
+  });
+
+  it("defaults search_path to public when schema is omitted", async () => {
+    await request(app).post("/api/apply-schema").send(baseRequest);
+
+    expect(sharedQueryMock).toHaveBeenCalledWith(
+      "SELECT set_config('search_path', $1, false)",
+      ["public"]
+    );
+  });
+
+  it("rejects DROP statements before connecting (fail fast, no DB access)", async () => {
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, ddl: "DROP TABLE test;", confirm: true });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Rejected");
+    expect(res.body.message).toContain("destructive");
+    expect(res.body.details).toBeDefined();
+    expect(Array.isArray(res.body.details)).toBe(true);
+    expect(res.body.details.some((e: string) => e.includes("DROP"))).toBe(true);
+    // No connection is attempted for unsafe DDL.
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+    expect(sharedQueryMock).not.toHaveBeenCalled();
+    expect(sharedEndMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects ALTER statements that modify existing objects before connecting", async () => {
     const res = await request(app)
       .post("/api/apply-schema")
       .send({
-        host: "localhost",
-        port: 5432,
-        database: "testdb",
-        user: "testuser",
-        password: "testpass",
-        ddl: "DROP TABLE test;",
+        ...baseRequest,
+        ddl: 'ALTER TABLE "employee" DROP COLUMN "salary";',
         confirm: true
       });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("Rejected");
+    expect(res.body.details.some((e: string) =>
+      e.includes("ALTER statement that may modify existing objects")
+    )).toBe(true);
+    // No connection is attempted for unsafe DDL.
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+    expect(sharedQueryMock).not.toHaveBeenCalled();
+    expect(sharedEndMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects TRUNCATE statements before connecting", async () => {
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, ddl: "TRUNCATE TABLE test;", confirm: true });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Rejected");
+    expect(res.body.details.some((e: string) => e.includes("TRUNCATE"))).toBe(true);
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects DELETE statements before connecting", async () => {
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, ddl: "DELETE FROM test;", confirm: true });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Rejected");
+    expect(res.body.details.some((e: string) => e.includes("DELETE"))).toBe(true);
+    expect(sharedConnectMock).not.toHaveBeenCalled();
+  });
+
+  it("allows ALTER TABLE ... ADD CONSTRAINT and executes normally", async () => {
+    const ddl =
+      'CREATE TABLE "employee_project" ("employee_id" INTEGER NOT NULL, "project_id" INTEGER NOT NULL); ' +
+      'ALTER TABLE "employee_project" ADD CONSTRAINT "pk_employee_project" PRIMARY KEY ("employee_id", "project_id");';
+
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send({ ...baseRequest, ddl, confirm: true });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(sharedConnectMock).toHaveBeenCalledTimes(1);
+    expect(sharedQueryMock).toHaveBeenCalledWith("BEGIN");
+    expect(sharedQueryMock).toHaveBeenCalledWith("COMMIT");
+    expect(sharedEndMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rolls back and returns an error when query execution fails", async () => {
+    sharedQueryMock.mockRejectedValueOnce(new Error("relation already exists"));
+
+    const res = await request(app)
+      .post("/api/apply-schema")
+      .send(baseRequest);
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toContain("relation already exists");
+    expect(sharedQueryMock).toHaveBeenCalledWith("BEGIN");
+    expect(sharedQueryMock).toHaveBeenCalledWith("ROLLBACK");
+    expect(sharedQueryMock).not.toHaveBeenCalledWith("COMMIT");
+    expect(sharedEndMock).toHaveBeenCalledTimes(1);
   });
 });

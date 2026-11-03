@@ -1,0 +1,15 @@
+
+ RUN  v2.1.9 /work
+
+ ✓ src/components/ExportButton.test.tsx > ExportButton > renders an Export to JSON button
+ ✓ src/components/ExportButton.test.tsx > ExportButton > is keyboard-focusable and announces itself to assistive technology
+ ✓ src/components/ExportButton.test.tsx > ExportButton > triggers a file download with a .json filename
+ ✓ src/components/ExportButton.test.tsx > ExportButton > downloads JSON containing the complete diagram model and no credentials
+ ✓ src/components/ExportButton.test.tsx > ExportButton > uses a default filename when the diagram name is empty
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  16:55:31
+   Duration  701ms (transform 54ms, setup 49ms, collect 78ms, tests 141ms, environment 236ms, prepare 51ms)
+
+vitest_exit=0
