@@ -17,10 +17,35 @@ import {
  * behaves identically to a real File.
  */
 function createFile(content: string | string[], name: string, type: string): File {
+  const textContent = Array.isArray(content) ? content.join('') : content;
   const blob = new Blob([content], { type });
   Object.defineProperty(blob, 'name', { value: name, configurable: true });
+  // Stash the text content so the FileReader mock can read it synchronously.
+  Object.defineProperty(blob, '_content', { value: textContent, configurable: true });
   return blob as unknown as File;
 }
+
+/**
+ * Mock FileReader for jsdom: readAsText() synchronously triggers onload
+ * with the file's text content as reader.result. This lets the component's
+ * handleFileSelect → FileReader → onload → JSON.parse → onImport/onError
+ * chain execute synchronously inside fireEvent.change.
+ */
+vi.stubGlobal('FileReader', class {
+  result: string | null = null;
+  onload: ((this: FileReader, ev: any) => void) | null = null;
+  onerror: ((this: FileReader, ev: any) => void) | null = null;
+
+  readAsText(file: File | Blob) {
+    const content = (file as { _content?: string })._content ?? '';
+    this.result = content;
+    if (this.onload) {
+      this.onload.call(this, null);
+    }
+  }
+
+  abort() {}
+});
 
 describe('ImportButton', () => {
   beforeEach(() => {
