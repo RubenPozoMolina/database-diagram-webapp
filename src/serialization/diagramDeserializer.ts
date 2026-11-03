@@ -21,7 +21,6 @@ import type {
 import {
   DIAGRAM_JSON_VERSION,
   type SerializedColumn,
-  type SerializedDiagram,
   type SerializedExport,
   type SerializedRelationship,
   type SerializedTable,
@@ -101,7 +100,7 @@ function validateVersion(payload: unknown): asserts payload is {
   if (
     typeof payload !== 'object' ||
     payload === null ||
-    !('version' in payload as Record<string, unknown>)
+    !('version' in payload)
   ) {
     throw new DiagramImportError(
       'Invalid diagram file: missing schema version.',
@@ -127,10 +126,10 @@ function validateDiagramRoot(diagram: unknown): asserts diagram is {
   if (
     typeof diagram !== 'object' ||
     diagram === null ||
-    !('id' in diagram as Record<string, unknown>) ||
-    !('name' in diagram as Record<string, unknown>) ||
-    !('tables' in diagram as Record<string, unknown>) ||
-    !('relationships' in diagram as Record<string, unknown>)
+    !('id' in diagram) ||
+    !('name' in diagram) ||
+    !('tables' in diagram) ||
+    !('relationships' in diagram)
   ) {
     throw new DiagramImportError(
       'Invalid diagram file: missing diagram root or required fields.',
@@ -163,13 +162,13 @@ export function deserializeDiagram(payload: SerializedExport): Diagram {
     if (
       typeof t !== 'object' ||
       t === null ||
-      !('id' in t as Record<string, unknown>) ||
-      !('name' in t as Record<string, unknown>) ||
-      !('x' in t as Record<string, unknown>) ||
-      !('y' in t as Record<string, unknown>) ||
-      !('width' in t as Record<string, unknown>) ||
-      !('height' in t as Record<string, unknown>) ||
-      !('columns' in t as Record<string, unknown>)
+      !('id' in t) ||
+      !('name' in t) ||
+      !('x' in t) ||
+      !('y' in t) ||
+      !('width' in t) ||
+      !('height' in t) ||
+      !('columns' in t)
     ) {
       throw new DiagramImportError(
         `Invalid diagram file: table ${String(
@@ -200,9 +199,9 @@ export function deserializeDiagram(payload: SerializedExport): Diagram {
       if (
         typeof r !== 'object' ||
         r === null ||
-        !('id' in r as Record<string, unknown>) ||
-        !('sourceTableId' in r as Record<string, unknown>) ||
-        !('targetTableId' in r as Record<string, unknown>)
+        !('id' in r) ||
+        !('sourceTableId' in r) ||
+        !('targetTableId' in r)
       ) {
         throw new DiagramImportError(
           'Invalid diagram file: relationship is missing required fields.',
@@ -243,8 +242,8 @@ export function deserializeJson(value: unknown): Diagram {
   if (
     typeof value !== 'object' ||
     value === null ||
-    !('version' in value as Record<string, unknown>) ||
-    !('diagram' in value as Record<string, unknown>)
+    !('version' in value) ||
+    !('diagram' in value)
   ) {
     throw new DiagramImportError(
       'Invalid diagram file: missing version or diagram root.',

@@ -69,7 +69,7 @@ export function App() {
 
   const handleImport = (importedDiagram: Diagram) => {
     setDiagram(importedDiagram);
-    setImportError(null);
+    setImportErrorState(null);
   };
 
   const handleTablePositionUpdate = (

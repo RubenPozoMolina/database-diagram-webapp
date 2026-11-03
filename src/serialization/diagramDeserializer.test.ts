@@ -3,12 +3,13 @@ import {
   deserializeJson,
   deserializeDiagram,
   DiagramImportError,
-  type SerializedExport,
 } from './diagramDeserializer';
 import {
   DIAGRAM_JSON_VERSION,
   serializeDiagram,
   type SerializedDiagram,
+  type SerializedExport,
+  type SerializedTable,
 } from './diagramSerializer';
 import { createEmptyDiagram, type Diagram } from '../types/diagram';
 

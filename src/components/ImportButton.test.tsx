@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ImportButton } from './ImportButton';
 import { createEmptyDiagram } from '../types/diagram';
@@ -18,7 +18,10 @@ import {
  */
 function createFile(content: string | string[], name: string, type: string): File {
   const textContent = Array.isArray(content) ? content.join('') : content;
-  const blob = new Blob([content], { type });
+  // textContent is always a string, so it is a valid BlobPart. Passing the
+  // original `content` (which may be a string[]) breaks the Blob constructor
+  // in jsdom ("parameter 1 is not an iterable object" / invalid BlobPart).
+  const blob = new Blob([textContent], { type });
   Object.defineProperty(blob, 'name', { value: name, configurable: true });
   // Stash the text content so the FileReader mock can read it synchronously.
   Object.defineProperty(blob, '_content', { value: textContent, configurable: true });
@@ -31,21 +34,24 @@ function createFile(content: string | string[], name: string, type: string): Fil
  * handleFileSelect → FileReader → onload → JSON.parse → onImport/onError
  * chain execute synchronously inside fireEvent.change.
  */
-vi.stubGlobal('FileReader', class {
-  result: string | null = null;
-  onload: ((this: FileReader, ev: any) => void) | null = null;
-  onerror: ((this: FileReader, ev: any) => void) | null = null;
+vi.stubGlobal(
+  'FileReader',
+  class FileReaderMock {
+    result: string | null = null;
+    onload: ((this: any, ev: any) => void) | null = null;
+    onerror: ((this: any, ev: any) => void) | null = null;
 
-  readAsText(file: File | Blob) {
-    const content = (file as { _content?: string })._content ?? '';
-    this.result = content;
-    if (this.onload) {
-      this.onload.call(this, null);
+    readAsText(file: File | Blob) {
+      const content = (file as { _content?: string })._content ?? '';
+      this.result = content;
+      if (this.onload) {
+        this.onload.call(this, null);
+      }
     }
-  }
 
-  abort() {}
-});
+    abort() {}
+  } as any,
+);
 
 describe('ImportButton', () => {
   beforeEach(() => {
@@ -69,9 +75,9 @@ describe('ImportButton', () => {
   it('triggers a hidden file input when clicked', () => {
     const clickSpy = vi.fn();
     const { container } = render(<ImportButton onImport={vi.fn()} onError={vi.fn()} />);
-    const fileInput = container.querySelector('input[type="file"]');
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
     expect(fileInput).not.toBeNull();
-    vi.spyOn(fileInput!, 'click').mockImplementation(clickSpy);
+    vi.spyOn(fileInput, 'click').mockImplementation(clickSpy);
 
     fireEvent.click(screen.getByRole('button', { name: /import diagram from json/i }));
     expect(clickSpy).toHaveBeenCalledTimes(1);
@@ -82,8 +88,8 @@ describe('ImportButton', () => {
     const onImport = vi.fn();
     render(<ImportButton onImport={onImport} onError={onError} />);
 
-    const input = document.querySelector('input[type="file"]')!;
-    const file = createFile(['not json'], 'diagram.txt', { type: 'text/plain' });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = createFile(['not json'], 'diagram.txt', 'text/plain');
     Object.defineProperty(input, 'files', { value: [file] });
     fireEvent.change(input);
 
@@ -118,9 +124,7 @@ describe('ImportButton', () => {
     });
     const exportPayload = serializeDiagram(diagram);
     const jsonString = JSON.stringify(exportPayload);
-    const file = createFile([jsonString], 'diagram.json', {
-      type: 'application/json',
-    });
+    const file = createFile([jsonString], 'diagram.json', 'application/json');
 
     const input = document.querySelector('input[type="file"]')!;
     Object.defineProperty(input, 'files', { value: [file] });
@@ -141,9 +145,7 @@ describe('ImportButton', () => {
     const onError = vi.fn();
     render(<ImportButton onImport={onImport} onError={onError} />);
 
-    const file = createFile(['not valid json{{{'], 'bad.json', {
-      type: 'application/json',
-    });
+    const file = createFile(['not valid json{{{'], 'bad.json', 'application/json');
     const input = document.querySelector('input[type="file"]')!;
     Object.defineProperty(input, 'files', { value: [file] });
     fireEvent.change(input);
@@ -172,9 +174,7 @@ describe('ImportButton', () => {
         updatedAt: '2026-01-01T00:00:00Z',
       },
     };
-    const file = createFile([JSON.stringify(payload)], 'bad-version.json', {
-      type: 'application/json',
-    });
+    const file = createFile([JSON.stringify(payload)], 'bad-version.json', 'application/json');
     const input = document.querySelector('input[type="file"]')!;
     Object.defineProperty(input, 'files', { value: [file] });
     fireEvent.change(input);
@@ -193,7 +193,7 @@ describe('ImportButton', () => {
     const file = createFile(
       JSON.stringify({ version: DIAGRAM_JSON_VERSION }),
       'no-diagram.json',
-      { type: 'application/json' },
+      'application/json',
     );
     const input = document.querySelector('input[type="file"]')!;
     Object.defineProperty(input, 'files', { value: [file] });
@@ -243,9 +243,7 @@ describe('ImportButton', () => {
 
     const exportPayload = serializeDiagram(original);
     const jsonString = JSON.stringify(exportPayload);
-    const file = createFile([jsonString], 'roundtrip.json', {
-      type: 'application/json',
-    });
+    const file = createFile([jsonString], 'roundtrip.json', 'application/json');
 
     const input = document.querySelector('input[type="file"]')!;
     Object.defineProperty(input, 'files', { value: [file] });
