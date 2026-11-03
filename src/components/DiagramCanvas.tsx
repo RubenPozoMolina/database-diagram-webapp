@@ -29,6 +29,7 @@ export function DiagramCanvas({
 
   return (
     <div className="diagram-canvas-wrapper" style={style}>
+      <h2 className="diagram-title">{diagram.name}</h2>
       <svg
         className="diagram-svg"
         width="100%"

@@ -72,13 +72,12 @@ export function App() {
     setImportErrorState(null);
   };
 
-  const handleTablePositionUpdate = (
-    id: string,
-    x: number,
-    y: number,
-  ) => {
-    updateTablePosition(id, { x, y });
-  };
+  const handleTablePositionUpdate = useCallback(
+    (id: string, x: number, y: number) => {
+      updateTablePosition(id, { x, y });
+    },
+    [updateTablePosition],
+  );
 
   const handleAddTable = () => {
     setIsAddTableModalOpen(true);
