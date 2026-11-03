@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TableNode } from './TableNode';
-import type { Column, Table } from '../types/diagram';
+import type { Column, Table, UniqueConstraint } from '../types/diagram';
 
 const makeColumn = (overrides: Partial<Column> = {}): Column => ({
   id: 'c1',
@@ -369,5 +369,100 @@ describe('TableNode', () => {
         expect.objectContaining({ name: 'email', dataType: 'varchar' }),
       ]),
     });
+  });
+
+  it('renders no unique constraint badge when there are no constraints', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.queryByText('UQ')).toBeNull();
+  });
+
+  it('renders a unique constraint badge for a single-column constraint', () => {
+    const onUpdateTable = vi.fn();
+    const uniqueConstraints: UniqueConstraint[] = [
+      { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+    ];
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={uniqueConstraints}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.getByText('UQ')).toBeInTheDocument();
+    expect(screen.getByTitle(/users_email_key/)).toBeInTheDocument();
+    expect(screen.getByTitle(/email/)).toBeInTheDocument();
+  });
+
+  it('renders a unique constraint badge for a composite column-group constraint', () => {
+    const onUpdateTable = vi.fn();
+    const uniqueConstraints: UniqueConstraint[] = [
+      {
+        id: 'uc1',
+        tableId: 't1',
+        columnIds: ['c2', 'c3'],
+        name: 'orders_user_product_key',
+      },
+    ];
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'user_id', dataType: 'integer' }),
+              makeColumn({ id: 'c3', name: 'product_id', dataType: 'integer' }),
+            ],
+          })
+        }
+        uniqueConstraints={uniqueConstraints}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    const badges = screen.getAllByText('UQ');
+    expect(badges).toHaveLength(1);
+    expect(screen.getByTitle(/orders_user_product_key/)).toBeInTheDocument();
+    expect(screen.getByTitle(/user_id/)).toBeInTheDocument();
+    expect(screen.getByTitle(/product_id/)).toBeInTheDocument();
+  });
+
+  it('renders multiple unique constraint badges for multiple constraints', () => {
+    const onUpdateTable = vi.fn();
+    const uniqueConstraints: UniqueConstraint[] = [
+      { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+      { id: 'uc2', tableId: 't1', columnIds: ['c1', 'c2'], name: 'users_id_email_key' },
+    ];
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={uniqueConstraints}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.getAllByText('UQ')).toHaveLength(2);
   });
 });

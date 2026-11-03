@@ -7,7 +7,7 @@ import { DdlPreview } from './components/DdlPreview';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
 import { readSchema } from './connection/readSchemaApi';
-import type { Column, Table } from './types/diagram';
+import type { Column, Table, UniqueConstraint } from './types/diagram';
 import type {
   ConnectionConfig,
   ConnectionResult,
@@ -23,6 +23,7 @@ export function App() {
     diagram,
     createNewDiagram,
     addTable,
+    addUniqueConstraint,
     updateTable,
     updateTablePosition,
   } = useDiagram();
@@ -81,7 +82,11 @@ export function App() {
     setIsAddTableModalOpen(true);
   };
 
-  const handleCreateTable = (table: { name: string; columns: Column[] }) => {
+  const handleCreateTable = (table: {
+    name: string;
+    columns: Column[];
+    uniqueConstraints: UniqueConstraint[];
+  }) => {
     const offset = diagram.tables.length * 30;
     addTable({
       name: table.name,
@@ -91,6 +96,12 @@ export function App() {
       height: Math.max(120, 48 + table.columns.length * 26),
       columns: table.columns,
     });
+    const newTable = diagram.tables.find((t) => t.name === table.name);
+    if (newTable) {
+      table.uniqueConstraints.forEach((uc) => {
+        addUniqueConstraint(newTable.id, uc.columnIds, uc.name);
+      });
+    }
     setIsAddTableModalOpen(false);
   };
 

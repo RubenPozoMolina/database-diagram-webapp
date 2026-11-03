@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react';
 import {
   createEmptyDiagram,
+  createUniqueConstraint,
   Diagram,
   Relationship,
   Table,
+  UniqueConstraint,
 } from '../types/diagram';
 
 interface UseDiagramReturn {
@@ -21,6 +23,12 @@ interface UseDiagramReturn {
     tableId: string,
     position: { x: number; y: number },
   ) => void;
+  addUniqueConstraint: (
+    tableId: string,
+    columnIds: string[],
+    name?: string,
+  ) => void;
+  removeUniqueConstraint: (constraintId: string) => void;
 }
 
 export function useDiagram(initialName?: string): UseDiagramReturn {
@@ -61,7 +69,10 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
       const relationships = prev.relationships.filter(
         (r) => r.sourceTableId !== tableId && r.targetTableId !== tableId,
       );
-      return { ...prev, tables, relationships };
+      const uniqueConstraints = prev.uniqueConstraints.filter(
+        (uc) => uc.tableId !== tableId,
+      );
+      return { ...prev, tables, relationships, uniqueConstraints };
     });
   }, []);
 
@@ -98,6 +109,31 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     [],
   );
 
+  const addUniqueConstraint = useCallback(
+    (tableId: string, columnIds: string[], name?: string) => {
+      const newConstraint: UniqueConstraint = createUniqueConstraint(
+        crypto.randomUUID(),
+        tableId,
+        columnIds,
+        name,
+      );
+      setDiagram((prev) => ({
+        ...prev,
+        uniqueConstraints: [...prev.uniqueConstraints, newConstraint],
+      }));
+    },
+    [],
+  );
+
+  const removeUniqueConstraint = useCallback((constraintId: string) => {
+    setDiagram((prev) => ({
+      ...prev,
+      uniqueConstraints: prev.uniqueConstraints.filter(
+        (uc) => uc.id !== constraintId,
+      ),
+    }));
+  }, []);
+
   return {
     diagram,
     createNewDiagram,
@@ -107,5 +143,7 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     addRelationship,
     removeRelationship,
     updateTablePosition,
+    addUniqueConstraint,
+    removeUniqueConstraint,
   };
 }
