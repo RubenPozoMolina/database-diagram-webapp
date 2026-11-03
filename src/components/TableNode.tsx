@@ -32,15 +32,45 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
   };
 
   const updateColumnField = useCallback(
-    (columnId: string, field: keyof Column, value: string | boolean | undefined) => {
+    (columnId: string, updates: Partial<Column>) => {
       onUpdateTable(table.id, {
         columns: table.columns.map((column) =>
-          column.id === columnId ? { ...column, [field]: value } : column,
+          column.id === columnId ? { ...column, ...updates } : column,
         ),
       });
     },
     [table.id, table.columns, onUpdateTable],
   );
+
+  const addColumn = useCallback(() => {
+    const newColumn: Column = {
+      id: crypto.randomUUID(),
+      name: 'new_column',
+      dataType: 'text',
+      nullable: true,
+      primaryKey: false,
+    };
+    onUpdateTable(table.id, {
+      columns: [...table.columns, newColumn],
+    });
+    setEditingColumn(newColumn.id);
+  }, [table.id, table.columns, onUpdateTable]);
+
+  const removeColumn = useCallback(
+    (columnId: string) => {
+      onUpdateTable(table.id, {
+        columns: table.columns.filter((column) => column.id !== columnId),
+      });
+      if (editingColumn === columnId) {
+        setEditingColumn(null);
+      }
+    },
+    [table.id, table.columns, editingColumn, onUpdateTable],
+  );
+
+  const exitColumnEdit = () => {
+    setEditingColumn(null);
+  };
 
   return (
     <div
@@ -92,24 +122,24 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                   autoFocus
                   value={column.name}
                   onChange={(event) =>
-                    updateColumnField(column.id, 'name', event.target.value)
+                    updateColumnField(column.id, { name: event.target.value })
                   }
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') {
                       event.preventDefault();
-                      setEditingColumn(null);
+                      exitColumnEdit();
                     }
                     if (event.key === 'Escape') {
-                      setEditingColumn(null);
+                      exitColumnEdit();
                     }
                   }}
-                  onBlur={() => setEditingColumn(null)}
+                  onBlur={exitColumnEdit}
                 />
                 <select
                   className="column-type-select"
                   value={column.dataType}
                   onChange={(event) =>
-                    updateColumnField(column.id, 'dataType', event.target.value)
+                    updateColumnField(column.id, { dataType: event.target.value })
                   }
                 >
                   {DATA_TYPES.map((dataType) => (
@@ -124,11 +154,9 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                     className="nullable-checkbox"
                     checked={column.nullable}
                     onChange={(event) =>
-                      updateColumnField(
-                        column.id,
-                        'nullable',
-                        event.target.checked,
-                      )
+                      updateColumnField(column.id, {
+                        nullable: event.target.checked,
+                      })
                     }
                     aria-label={`Nullable for ${column.name}`}
                   />
@@ -141,14 +169,20 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                   placeholder="Default"
                   title="Default value"
                   onChange={(event) =>
-                    updateColumnField(
-                      column.id,
-                      'defaultValue',
-                      event.target.value || undefined,
-                    )
+                    updateColumnField(column.id, {
+                      defaultValue: event.target.value || undefined,
+                    })
                   }
                   onBlur={() => setEditingColumn(null)}
                 />
+                <button
+                  type="button"
+                  className="remove-column"
+                  onClick={() => removeColumn(column.id)}
+                  aria-label={`Remove column ${column.name}`}
+                >
+                  Remove
+                </button>
               </div>
             ) : (
               <span
@@ -160,6 +194,14 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
             )}
           </div>
         ))}
+        <button
+          type="button"
+          className="add-column"
+          onClick={addColumn}
+          aria-label="Add a new column to this table"
+        >
+          + Add column
+        </button>
       </div>
     </div>
   );
