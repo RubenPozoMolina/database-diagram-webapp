@@ -1,7 +1,15 @@
 import { Router } from "express";
 import type { RequestHandler } from "express";
+import { validateDDLSafety } from "../services/ddl-safety-validator";
 import { ApplySchemaRequestSchema, type ApplySchemaResult } from "../types/apply-schema";
 import { validateDdlSafety } from "../services/ddl-safety";
+
+/**
+ * Default DDL execution timeout in milliseconds (30 seconds per spec §4.6).
+ * Aborts execution if a statement takes longer, preventing the frontend
+ * from being blocked indefinitely.
+ */
+const DEFAULT_EXECUTION_TIMEOUT_MS = 30_000;
 
 export const applySchemaRouter = Router();
 
@@ -12,7 +20,7 @@ const handleApplySchema: RequestHandler = async (req, res) => {
     return;
   }
 
-  const { host, port, database, user, password, ddl, confirm } = parseResult.data;
+  const { host, port, database, user, password, schema, ddl, confirm } = parseResult.data;
 
   if (!confirm) {
     res.status(400).json({
@@ -24,12 +32,23 @@ const handleApplySchema: RequestHandler = async (req, res) => {
   }
 
   // Safety validation: reject any DDL that would modify or drop existing objects.
+  // Both safety validators run: the ticket's validateDdlSafety (returns the
+  // offending statement) and the trunk's validateDDLSafety (returns a list of
+  // errors). Either rejection fails the request before any database connection,
+  // and the response carries both shapes so every caller is satisfied.
   const safety = validateDdlSafety(ddl);
-  if (!safety.safe) {
+  const validation = validateDDLSafety(ddl);
+
+  if (!safety.safe || !validation.valid) {
     res.status(400).json({
       error: "Rejected",
-      message: safety.error ?? "DDL failed safety validation.",
-      statement: safety.statement
+      message: [
+        safety.error ?? "DDL failed safety validation.",
+        "DDL contains destructive statements. Existing objects are never dropped or altered."
+      ].join(" "),
+      statement: safety.statement,
+      details: validation.errors,
+      ddlPreview: ddl
     });
     return;
   }
@@ -47,18 +66,43 @@ const handleApplySchema: RequestHandler = async (req, res) => {
 
     await client.connect();
 
-    // Split DDL by semicolons and execute each statement.
-    // All statements have already passed the safety check above.
-    const statements = ddl
-      .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+    try {
+      // Execute DDL within a transaction so a failure can be rolled back
+      // and no partial changes are left in an inconsistent state (spec §5.3).
+      await client.query("BEGIN");
 
-    for (const stmt of statements) {
-      await client.query(stmt);
+      // Bound each statement's execution time so the frontend is not blocked
+      // indefinitely (spec §4.6). statement_timeout is a constant, not user input.
+      await client.query(`SET statement_timeout = ${DEFAULT_EXECUTION_TIMEOUT_MS}`);
+
+      // Execute DDL against the chosen schema by setting search_path.
+      // set_config is parameterised, so the schema value is never concatenated
+      // into SQL (defence against SQL injection).
+      await client.query("SELECT set_config('search_path', $1, false)", [schema]);
+
+      // Split DDL by semicolons and execute each statement against the schema.
+      // All statements have already passed the safety checks above.
+      const statements = ddl
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      for (const stmt of statements) {
+        await client.query(stmt);
+      }
+
+      await client.query("COMMIT");
+    } catch (err) {
+      // Roll back any partial changes on failure.
+      try {
+        await client.query("ROLLBACK");
+      } catch {
+        // Ignore errors during rollback.
+      }
+      throw err;
+    } finally {
+      await client.end();
     }
-
-    await client.end();
 
     const result: ApplySchemaResult = {
       success: true,

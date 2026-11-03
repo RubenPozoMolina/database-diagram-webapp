@@ -20,6 +20,16 @@ function env(name: string): string | undefined {
   return process.env[name];
 }
 
+// Skip all integration tests when no PostgreSQL connection parameters are
+// provided (for example when running `npm test` without a database). This
+// mirrors the pattern used by ddl-generator.integration.test.ts and
+// read-schema.integration.test.ts.
+const PG_AVAILABLE = Boolean(
+  env('PG_HOST') && env('PG_DATABASE') && env('PG_USER') && env('PG_PASSWORD'),
+);
+const pgIt = PG_AVAILABLE ? it : it.skip;
+const pgDescribe = PG_AVAILABLE ? describe : describe.skip;
+
 const VALID = {
   host: env('PG_HOST') ?? 'localhost',
   port: env('PG_PORT') ? Number(env('PG_PORT')) : 5432,
@@ -31,7 +41,7 @@ const VALID = {
 const INVALID_PASSWORD = env('PG_BAD_PASSWORD') ?? 'wrong-password';
 const UNREACHABLE_HOST = env('PG_BAD_HOST') ?? '10.255.255.1';
 
-describe('POST /api/v1/connections/test (integration)', () => {
+pgDescribe('POST /api/v1/connections/test (integration)', () => {
   let app: ReturnType<typeof createApp>;
 
   beforeEach(() => {
@@ -42,7 +52,7 @@ describe('POST /api/v1/connections/test (integration)', () => {
     // No cleanup needed; each request opens and closes its own connection.
   });
 
-  it('returns 200 for valid credentials', async () => {
+  pgIt('returns 200 for valid credentials', async () => {
     const res = await request(app)
       .post('/api/v1/connections/test')
       .send(VALID)
@@ -53,7 +63,7 @@ describe('POST /api/v1/connections/test (integration)', () => {
     expect(res.body.message).toBe('Connection to PostgreSQL established successfully.');
   });
 
-  it('returns 401 for invalid password', async () => {
+  pgIt('returns 401 for invalid password', async () => {
     const res = await request(app)
       .post('/api/v1/connections/test')
       .send({ ...VALID, password: INVALID_PASSWORD })
@@ -67,7 +77,7 @@ describe('POST /api/v1/connections/test (integration)', () => {
     expect(JSON.stringify(res.body)).not.toContain(VALID.password);
   });
 
-  it('returns a 5xx server error for unreachable host', async () => {
+  pgIt('returns a 5xx server error for unreachable host', async () => {
     // This test takes longer because the OS TCP timeout must elapse
     // before pg reports the connection failure. An unreachable host
     // may surface as 502 (network unreachable) or 504 (connection
@@ -87,7 +97,7 @@ describe('POST /api/v1/connections/test (integration)', () => {
     );
   }, 15000);
 
-  it('returns 400 for missing required field', async () => {
+  pgIt('returns 400 for missing required field', async () => {
     const { password: _unusedPassword, ...withoutPassword } = VALID;
     void _unusedPassword;
     const res = await request(app)

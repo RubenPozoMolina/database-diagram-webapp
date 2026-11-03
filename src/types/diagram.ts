@@ -51,6 +51,56 @@ export function createEmptyDiagram(name = 'New Diagram'): Diagram {
   };
 }
 
+/**
+ * Creates a column with the given properties.
+ *
+ * Used by TASK-005 table data model: columns store name, data type,
+ * nullable flag and optional default value.
+ */
+export function createColumn(
+  id: string,
+  name: string,
+  dataType: string,
+  nullable: boolean,
+  defaultValue?: string,
+  primaryKey = false,
+): Column {
+  return {
+    id,
+    name,
+    dataType,
+    nullable,
+    defaultValue,
+    primaryKey,
+  };
+}
+
+/**
+ * Creates a table with the given properties.
+ *
+ * Used by TASK-005 table data model: tables store a name and a list
+ * of columns, plus canvas position and size.
+ */
+export function createTable(
+  id: string,
+  name: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  columns: Column[] = [],
+): Table {
+  return {
+    id,
+    name,
+    x,
+    y,
+    width,
+    height,
+    columns,
+  };
+}
+
 export function findTableById(diagram: Diagram, tableId: string): Table | undefined {
   return diagram.tables.find((table) => table.id === tableId);
 }
