@@ -118,4 +118,72 @@ describe('TableNode', () => {
       ]),
     });
   });
+
+  it('toggles column nullable via the checkbox', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ columns: [makeColumn({ nullable: false })] })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Nullable for id',
+    });
+    fireEvent.click(checkbox);
+    fireEvent.blur(checkbox);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id', nullable: true }),
+      ]),
+    });
+  });
+
+  it('edits column default value via the text input', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const inputs = screen.getAllByRole('textbox');
+    const defaultInput = inputs[inputs.length - 1];
+    fireEvent.change(defaultInput, { target: { value: '0' } });
+    fireEvent.blur(defaultInput);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id', defaultValue: '0' }),
+      ]),
+    });
+  });
+
+  it('clears column default value when input is emptied', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [makeColumn({ defaultValue: '0' })],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const inputs = screen.getAllByRole('textbox');
+    const defaultInput = inputs[inputs.length - 1];
+    fireEvent.change(defaultInput, { target: { value: '' } });
+    fireEvent.blur(defaultInput);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id', defaultValue: undefined }),
+      ]),
+    });
+  });
 });

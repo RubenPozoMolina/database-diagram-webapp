@@ -32,7 +32,7 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
   };
 
   const updateColumnField = useCallback(
-    (columnId: string, field: keyof Column, value: string) => {
+    (columnId: string, field: keyof Column, value: string | boolean | undefined) => {
       onUpdateTable(table.id, {
         columns: table.columns.map((column) =>
           column.id === columnId ? { ...column, [field]: value } : column,
@@ -118,6 +118,37 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                     </option>
                   ))}
                 </select>
+                <label className="nullable-checkbox-label">
+                  <input
+                    type="checkbox"
+                    className="nullable-checkbox"
+                    checked={column.nullable}
+                    onChange={(event) =>
+                      updateColumnField(
+                        column.id,
+                        'nullable',
+                        event.target.checked,
+                      )
+                    }
+                    aria-label={`Nullable for ${column.name}`}
+                  />
+                  <span className="nullable-checkbox-text">Nullable</span>
+                </label>
+                <input
+                  className="column-default-input"
+                  type="text"
+                  value={column.defaultValue ?? ''}
+                  placeholder="Default"
+                  title="Default value"
+                  onChange={(event) =>
+                    updateColumnField(
+                      column.id,
+                      'defaultValue',
+                      event.target.value || undefined,
+                    )
+                  }
+                  onBlur={() => setEditingColumn(null)}
+                />
               </div>
             ) : (
               <span

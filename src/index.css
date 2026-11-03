@@ -342,12 +342,33 @@ body {
 }
 
 .column-edit-row .column-name-input,
-.column-edit-row .column-type-select {
+.column-edit-row .column-type-select,
+.column-edit-row .column-default-input {
   font-size: 0.85rem;
   padding: 0.2rem 0.4rem;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background: #ffffff;
+}
+
+.nullable-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nullable-checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+}
+
+.nullable-checkbox-text {
+  user-select: none;
 }
 
 .table-name-input {
