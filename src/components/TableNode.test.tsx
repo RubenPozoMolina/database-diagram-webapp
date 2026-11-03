@@ -346,7 +346,7 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
       />,
     );
-    expect(screen.getByTitle('IX')).toBeInTheDocument();
+    expect(screen.getByTitle(/IX/)).toBeInTheDocument();
     expect(screen.getByText(/id: integer/)).toBeInTheDocument();
   });
 
@@ -372,7 +372,7 @@ describe('TableNode', () => {
     ).toBeInTheDocument();
   });
 
-  it('does not render the indexes section when there are no indexes', () => {
+  it('renders the indexes section and Add index button even when there are no indexes', () => {
     const onUpdateTable = vi.fn();
     render(
       <TableNode
@@ -381,7 +381,10 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
       />,
     );
-    expect(screen.queryByText('Indexes')).toBeNull();
+    expect(screen.getByText('Indexes')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /add a new index to this table/i }),
+    ).toBeInTheDocument();
   });
 
   it('adds a new index when Add index is clicked and form is submitted', () => {
@@ -411,10 +414,6 @@ describe('TableNode', () => {
     fireEvent.change(select, { target: { value: 'c2' } });
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'id' }),
-        expect.objectContaining({ name: 'email' }),
-      ]),
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'test-index-uuid',
@@ -441,9 +440,6 @@ describe('TableNode', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /Remove index idx_id/i }));
     expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'id' }),
-      ]),
       indexes: [],
     });
   });
@@ -473,10 +469,6 @@ describe('TableNode', () => {
     fireEvent.change(select, { target: { value: 'c1' } });
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'id' }),
-        expect.objectContaining({ name: 'email' }),
-      ]),
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'i1',

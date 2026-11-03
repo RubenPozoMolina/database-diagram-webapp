@@ -268,9 +268,8 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
             )}
           </div>
         ))}
-        {table.indexes.length > 0 || editingIndex !== null ? (
-          <div className="table-indexes">
-            <h3 className="indexes-title">Indexes</h3>
+        <div className="table-indexes">
+          <h3 className="indexes-title">Indexes</h3>
             {editingIndex !== null ? (
               <div className="index-edit-row">
                 <input
@@ -365,7 +364,7 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
               + Add index
             </button>
           </div>
-        ) : null}
+
         <button
           type="button"
           className="add-column"

@@ -192,7 +192,7 @@ describe('useDiagram', () => {
         height: 120,
         columns: [
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
-          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
         ],
         indexes: [],
       });
@@ -219,7 +219,7 @@ describe('useDiagram', () => {
         height: 120,
         columns: [
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
-          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
         ],
         indexes: [],
       });
@@ -247,8 +247,8 @@ describe('useDiagram', () => {
         height: 120,
         columns: [
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
-          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true },
-          { id: 'c3', name: 'name', dataType: 'text', nullable: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
+          { id: 'c3', name: 'name', dataType: 'text', nullable: true, primaryKey: false },
         ],
         indexes: [],
       });

@@ -152,6 +152,7 @@ describe('generateDDL', () => {
           primaryKey: false,
         },
       ],
+      indexes: [],
     });
     expect(() => generateDDL(diagram)).toThrow(/Unsupported column type/);
   });
