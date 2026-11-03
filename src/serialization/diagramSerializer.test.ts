@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { createEmptyDiagram } from '../types/diagram';
 import {
+  CREDENTIAL_FIELDS,
   DIAGRAM_JSON_VERSION,
   serializeDiagram,
+  stripCredentials,
   type SerializedExport,
 } from './diagramSerializer';
 
@@ -173,6 +175,65 @@ describe('serializeDiagram', () => {
     ]) {
       expect(serialized).not.toContain(credential);
     }
+  });
+
+  it('stripCredentials removes credential fields from nested objects', () => {
+    const dirty = {
+      version: '1.0.0',
+      diagram: {
+        id: 'abc',
+        name: 'My Diagram',
+        host: 'db.example.com',
+        port: 5432,
+        database: 'mydb',
+        user: 'app_user',
+        password: 's3cret',
+        tables: [
+          {
+            id: 't1',
+            name: 'accounts',
+            host: 'injected-host',
+            columns: [{ id: 'c1', name: 'id', password: 'leaked-pw' }],
+          },
+        ],
+      },
+    };
+    const cleaned = stripCredentials(dirty);
+    const serialized = JSON.stringify(cleaned).toLowerCase();
+    for (const field of CREDENTIAL_FIELDS) {
+      expect(serialized).not.toContain(field);
+    }
+    // Non-credential data is preserved.
+    expect(cleaned).toMatchObject({
+      version: '1.0.0',
+      diagram: { id: 'abc', name: 'My Diagram' },
+    });
+  });
+
+  it('stripCredentials preserves arrays of non-credential objects', () => {
+    const dirty = {
+      items: [
+        { name: 'table-a', host: 'bad' },
+        { name: 'table-b', password: 'bad' },
+      ],
+    };
+    const cleaned = stripCredentials(dirty);
+    expect(cleaned).toEqual({
+      items: [{ name: 'table-a' }, { name: 'table-b' }],
+    });
+  });
+
+  it('serializeDiagram strips credentials even if injected into the diagram', () => {
+    const diagram = createEmptyDiagram('Tainted Diagram');
+    // Simulate a future model extension that mistakenly carries credentials.
+    (diagram as Record<string, unknown>).host = 'db.example.com';
+    (diagram as Record<string, unknown>).password = 's3cret';
+    const result = serializeDiagram(diagram);
+    const serialized = JSON.stringify(result).toLowerCase();
+    for (const field of CREDENTIAL_FIELDS) {
+      expect(serialized).not.toContain(field);
+    }
+    expect(result.diagram.name).toBe('Tainted Diagram');
   });
 
   it('serializes an empty diagram to valid well-formed JSON', () => {
