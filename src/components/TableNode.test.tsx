@@ -205,12 +205,12 @@ describe('TableNode', () => {
   });
 
   it('adds a new column to the table and opens it for editing', () => {
-    const globalCrypto = globalThis as {
-      crypto?: { randomUUID?: () => string };
-    };
-    if (!globalCrypto.crypto?.randomUUID) {
-      globalCrypto.crypto = { randomUUID: () => 'test-column-uuid' };
-    }
+    // crypto.randomUUID exists in the Node test runtime; override it
+    // unconditionally so the new column id is deterministic.
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-column-uuid' },
+    });
     const onUpdateTable = vi.fn();
     render(
       <TableNode
