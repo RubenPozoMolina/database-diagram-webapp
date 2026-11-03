@@ -162,6 +162,20 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                   />
                   <span className="nullable-checkbox-text">Nullable</span>
                 </label>
+                <label className="pk-checkbox-label">
+                  <input
+                    type="checkbox"
+                    className="pk-checkbox"
+                    checked={column.primaryKey}
+                    onChange={(event) =>
+                      updateColumnField(column.id, {
+                        primaryKey: event.target.checked,
+                      })
+                    }
+                    aria-label={`Primary key for ${column.name}`}
+                  />
+                  <span className="pk-checkbox-text">PK</span>
+                </label>
                 <input
                   className="column-default-input"
                   type="text"
@@ -190,6 +204,11 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                 onDoubleClick={() => setEditingColumn(column.id)}
               >
                 {column.name}: {column.dataType}
+                {column.primaryKey && (
+                  <span className="pk-badge" aria-label="Primary key">
+                    PK
+                  </span>
+                )}
               </span>
             )}
           </div>

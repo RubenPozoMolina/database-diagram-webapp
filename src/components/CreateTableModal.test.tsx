@@ -75,6 +75,30 @@ describe('CreateTableModal', () => {
     });
   });
 
+  it('toggles primary key on a column via the PK checkbox', () => {
+    const onCreate = vi.fn();
+    render(<CreateTableModal isOpen onClose={vi.fn()} onCreate={onCreate} />);
+    fireEvent.click(screen.getByRole('button', { name: /add column/i }));
+    const columnName = screen.getAllByPlaceholderText('Column name')[0];
+    fireEvent.change(columnName, { target: { value: 'id' } });
+
+    const pkCheckbox = screen.getByRole('checkbox', {
+      name: 'Primary key for id',
+    });
+    fireEvent.click(pkCheckbox);
+
+    fireEvent.change(screen.getByLabelText('Table name'), {
+      target: { value: 'users' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create table/i }));
+    expect(onCreate).toHaveBeenCalledWith({
+      name: 'users',
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id', primaryKey: true }),
+      ]),
+    });
+  });
+
   it('shows an error and does not call onCreate when the name is empty', () => {
     const onCreate = vi.fn();
     const { container } = render(

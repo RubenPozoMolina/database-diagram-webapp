@@ -151,7 +151,9 @@ describe('TableNode', () => {
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
-    const checkbox = screen.getByRole('checkbox');
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Nullable for id',
+    });
     fireEvent.click(checkbox);
     fireEvent.blur(screen.getAllByRole('textbox')[0]);
     expect(onUpdateTable).toHaveBeenCalledWith('t1', {
@@ -160,6 +162,44 @@ describe('TableNode', () => {
           name: 'id',
           dataType: 'integer',
           nullable: true,
+        }),
+      ]),
+    });
+  });
+
+  it('shows a PK badge next to primary key columns', () => {
+    renderTableNode(
+      makeTable({
+        columns: [makeColumn({ name: 'id', primaryKey: true })],
+      }),
+    );
+    const columnText = screen.getByText(/id: integer/);
+    expect(columnText.parentElement).toContainElement(
+      screen.getByText('PK'),
+    );
+  });
+
+  it('toggles column primary key via the checkbox', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ columns: [makeColumn({ primaryKey: false })] })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Primary key for id',
+    });
+    fireEvent.click(checkbox);
+    fireEvent.blur(screen.getAllByRole('textbox')[0]);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({
+          name: 'id',
+          dataType: 'integer',
+          primaryKey: true,
         }),
       ]),
     });

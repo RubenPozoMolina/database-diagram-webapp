@@ -123,6 +123,20 @@ export function CreateTableModal({
                       </option>
                     ))}
                   </select>
+                  <label className="pk-checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="pk-checkbox"
+                      checked={column.primaryKey}
+                      onChange={(event) =>
+                        updateColumn(column.id, {
+                          primaryKey: event.target.checked,
+                        })
+                      }
+                      aria-label={`Primary key for ${column.name || column.id}`}
+                    />
+                    <span className="pk-checkbox-text">PK</span>
+                  </label>
                   <button
                     type="button"
                     className="remove-column"
