@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
 
 test.describe('Import from JSON', () => {
   const exampleDiagram = {
@@ -57,7 +55,6 @@ test.describe('Import from JSON', () => {
               nullable: false,
               primaryKey: true,
               unique: false,
-              defaultValue: null,
               comment: null,
             },
             {
@@ -92,18 +89,22 @@ test.describe('Import from JSON', () => {
     },
   };
 
+  /** Feed a JSON diagram to the hidden file input without touching the host filesystem. */
+  async function importJsonFile(page: import('@playwright/test').Page, content: string, fileName: string) {
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: fileName,
+      mimeType: 'application/json',
+      buffer: Buffer.from(content),
+    });
+  }
+
   test('loads a valid diagram from JSON into the canvas', async ({ page }) => {
     await page.goto('/');
 
-    // Write the valid diagram JSON to a temporary file
-    const jsonContent = JSON.stringify(exampleDiagram, null, 2);
-    const filePath = path.join('/tmp', 'test-import-diagram.json');
-    fs.writeFileSync(filePath, jsonContent);
+    await importJsonFile(page, JSON.stringify(exampleDiagram, null, 2), 'test-import-diagram.json');
 
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(filePath);
-
-    // The diagram name should appear somewhere (tables should render)
+    // The diagram name and tables should render on the canvas
     await expect(page.getByText(/users/i)).toBeVisible();
     await expect(page.getByText(/orders/i)).toBeVisible();
     await expect(page.getByText(/E-commerce Schema/i)).toBeVisible();
@@ -112,16 +113,11 @@ test.describe('Import from JSON', () => {
   test('shows an error for invalid JSON', async ({ page }) => {
     await page.goto('/');
 
-    const invalidJson = 'this is not valid json{{{';
-    const filePath = path.join('/tmp', 'test-import-invalid.json');
-    fs.writeFileSync(filePath, invalidJson);
+    await importJsonFile(page, 'this is not valid json{{{', 'test-import-invalid.json');
 
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(filePath);
-
-    // Error message should be visible
+    // Error message should be visible in the alert banner
     await expect(page.getByRole('alert')).toBeVisible();
-    await expect(page.getByRole('alert')).toContainError(/invalid json/i);
+    await expect(page.getByRole('alert')).toContainText(/invalid json/i);
   });
 
   test('shows an error for unsupported schema version', async ({ page }) => {
@@ -140,14 +136,10 @@ test.describe('Import from JSON', () => {
         updatedAt: '2026-01-01T00:00:00Z',
       },
     };
-    const filePath = path.join('/tmp', 'test-import-bad-version.json');
-    fs.writeFileSync(filePath, JSON.stringify(badVersion, null, 2));
-
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(filePath);
+    await importJsonFile(page, JSON.stringify(badVersion, null, 2), 'test-import-bad-version.json');
 
     await expect(page.getByRole('alert')).toBeVisible();
-    await expect(page.getByRole('alert')).toContainError(
+    await expect(page.getByRole('alert')).toContainText(
       /unsupported diagram file version/i,
     );
   });
@@ -155,12 +147,7 @@ test.describe('Import from JSON', () => {
   test('imported diagram tables are editable', async ({ page }) => {
     await page.goto('/');
 
-    const jsonContent = JSON.stringify(exampleDiagram, null, 2);
-    const filePath = path.join('/tmp', 'test-import-editable.json');
-    fs.writeFileSync(filePath, jsonContent);
-
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(filePath);
+    await importJsonFile(page, JSON.stringify(exampleDiagram, null, 2), 'test-import-editable.json');
 
     // Table nodes should be rendered on the canvas
     await expect(page.getByText(/users/i)).toBeVisible();
@@ -174,12 +161,7 @@ test.describe('Import from JSON', () => {
   test('imported relationships are rendered', async ({ page }) => {
     await page.goto('/');
 
-    const jsonContent = JSON.stringify(exampleDiagram, null, 2);
-    const filePath = path.join('/tmp', 'test-import-relationships.json');
-    fs.writeFileSync(filePath, jsonContent);
-
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(filePath);
+    await importJsonFile(page, JSON.stringify(exampleDiagram, null, 2), 'test-import-relationships.json');
 
     // Both tables should be visible, and the relationship line should exist
     await expect(page.getByText(/users/i)).toBeVisible();

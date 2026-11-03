@@ -162,7 +162,7 @@ export function App() {
           </div>
         )}
         {importError && (
-          <div className="connection-status connection-status--error" role="status" aria-live="polite">
+          <div className="connection-status connection-status--error" role="alert" aria-live="polite">
             {importError}
             <button
               type="button"

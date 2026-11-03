@@ -7,6 +7,21 @@ import {
   serializeDiagram,
 } from '../serialization/diagramSerializer';
 
+/**
+ * Build a File-like object for jsdom.
+ *
+ * jsdom's File constructor rejects array bits in this environment
+ * ("parameter 1 is not an iterable object"), so build the file from a
+ * Blob instead and give it a name. The component under test only reads
+ * `name`/`type` and passes the file to FileReader, so a Blob with a name
+ * behaves identically to a real File.
+ */
+function createFile(content: string | string[], name: string, type: string): File {
+  const blob = new Blob([content], { type });
+  Object.defineProperty(blob, 'name', { value: name, configurable: true });
+  return blob as unknown as File;
+}
+
 describe('ImportButton', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -15,13 +30,13 @@ describe('ImportButton', () => {
   it('renders an Import from JSON button', () => {
     render(<ImportButton onImport={vi.fn()} onError={vi.fn()} />);
     expect(
-      screen.getByRole('button', { name: /import from json/i }),
+      screen.getByRole('button', { name: /import diagram from json/i }),
     ).toBeInTheDocument();
   });
 
   it('is keyboard-focusable and announces itself to assistive technology', () => {
     render(<ImportButton onImport={vi.fn()} onError={vi.fn()} />);
-    const button = screen.getByRole('button', { name: /import from json/i });
+    const button = screen.getByRole('button', { name: /import diagram from json/i });
     expect(button).toHaveAttribute('type', 'button');
     expect(button).toHaveAttribute('aria-label', 'Import diagram from JSON');
   });
@@ -33,7 +48,7 @@ describe('ImportButton', () => {
     expect(fileInput).not.toBeNull();
     vi.spyOn(fileInput!, 'click').mockImplementation(clickSpy);
 
-    fireEvent.click(screen.getByRole('button', { name: /import from json/i }));
+    fireEvent.click(screen.getByRole('button', { name: /import diagram from json/i }));
     expect(clickSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -43,12 +58,14 @@ describe('ImportButton', () => {
     render(<ImportButton onImport={onImport} onError={onError} />);
 
     const input = document.querySelector('input[type="file"]')!;
-    const file = new File(['not json'], 'diagram.txt', { type: 'text/plain' });
+    const file = createFile(['not json'], 'diagram.txt', { type: 'text/plain' });
     Object.defineProperty(input, 'files', { value: [file] });
     fireEvent.change(input);
 
     expect(onImport).not.toHaveBeenCalled();
-    expect(onError).toHaveBeenCalledWith(/please select a json file/i);
+    expect(onError).toHaveBeenCalledWith(
+      expect.stringMatching(/please select a json file/i),
+    );
   });
 
   it('imports a valid diagram and calls onImport', () => {
@@ -76,7 +93,7 @@ describe('ImportButton', () => {
     });
     const exportPayload = serializeDiagram(diagram);
     const jsonString = JSON.stringify(exportPayload);
-    const file = new File([jsonString], 'diagram.json', {
+    const file = createFile([jsonString], 'diagram.json', {
       type: 'application/json',
     });
 
@@ -99,7 +116,7 @@ describe('ImportButton', () => {
     const onError = vi.fn();
     render(<ImportButton onImport={onImport} onError={onError} />);
 
-    const file = new File(['not valid json{{{'], 'bad.json', {
+    const file = createFile(['not valid json{{{'], 'bad.json', {
       type: 'application/json',
     });
     const input = document.querySelector('input[type="file"]')!;
@@ -107,7 +124,9 @@ describe('ImportButton', () => {
     fireEvent.change(input);
 
     expect(onImport).not.toHaveBeenCalled();
-    expect(onError).toHaveBeenCalledWith(/invalid json/i);
+    expect(onError).toHaveBeenCalledWith(
+      expect.stringMatching(/invalid json/i),
+    );
   });
 
   it('calls onError for unsupported schema version', () => {
@@ -128,7 +147,7 @@ describe('ImportButton', () => {
         updatedAt: '2026-01-01T00:00:00Z',
       },
     };
-    const file = new File([JSON.stringify(payload)], 'bad-version.json', {
+    const file = createFile([JSON.stringify(payload)], 'bad-version.json', {
       type: 'application/json',
     });
     const input = document.querySelector('input[type="file"]')!;
@@ -137,7 +156,7 @@ describe('ImportButton', () => {
 
     expect(onImport).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledWith(
-      expect.stringContaining(/unsupported diagram file version/i),
+      expect.stringMatching(/unsupported diagram file version/i),
     );
   });
 
@@ -146,7 +165,7 @@ describe('ImportButton', () => {
     const onError = vi.fn();
     render(<ImportButton onImport={onImport} onError={onError} />);
 
-    const file = new File(
+    const file = createFile(
       JSON.stringify({ version: DIAGRAM_JSON_VERSION }),
       'no-diagram.json',
       { type: 'application/json' },
@@ -157,7 +176,7 @@ describe('ImportButton', () => {
 
     expect(onImport).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledWith(
-      expect.stringContaining(/missing version or diagram root/i),
+      expect.stringMatching(/missing version or diagram root/i),
     );
   });
 
@@ -199,7 +218,7 @@ describe('ImportButton', () => {
 
     const exportPayload = serializeDiagram(original);
     const jsonString = JSON.stringify(exportPayload);
-    const file = new File([jsonString], 'roundtrip.json', {
+    const file = createFile([jsonString], 'roundtrip.json', {
       type: 'application/json',
     });
 
