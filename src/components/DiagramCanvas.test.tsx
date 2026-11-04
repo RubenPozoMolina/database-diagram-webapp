@@ -13,6 +13,9 @@ describe('DiagramCanvas', () => {
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
+        onAddUniqueConstraint={() => {}}
+        onRemoveUniqueConstraint={() => {}}
+        onUpdateUniqueConstraint={() => {}}
       />,
     );
     const message = screen.getByText(
@@ -43,6 +46,9 @@ describe('DiagramCanvas', () => {
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
+        onAddUniqueConstraint={() => {}}
+        onRemoveUniqueConstraint={() => {}}
+        onUpdateUniqueConstraint={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();
@@ -69,6 +75,9 @@ describe('DiagramCanvas', () => {
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
+        onAddUniqueConstraint={() => {}}
+        onRemoveUniqueConstraint={() => {}}
+        onUpdateUniqueConstraint={() => {}}
       />,
     );
     expect(screen.queryByText(/Empty diagram canvas/i)).not.toBeInTheDocument();
@@ -111,6 +120,9 @@ describe('DiagramCanvas', () => {
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
+        onAddUniqueConstraint={() => {}}
+        onRemoveUniqueConstraint={() => {}}
+        onUpdateUniqueConstraint={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();

@@ -31,7 +31,6 @@ export function App() {
     addColumn,
     removeColumn,
     updateColumn,
-    addUniqueConstraint,
     removeUniqueConstraint,
     updateUniqueConstraint,
   } = useDiagram();

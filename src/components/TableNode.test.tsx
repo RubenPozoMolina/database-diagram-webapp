@@ -32,6 +32,9 @@ const renderTableNode = (table = makeTable()) =>
       onUpdateTable={vi.fn()}
       onAddColumn={vi.fn()}
       onRemoveColumn={vi.fn()}
+    onAddUniqueConstraint={vi.fn()}
+    onRemoveUniqueConstraint={vi.fn()}
+    onUpdateUniqueConstraint={vi.fn()}
       onUpdateColumn={vi.fn()}
     />,
   );
@@ -59,6 +62,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -78,6 +84,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -98,6 +107,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -119,6 +131,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -140,6 +155,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -163,6 +181,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -186,6 +207,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -209,6 +233,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -231,6 +258,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -254,6 +284,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -287,6 +320,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -314,6 +350,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={onAddColumn}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -346,6 +385,9 @@ describe('TableNode', () => {
         onUpdateTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={onRemoveColumn}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -374,6 +416,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -396,6 +441,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -417,6 +465,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -438,6 +489,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -459,6 +513,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -489,6 +546,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -524,6 +584,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -551,6 +614,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -587,6 +653,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -607,6 +676,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -633,6 +705,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -667,6 +742,9 @@ describe('TableNode', () => {
         onUpdateTable={onUpdateTable}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -883,7 +961,9 @@ describe('TableNode', () => {
       />,
     );
     fireEvent.click(
-      screen.getByRole('button', { name: /Remove unique constraint uc1/i }),
+      screen.getByRole('button', {
+        name: /Remove unique constraint users_email_key/i,
+      }),
     );
     expect(onRemoveUniqueConstraint).toHaveBeenCalledWith('uc1');
   });

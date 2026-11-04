@@ -160,14 +160,6 @@ export function TableNode({
     setEditingIndex(null);
   };
 
-  const constraintColumnIds = useCallback(
-    (constraintId: string) => {
-      const constraint = uniqueConstraints.find((uc) => uc.id === constraintId);
-      return constraint ? constraint.columnIds : [];
-    },
-    [uniqueConstraints],
-  );
-
   const addUniqueConstraint = useCallback(() => {
     if (!newConstraintName.trim() || newConstraintColumnIds.length === 0) return;
     onAddUniqueConstraint(

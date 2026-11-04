@@ -17,7 +17,7 @@
  *   * Unsupported column types throw at generation time.
  */
 
-import type { Column, Diagram, Relationship } from '../types/diagram';
+import type { Diagram } from '../types/diagram';
 
 // ---------------------------------------------------------------------------
 // Types used internally by the generator
