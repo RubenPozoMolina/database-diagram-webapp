@@ -21,6 +21,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     expect(result.current.diagram.tables).toHaveLength(1);
@@ -38,6 +39,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
       result.current.addTable({
         name: 'orders',
@@ -46,6 +48,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     const userId = result.current.diagram.tables[0].id;
@@ -74,6 +77,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
       result.current.addTable({
         name: 'orders',
@@ -82,6 +86,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     const userId = result.current.diagram.tables[0].id;
@@ -108,6 +113,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
       result.current.createNewDiagram('Second');
     });
@@ -127,6 +133,7 @@ describe('useDiagram', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -149,6 +156,7 @@ describe('useDiagram', () => {
         columns: [
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
         ],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -174,6 +182,35 @@ describe('useDiagram', () => {
     expect(diagram.id).toBeDefined();
   });
 
+  /* ---- STORY-007: index tests ---- */
+
+  it('adds an index to a table column', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.indexes).toHaveLength(1);
+    expect(table?.indexes[0].name).toBe('idx_email');
+    expect(table?.indexes[0].columnId).toBe('c2');
+    expect(table?.indexes[0].id).toBeDefined();
+  });
+
   it('adds a unique constraint to a table', () => {
     const { result } = renderHook(() => useDiagram());
     act(() => {
@@ -187,6 +224,7 @@ describe('useDiagram', () => {
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
           { id: 'c2', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false },
         ],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -198,6 +236,34 @@ describe('useDiagram', () => {
     expect(result.current.diagram.uniqueConstraints[0].columnIds).toEqual(['c2']);
     expect(result.current.diagram.uniqueConstraints[0].name).toBe('users_email_key');
     expect(result.current.diagram.uniqueConstraints[0].id).toBeDefined();
+  });
+
+  it('removes an index from a table', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+    });
+    const indexId = result.current.diagram.tables[0].indexes[0].id;
+    act(() => {
+      result.current.removeIndex(tableId, indexId);
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.indexes).toHaveLength(0);
   });
 
   it('supports composite unique constraints on column groups', () => {
@@ -214,6 +280,7 @@ describe('useDiagram', () => {
           { id: 'c2', name: 'user_id', dataType: 'integer', nullable: false, primaryKey: false },
           { id: 'c3', name: 'product_id', dataType: 'integer', nullable: false, primaryKey: false },
         ],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -222,6 +289,40 @@ describe('useDiagram', () => {
     });
     expect(result.current.diagram.uniqueConstraints).toHaveLength(1);
     expect(result.current.diagram.uniqueConstraints[0].columnIds).toEqual(['c2', 'c3']);
+  });
+
+  it('updates an index name and column', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
+          { id: 'c3', name: 'name', dataType: 'text', nullable: true, primaryKey: false },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+    });
+    const indexId = result.current.diagram.tables[0].indexes[0].id;
+    act(() => {
+      result.current.updateIndex(tableId, indexId, {
+        name: 'idx_user_email',
+        columnId: 'c3',
+      });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.indexes).toHaveLength(1);
+    expect(table?.indexes[0].name).toBe('idx_user_email');
+    expect(table?.indexes[0].columnId).toBe('c3');
   });
 
   it('removes a unique constraint by id', () => {
@@ -237,6 +338,7 @@ describe('useDiagram', () => {
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
           { id: 'c2', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false },
         ],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -263,6 +365,7 @@ describe('useDiagram', () => {
           { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
           { id: 'c2', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false },
         ],
+        indexes: [],
       });
     });
     const tableId = result.current.diagram.tables[0].id;
@@ -282,7 +385,7 @@ describe('useDiagram', () => {
     const constraint = createUniqueConstraint('uc1', tableId, ['c2'], 'users_email_key');
     const updated = {
       ...diagram,
-      tables: [{ id: tableId, name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [] }],
+      tables: [{ id: tableId, name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] }],
       uniqueConstraints: [constraint],
     };
     expect(findUniqueConstraintsByTable(updated, tableId)).toEqual([constraint]);

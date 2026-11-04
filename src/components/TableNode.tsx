@@ -9,6 +9,13 @@ interface TableNodeProps {
   uniqueConstraints?: UniqueConstraint[];
   onUpdatePosition: (id: string, x: number, y: number) => void;
   onUpdateTable: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
+  onAddColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
+  onRemoveColumn: (tableId: string, columnId: string) => void;
+  onUpdateColumn: (
+    tableId: string,
+    columnId: string,
+    updates: Partial<Omit<Column, 'id'>>,
+  ) => void;
 }
 
 export function TableNode({
@@ -16,11 +23,17 @@ export function TableNode({
   uniqueConstraints = [],
   onUpdatePosition,
   onUpdateTable,
+  onAddColumn,
+  onRemoveColumn,
+  onUpdateColumn,
 }: TableNodeProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(table.name);
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
+  const [editingIndex, setEditingIndex] = useState<string | null>(null);
+  const [newIndexName, setNewIndexName] = useState('');
+  const [newIndexColumnId, setNewIndexColumnId] = useState<string | null>(null);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -39,43 +52,96 @@ export function TableNode({
 
   const updateColumnField = useCallback(
     (columnId: string, updates: Partial<Column>) => {
-      onUpdateTable(table.id, {
-        columns: table.columns.map((column) =>
-          column.id === columnId ? { ...column, ...updates } : column,
-        ),
-      });
+      onUpdateColumn(table.id, columnId, updates);
     },
-    [table.id, table.columns, onUpdateTable],
+    [table.id, onUpdateColumn],
   );
 
   const addColumn = useCallback(() => {
-    const newColumn: Column = {
-      id: crypto.randomUUID(),
+    const newColumn: Omit<Column, 'id'> = {
       name: 'new_column',
       dataType: 'text',
       nullable: true,
       primaryKey: false,
     };
-    onUpdateTable(table.id, {
-      columns: [...table.columns, newColumn],
-    });
-    setEditingColumn(newColumn.id);
-  }, [table.id, table.columns, onUpdateTable]);
+    onAddColumn(table.id, newColumn);
+  }, [table.id, onAddColumn]);
 
   const removeColumn = useCallback(
     (columnId: string) => {
-      onUpdateTable(table.id, {
-        columns: table.columns.filter((column) => column.id !== columnId),
-      });
+      onRemoveColumn(table.id, columnId);
       if (editingColumn === columnId) {
         setEditingColumn(null);
       }
     },
-    [table.id, table.columns, editingColumn, onUpdateTable],
+    [table.id, onRemoveColumn, editingColumn],
   );
 
   const exitColumnEdit = () => {
     setEditingColumn(null);
+  };
+
+  const columnHasIndex = useCallback(
+    (columnId: string) => table.indexes.some((index) => index.columnId === columnId),
+    [table.indexes],
+  );
+
+  const addIndex = useCallback(() => {
+    if (!newIndexColumnId || !newIndexName.trim()) return;
+    onUpdateTable(table.id, {
+      indexes: [
+        ...table.indexes,
+        {
+          id: crypto.randomUUID(),
+          name: newIndexName.trim(),
+          columnId: newIndexColumnId,
+        },
+      ],
+    });
+    setNewIndexName('');
+    setNewIndexColumnId(null);
+    setEditingIndex(null);
+  }, [table.id, table.indexes, newIndexColumnId, newIndexName, onUpdateTable]);
+
+  const removeIndex = useCallback(
+    (indexId: string) => {
+      onUpdateTable(table.id, {
+        indexes: table.indexes.filter((index) => index.id !== indexId),
+      });
+      if (editingIndex === indexId) {
+        setEditingIndex(null);
+      }
+    },
+    [table.id, table.indexes, editingIndex, onUpdateTable],
+  );
+
+  const startIndexEdit = (indexId: string) => {
+    const index = table.indexes.find((i) => i.id === indexId);
+    if (index) {
+      setNewIndexName(index.name);
+      setNewIndexColumnId(index.columnId);
+      setEditingIndex(indexId);
+    }
+  };
+
+  const saveIndexEdit = (indexId: string) => {
+    if (!newIndexColumnId || !newIndexName.trim()) return;
+    onUpdateTable(table.id, {
+      indexes: table.indexes.map((index) =>
+        index.id === indexId
+          ? { ...index, name: newIndexName.trim(), columnId: newIndexColumnId }
+          : index,
+      ),
+    });
+    setNewIndexName('');
+    setNewIndexColumnId(null);
+    setEditingIndex(null);
+  };
+
+  const cancelIndexEdit = () => {
+    setNewIndexName('');
+    setNewIndexColumnId(null);
+    setEditingIndex(null);
   };
 
   return (
@@ -207,6 +273,11 @@ export function TableNode({
             ) : (
               <span
                 className="column-text"
+                title={
+              [column.primaryKey ? 'PK' : null, columnHasIndex(column.id) ? 'IX' : null]
+                .filter(Boolean)
+                .join(' ')
+            }
                 onDoubleClick={() => setEditingColumn(column.id)}
               >
                 {column.name}: {column.dataType}
@@ -215,10 +286,110 @@ export function TableNode({
                     PK
                   </span>
                 )}
+                {columnHasIndex(column.id) && (
+                  <span className="index-badge" aria-label="Indexed">IX</span>
+                )}
               </span>
             )}
           </div>
         ))}
+        <div className="table-indexes">
+          <h3 className="indexes-title">Indexes</h3>
+            {editingIndex !== null ? (
+              <div className="index-edit-row">
+                <input
+                  className="index-name-input"
+                  autoFocus
+                  value={newIndexName}
+                  onChange={(event) => setNewIndexName(event.target.value)}
+                  placeholder="Index name"
+                  aria-label="Index name"
+                />
+                <select
+                  className="index-column-select"
+                  value={newIndexColumnId ?? ''}
+                  onChange={(event) =>
+                    setNewIndexColumnId(event.target.value || null)
+                  }
+                  aria-label="Column to index"
+                >
+                  <option value="">Select column</option>
+                  {table.columns.map((column) => (
+                    <option key={column.id} value={column.id}>
+                      {column.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="save-index"
+                  onClick={() =>
+                    editingIndex === 'new'
+                      ? addIndex()
+                      : saveIndexEdit(editingIndex as string)
+                  }
+                  disabled={!newIndexColumnId || !newIndexName.trim()}
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  className="cancel-index"
+                  onClick={cancelIndexEdit}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : null}
+            <ul className="index-list">
+              {table.indexes.map((index) => {
+                const column = table.columns.find(
+                  (c) => c.id === index.columnId,
+                );
+                return (
+                  <li key={index.id} className="index-item">
+                    <span className="index-name">{index.name}</span>
+                    <span className="index-column">
+                      on {column ? column.name : 'unknown column'}
+                    </span>
+                    {editingIndex === index.id ? null : (
+                      <>
+                        <button
+                          type="button"
+                          className="edit-index"
+                          onClick={() => startIndexEdit(index.id)}
+                          aria-label={`Edit index ${index.name}`}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="remove-index"
+                          onClick={() => removeIndex(index.id)}
+                          aria-label={`Remove index ${index.name}`}
+                        >
+                          Remove
+                        </button>
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              className="add-index"
+              onClick={() => {
+                setNewIndexName('');
+                setNewIndexColumnId(null);
+                setEditingIndex('new');
+              }}
+              aria-label="Add a new index to this table"
+            >
+              + Add index
+            </button>
+          </div>
+
         <button
           type="button"
           className="add-column"

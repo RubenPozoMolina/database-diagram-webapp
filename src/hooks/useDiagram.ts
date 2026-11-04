@@ -1,8 +1,12 @@
 import { useCallback, useState } from 'react';
 import {
+  Column,
+  createColumn,
   createEmptyDiagram,
+  createIndex,
   createUniqueConstraint,
   Diagram,
+  Index,
   Relationship,
   Table,
   UniqueConstraint,
@@ -11,6 +15,7 @@ import {
 interface UseDiagramReturn {
   diagram: Diagram;
   createNewDiagram: (name?: string) => void;
+  setDiagram: (diagram: Diagram) => void;
   addTable: (table: Omit<Table, 'id'>) => void;
   removeTable: (tableId: string) => void;
   updateTable: (
@@ -23,12 +28,26 @@ interface UseDiagramReturn {
     tableId: string,
     position: { x: number; y: number },
   ) => void;
+  addIndex: (tableId: string, index: Omit<Index, 'id'>) => void;
+  removeIndex: (tableId: string, indexId: string) => void;
+  updateIndex: (
+    tableId: string,
+    indexId: string,
+    updates: Partial<Omit<Index, 'id'>>,
+  ) => void;
   addUniqueConstraint: (
     tableId: string,
     columnIds: string[],
     name?: string,
   ) => void;
   removeUniqueConstraint: (constraintId: string) => void;
+  addColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
+  removeColumn: (tableId: string, columnId: string) => void;
+  updateColumn: (
+    tableId: string,
+    columnId: string,
+    updates: Partial<Omit<Column, 'id'>>,
+  ) => void;
 }
 
 export function useDiagram(initialName?: string): UseDiagramReturn {
@@ -38,6 +57,10 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
 
   const createNewDiagram = useCallback((name?: string) => {
     setDiagram(createEmptyDiagram(name));
+  }, []);
+
+  const loadDiagram = useCallback((next: Diagram) => {
+    setDiagram(next);
   }, []);
 
   const addTable = useCallback(
@@ -109,6 +132,21 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     [],
   );
 
+  const addIndex = useCallback(
+    (tableId: string, index: Omit<Index, 'id'>) => {
+      const newIndex: Index = createIndex(crypto.randomUUID(), index.name, index.columnId);
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? { ...t, indexes: [...t.indexes, newIndex] }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
   const addUniqueConstraint = useCallback(
     (tableId: string, columnIds: string[], name?: string) => {
       const newConstraint: UniqueConstraint = createUniqueConstraint(
@@ -125,6 +163,43 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     [],
   );
 
+  const removeIndex = useCallback(
+    (tableId: string, indexId: string) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? { ...t, indexes: t.indexes.filter((i) => i.id !== indexId) }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const updateIndex = useCallback(
+    (
+      tableId: string,
+      indexId: string,
+      updates: Partial<Omit<Index, 'id'>>,
+    ) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? {
+                ...t,
+                indexes: t.indexes.map((i) =>
+                  i.id === indexId ? { ...i, ...updates } : i,
+                ),
+              }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
   const removeUniqueConstraint = useCallback((constraintId: string) => {
     setDiagram((prev) => ({
       ...prev,
@@ -134,16 +209,94 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     }));
   }, []);
 
+  const addColumn = useCallback(
+    (tableId: string, column: Omit<Column, 'id'>) => {
+      const newColumn: Column = createColumn(
+        crypto.randomUUID(),
+        column.name,
+        column.dataType,
+        column.nullable,
+        column.defaultValue,
+        column.primaryKey,
+      );
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? { ...t, columns: [...t.columns, newColumn] }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const removeColumn = useCallback(
+    (tableId: string, columnId: string) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? {
+                ...t,
+                columns: t.columns.filter((c) => c.id !== columnId),
+                indexes: t.indexes.filter((i) => i.columnId !== columnId),
+              }
+            : t,
+        ),
+        uniqueConstraints: prev.uniqueConstraints.map((uc) =>
+          uc.tableId === tableId
+            ? {
+                ...uc,
+                columnIds: uc.columnIds.filter((cid) => cid !== columnId),
+              }
+            : uc,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const updateColumn = useCallback(
+    (
+      tableId: string,
+      columnId: string,
+      updates: Partial<Omit<Column, 'id'>>,
+    ) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? {
+                ...t,
+                columns: t.columns.map((c) =>
+                  c.id === columnId ? { ...c, ...updates } : c,
+                ),
+              }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
   return {
     diagram,
     createNewDiagram,
+    setDiagram: loadDiagram,
     addTable,
     removeTable,
     updateTable,
     addRelationship,
     removeRelationship,
     updateTablePosition,
+    addIndex,
+    removeIndex,
+    updateIndex,
     addUniqueConstraint,
     removeUniqueConstraint,
+    addColumn,
+    removeColumn,
+    updateColumn,
   };
 }

@@ -1,18 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDiagram } from './hooks/useDiagram';
 import { useConnection } from './hooks/useConnection';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import { ExportButton } from './components/ExportButton';
+import { ImportButton } from './components/ImportButton';
 import { DdlPreview } from './components/DdlPreview';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
 import { CreateRelationshipModal } from './components/CreateRelationshipModal';
 import { readSchema } from './connection/readSchemaApi';
-import type { Column, Table, UniqueConstraint } from './types/diagram';
-import type {
-  ConnectionConfig,
-  ConnectionResult,
-} from './types';
+import type { Column, Diagram, Table, UniqueConstraint } from './types/diagram';
+import type { ConnectionConfig, ConnectionResult } from './types';
 import type { ReadSchemaResponse } from './connection/readSchemaApi';
 
 const CANVAS_WIDTH = 1200;
@@ -23,11 +21,15 @@ export function App() {
   const {
     diagram,
     createNewDiagram,
+    setDiagram,
     addTable,
     addRelationship,
     addUniqueConstraint,
     updateTable,
     updateTablePosition,
+    addColumn,
+    removeColumn,
+    updateColumn,
   } = useDiagram();
 
   const {
@@ -45,6 +47,12 @@ export function App() {
   const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
   const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
+  const [importError, setImportErrorState] = useState<string | null>(null);
+
+  const handleImportError = useCallback((message: string) => {
+    setImportErrorState(message);
+  }, []);
+
   const [isDdlPreviewOpen, setIsDdlPreviewOpen] = useState(false);
   const [isImportingSchema, setIsImportingSchema] = useState(false);
   const [importSchemaError, setImportSchemaError] = useState<string | null>(null);
@@ -71,15 +79,20 @@ export function App() {
 
   const handleNewDiagram = () => {
     createNewDiagram();
+    setImportErrorState(null);
   };
 
-  const handleTablePositionUpdate = (
-    id: string,
-    x: number,
-    y: number,
-  ) => {
-    updateTablePosition(id, { x, y });
+  const handleImport = (importedDiagram: Diagram) => {
+    setDiagram(importedDiagram);
+    setImportErrorState(null);
   };
+
+  const handleTablePositionUpdate = useCallback(
+    (id: string, x: number, y: number) => {
+      updateTablePosition(id, { x, y });
+    },
+    [updateTablePosition],
+  );
 
   const handleAddTable = () => {
     setIsAddTableModalOpen(true);
@@ -98,6 +111,7 @@ export function App() {
       width: TABLE_DEFAULT_WIDTH,
       height: Math.max(120, 48 + table.columns.length * 26),
       columns: table.columns,
+      indexes: [],
     });
     const newTable = diagram.tables.find((t) => t.name === table.name);
     if (newTable) {
@@ -133,6 +147,31 @@ export function App() {
   ) => {
     updateTable(id, updates);
   };
+
+  const handleAddColumn = useCallback(
+    (tableId: string, column: Omit<Column, 'id'>) => {
+      addColumn(tableId, column);
+    },
+    [addColumn],
+  );
+
+  const handleRemoveColumn = useCallback(
+    (tableId: string, columnId: string) => {
+      removeColumn(tableId, columnId);
+    },
+    [removeColumn],
+  );
+
+  const handleUpdateColumn = useCallback(
+    (
+      tableId: string,
+      columnId: string,
+      updates: Partial<Omit<Column, 'id'>>,
+    ) => {
+      updateColumn(tableId, columnId, updates);
+    },
+    [updateColumn],
+  );
 
   const handleImportSchema = async () => {
     if (!config) return;
@@ -197,6 +236,7 @@ export function App() {
             New Diagram
           </button>
           <ExportButton diagram={diagram} />
+          <ImportButton onImport={handleImport} onError={handleImportError} />
           {isConnected && config && (
             <>
               <button
@@ -242,6 +282,19 @@ export function App() {
             </button>
           </div>
         )}
+        {importError && (
+          <div className="connection-status connection-status--error" role="alert" aria-live="polite">
+            {importError}
+            <button
+              type="button"
+              onClick={() => setImportErrorState(null)}
+              className="connection-status-dismiss"
+              aria-label="Dismiss import error"
+            >
+              ×
+            </button>
+          </div>
+        )}
         {importSchemaError && (
           <div className="connection-status connection-status--error" role="status" aria-live="polite">
             {importSchemaError}
@@ -276,6 +329,9 @@ export function App() {
             diagram={diagram}
             onTablePositionUpdate={handleTablePositionUpdate}
             onTableUpdate={handleTableUpdate}
+            onAddColumn={handleAddColumn}
+            onRemoveColumn={handleRemoveColumn}
+            onUpdateColumn={handleUpdateColumn}
             style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           />
           {isAddTableModalOpen && (

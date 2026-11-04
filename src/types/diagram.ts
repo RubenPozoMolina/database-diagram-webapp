@@ -7,6 +7,12 @@ export type Column = {
   defaultValue?: string;
 };
 
+export type Index = {
+  id: string;
+  name: string;
+  columnId: string;
+};
+
 export type Table = {
   id: string;
   name: string;
@@ -15,6 +21,7 @@ export type Table = {
   width: number;
   height: number;
   columns: Column[];
+  indexes: Index[];
 };
 
 export type UniqueConstraint = {
@@ -107,7 +114,34 @@ export function createTable(
     width,
     height,
     columns,
+    indexes: [],
   };
+}
+
+/**
+ * Creates an index associated with a column of a table.
+ *
+ * Used by STORY-007 define index: indexes track query performance
+ * considerations and are stored per table.
+ */
+export function createIndex(
+  id: string,
+  name: string,
+  columnId: string,
+): Index {
+  return {
+    id,
+    name,
+    columnId,
+  };
+}
+
+export function findIndexById(table: Table, indexId: string): Index | undefined {
+  return table.indexes.find((index) => index.id === indexId);
+}
+
+export function findColumnById(table: Table, columnId: string): Column | undefined {
+  return table.columns.find((column) => column.id === columnId);
 }
 
 export function findTableById(diagram: Diagram, tableId: string): Table | undefined {

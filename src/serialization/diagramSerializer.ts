@@ -6,11 +6,55 @@
  * exported payload contains only diagram data (tables, columns, types, keys,
  * constraints, indexes, relationships) and never database credentials, which
  * live in a separate connection model outside the diagram.
+ *
+ * Defense-in-depth: {@link stripCredentials} is applied to every export
+ * payload so that even if the diagram model is later extended to carry
+ * connection details, host, port, database, user and password can never
+ * reach the JSON export.
  */
 
 import type { Column, Diagram, Relationship, Table } from '../types/diagram';
 
 export const DIAGRAM_JSON_VERSION = '1.0.0';
+
+/**
+ * Database connection credential field names that must never appear in a
+ * JSON export payload. Kept in a separate connection model and never
+ * serialized with diagram data.
+ */
+export const CREDENTIAL_FIELDS = new Set([
+  'host',
+  'port',
+  'database',
+  'user',
+  'password',
+]);
+
+/**
+ * Recursively strips credential fields from a serialized object.
+ *
+ * Defense-in-depth guard applied to every export payload. Even if the
+ * in-memory diagram model is later extended to carry connection details,
+ * this ensures host, port, database, user and password never reach the
+ * JSON export. Arrays and plain objects are traversed recursively;
+ * primitives are returned unchanged.
+ */
+export function stripCredentials<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map(stripCredentials) as unknown as T;
+  }
+  if (value !== null && typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value)) {
+      if (CREDENTIAL_FIELDS.has(key.toLowerCase())) {
+        continue;
+      }
+      result[key] = stripCredentials(val);
+    }
+    return result as unknown as T;
+  }
+  return value;
+}
 
 export type ReferentialAction =
   | 'cascade'
@@ -130,7 +174,7 @@ function serializeRelationship(
  */
 export function serializeDiagram(diagram: Diagram): SerializedExport {
   const now = new Date().toISOString();
-  return {
+  const exportPayload: SerializedExport = {
     version: DIAGRAM_JSON_VERSION,
     diagram: {
       id: diagram.id,
@@ -143,4 +187,7 @@ export function serializeDiagram(diagram: Diagram): SerializedExport {
       updatedAt: now,
     },
   };
+  // Defense-in-depth: strip any credential fields that might have been
+  // added to the payload so they never reach the JSON export.
+  return stripCredentials(exportPayload);
 }

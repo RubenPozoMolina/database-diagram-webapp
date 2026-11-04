@@ -10,6 +10,9 @@ describe('DiagramCanvas', () => {
         diagram={createEmptyDiagram()}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     const message = screen.getByText(
@@ -30,12 +33,16 @@ describe('DiagramCanvas', () => {
       columns: [
         { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
       ],
+      indexes: [],
     });
     render(
       <DiagramCanvas
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();
@@ -52,12 +59,16 @@ describe('DiagramCanvas', () => {
       width: 220,
       height: 120,
       columns: [],
+      indexes: [],
     });
     render(
       <DiagramCanvas
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     expect(screen.queryByText(/Empty diagram canvas/i)).not.toBeInTheDocument();
@@ -74,6 +85,7 @@ describe('DiagramCanvas', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       },
       {
         id: 'table-2',
@@ -83,6 +95,7 @@ describe('DiagramCanvas', () => {
         width: 220,
         height: 120,
         columns: [],
+        indexes: [],
       },
     );
     diagram.relationships.push({
@@ -95,6 +108,9 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();

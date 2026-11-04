@@ -47,6 +47,7 @@ function makeTable(overrides: Partial<Table> = {}): Table {
     width: 240,
     height: 200,
     columns: [makeColumn()],
+    indexes: [],
     ...overrides,
   };
 }
