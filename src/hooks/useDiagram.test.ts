@@ -103,6 +103,52 @@ describe('useDiagram', () => {
     expect(result.current.diagram.relationships).toHaveLength(0);
   });
 
+  /* ---- TASK-023: delete elements ---- */
+
+  it('removes a relationship by id while keeping both tables', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [],
+        indexes: [],
+      });
+      result.current.addTable({
+        name: 'orders',
+        x: 300,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [],
+        indexes: [],
+      });
+    });
+    const userId = result.current.diagram.tables[0].id;
+    const orderId = result.current.diagram.tables[1].id;
+    act(() => {
+      result.current.addRelationship({
+        sourceTableId: userId,
+        targetTableId: orderId,
+      });
+    });
+    expect(result.current.diagram.relationships).toHaveLength(1);
+    const relationshipId = result.current.diagram.relationships[0].id;
+    act(() => {
+      result.current.removeRelationship(relationshipId);
+    });
+    expect(result.current.diagram.relationships).toHaveLength(0);
+    // Both tables remain on the diagram; only the relationship is removed.
+    expect(result.current.diagram.tables).toHaveLength(2);
+    expect(result.current.diagram.tables.map((t) => t.id)).toEqual([
+      userId,
+      orderId,
+    ]);
+  });
+
   it('creates a new empty diagram', () => {
     const { result } = renderHook(() => useDiagram('First'));
     act(() => {

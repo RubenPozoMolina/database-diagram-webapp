@@ -433,6 +433,28 @@ describe('TableNode', () => {
     expect(onRemoveColumn).toHaveBeenCalledWith('t1', 'c1');
   });
 
+  it('calls onDeleteTable with the table id when the Delete button is clicked', () => {
+    const onDeleteTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={onDeleteTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /Delete table users/i }),
+    );
+    expect(onDeleteTable).toHaveBeenCalledWith('t1');
+  });
+
   /* ---- STORY-007: index tests ---- */
 
   /* ---- STORY-004 / TASK-010: primary key badge tests ---- */
@@ -1178,6 +1200,7 @@ describe('TableNode', () => {
         onAddUniqueConstraint={vi.fn()}
         onRemoveUniqueConstraint={vi.fn()}
         onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -1200,6 +1223,7 @@ describe('TableNode', () => {
         onAddUniqueConstraint={vi.fn()}
         onRemoveUniqueConstraint={vi.fn()}
         onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -1225,6 +1249,7 @@ describe('TableNode', () => {
         onAddUniqueConstraint={vi.fn()}
         onRemoveUniqueConstraint={vi.fn()}
         onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -1247,6 +1272,7 @@ describe('TableNode', () => {
         onAddUniqueConstraint={vi.fn()}
         onRemoveUniqueConstraint={vi.fn()}
         onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
