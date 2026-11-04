@@ -1,0 +1,56 @@
+{
+  "id": "TASK-046",
+  "type": "task",
+  "title": "Unit tests for DDL generation and export",
+  "description": "Write automated unit tests to verify DDL generation produces correct SQL and no-drops safety validation works.",
+  "status": "to-do",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": "project-manager",
+  "parent": "STORY-014",
+  "acceptanceCriteria": [
+    "Unit tests verify CREATE TABLE generation",
+    "Unit tests verify key and constraint generation",
+    "Unit tests verify no DROP statements in generated DDL",
+    "Unit tests verify user confirmation flow",
+    "All tests pass"
+  ],
+  "dependencies": [
+    "TASK-043",
+    "TASK-044",
+    "TASK-045"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.3"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T02:56:25.128900+00:00",
+      "reason": "Planned for sprint 29",
+      "evidence": []
+    }
+  ],
+  "sprint": 29,
+  "requiresReview": true,
+  "updatedAt": "2026-11-04T03:30:00.000000+00:00",
+  "result": "passed",
+  "resultEvidence": [
+    "Frontend unit tests (node:20-alpine container, docker-test-runner skill): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && npx vitest run\" → 22 test files, 217 tests, 217 passed, 0 failed.",
+    "Backend unit tests (node:20-alpine container, docker-test-runner skill): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work/backend node:20-alpine sh -c \"npm ci --ignore-scripts && npx vitest run\" → 12 test files, 177 tests passed, 0 failed (17 integration tests skipped — require live PostgreSQL, not related to ticket acceptance criteria).",
+    "Acceptance Criterion 1 — CREATE TABLE generation: Covered by frontend src/ddl/ddlGenerator.test.ts ('produces CREATE TABLE statements for all tables') and backend backend/src/services/ddl-generator.test.ts ('produces CREATE TABLE statements for every table').",
+    "Acceptance Criterion 2 — Key and constraint generation: Covered by frontend ddlGenerator.test.ts ('includes inline PRIMARY KEY for single-column keys', 'produces FOREIGN KEY constraint from relationships') and backend ddl-generator.test.ts (inline PK, composite PK, FOREIGN KEY, UNIQUE constraints, CREATE INDEX).",
+    "Acceptance Criterion 3 — No DROP statements in generated DDL: Covered by frontend ddlGenerator.test.ts ('contains no DROP, TRUNCATE or DELETE statements'), backend ddl-generator.test.ts ('produces no DROP/TRUNCATE/DELETE statements'), backend ddl-safety.test.ts and ddl-safety-validator.test.ts (extensive DROP/TRUNCATE/DELETE rejection tests).",
+    "Acceptance Criterion 4 — User confirmation flow: Covered by frontend src/components/DdlPreview.test.tsx ('disables Execute DDL until confirmation checkbox is checked', 'does not call applyDDL without confirmation', 'calls applyDDL with confirm=true when user confirms', Cancel handler, null-connection guard).",
+    "Acceptance Criterion 5 — All tests pass: Verified — frontend 217/217 passed, backend 177/177 passed, 0 failures.",
+    "No source code or test files were modified; all tests were pre-existing and passing.",
+    "All tests executed inside Docker containers; nothing ran on the host. No --privileged, --network host, or Docker socket mounts used."
+  ]
+}
