@@ -458,7 +458,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         onUpdatePosition={vi.fn()}
@@ -482,7 +482,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         onUpdatePosition={vi.fn()}
@@ -562,8 +562,9 @@ describe('TableNode', () => {
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'test-index-uuid',
+          tableId: 't1',
           name: 'idx_email',
-          columnId: 'c2',
+          columnIds: ['c2'],
         }),
       ]),
     });
@@ -576,7 +577,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}
@@ -606,7 +607,7 @@ describe('TableNode', () => {
               makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
               makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
             ],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}
@@ -631,8 +632,9 @@ describe('TableNode', () => {
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'i1',
+          tableId: 't1',
           name: 'idx_user_id',
-          columnId: 'c1',
+          columnIds: ['c1'],
         }),
       ]),
     });
@@ -645,7 +647,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}

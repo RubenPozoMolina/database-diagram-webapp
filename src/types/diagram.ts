@@ -9,8 +9,9 @@ export type Column = {
 
 export type Index = {
   id: string;
+  tableId: string;
   name: string;
-  columnId: string;
+  columnIds: string[];
 };
 
 export type Table = {
@@ -119,20 +120,24 @@ export function createTable(
 }
 
 /**
- * Creates an index associated with a column of a table.
+ * Creates an index associated with a table, tracking which column(s) are
+ * indexed (supports composite indexes via an array of column IDs).
  *
  * Used by STORY-007 define index: indexes track query performance
- * considerations and are stored per table.
+ * considerations and are stored per table. The tableId explicitly
+ * associates the index with its owning table.
  */
 export function createIndex(
   id: string,
+  tableId: string,
   name: string,
-  columnId: string,
+  columnIds: string[],
 ): Index {
   return {
     id,
+    tableId,
     name,
-    columnId,
+    columnIds,
   };
 }
 

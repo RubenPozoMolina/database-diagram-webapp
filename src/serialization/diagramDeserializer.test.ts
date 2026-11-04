@@ -66,8 +66,9 @@ function buildDiagramWithContent(): Diagram {
     indexes: [
       {
         id: 'idx-users-email',
+        tableId: 'table-users',
         name: 'users_email_idx',
-        columnId: 'col-users-email',
+        columnIds: ['col-users-email'],
       },
     ],
   });
@@ -97,8 +98,9 @@ function buildDiagramWithContent(): Diagram {
     indexes: [
       {
         id: 'idx-orders-user-id',
+        tableId: 'table-orders',
         name: 'orders_user_id_idx',
-        columnId: 'col-orders-user-id',
+        columnIds: ['col-orders-user-id'],
       },
     ],
   });
@@ -207,7 +209,7 @@ describe('deserializeDiagram', () => {
     expect(table.indexes).toHaveLength(1);
     expect(table.indexes[0].id).toBe('idx-1');
     expect(table.indexes[0].name).toBe('users_id_idx');
-    expect(table.indexes[0].columnId).toBe('col-1');
+    expect(table.indexes[0].columnIds).toEqual(['col-1']);
   });
 
   it('restores multiple indexes on the same table', () => {
@@ -277,7 +279,7 @@ describe('deserializeDiagram', () => {
       'users_id_idx',
       'users_email_idx',
     ]);
-    expect(table.indexes.map((i) => i.columnId)).toEqual(['col-1', 'col-2']);
+    expect(table.indexes.map((i) => i.columnIds[0])).toEqual(['col-1', 'col-2']);
   });
 
   it('generates a synthetic name when serialized index name is null', () => {

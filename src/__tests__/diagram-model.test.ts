@@ -216,9 +216,9 @@ describe('Diagram data model (TASK-005)', () => {
       const diagram: Diagram = {
         ...createEmptyDiagram(),
         tables: [
-          { id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [] },
-          { id: 't2', name: 'orders', x: 0, y: 0, width: 220, height: 120, columns: [] },
-          { id: 't3', name: 'products', x: 0, y: 0, width: 220, height: 120, columns: [] },
+          { id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+          { id: 't2', name: 'orders', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+          { id: 't3', name: 'products', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
         ],
         relationships: [
           createRelationship('r1', 't1', 'c1', 't2', 'c2'),

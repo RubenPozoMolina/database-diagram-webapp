@@ -96,9 +96,15 @@ export function schemaToDiagram(response: ReadSchemaResponse): Diagram {
     const { table: tableNode, columnIdByName } = build;
 
     tableNode.indexes = table.indexes.map((index) => {
-      const columnId =
-        index.columns.length > 0 ? columnIdByName.get(index.columns[0]) : undefined;
-      return createIndex(crypto.randomUUID(), index.name, columnId ?? '');
+      const columnIds = index.columns
+        .map((name) => columnIdByName.get(name))
+        .filter((id): id is string => Boolean(id));
+      return createIndex(
+        crypto.randomUUID(),
+        tableNode.id,
+        index.name,
+        columnIds,
+      );
     });
 
     table.uniqueConstraints.forEach((uniqueConstraint) => {
