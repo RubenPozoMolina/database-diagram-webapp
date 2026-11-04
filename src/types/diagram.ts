@@ -2,9 +2,12 @@ export type Column = {
   id: string;
   name: string;
   dataType: string;
+  length?: number | null;
   nullable: boolean;
   primaryKey: boolean;
+  unique?: boolean;
   defaultValue?: string;
+  comment?: string | null;
 };
 
 export type Index = {
@@ -95,6 +98,9 @@ export function createColumn(
   nullable: boolean,
   defaultValue?: string,
   primaryKey = false,
+  length?: number | null,
+  unique = false,
+  comment?: string | null,
 ): Column {
   return {
     id,
@@ -103,6 +109,9 @@ export function createColumn(
     nullable,
     defaultValue,
     primaryKey,
+    ...(length !== undefined ? { length } : {}),
+    ...(unique !== undefined ? { unique } : {}),
+    ...(comment !== undefined ? { comment } : {}),
   };
 }
 

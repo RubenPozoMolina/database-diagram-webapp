@@ -323,8 +323,11 @@ export function TableNode({
     const newColumn: Omit<Column, 'id'> = {
       name: 'new_column',
       dataType: 'text',
+      length: null,
       nullable: true,
       primaryKey: false,
+      unique: false,
+      comment: null,
     };
     onAddColumn(table.id, newColumn);
   }, [table.id, onAddColumn]);

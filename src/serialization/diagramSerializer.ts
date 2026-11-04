@@ -132,12 +132,12 @@ function serializeColumn(column: Column): SerializedColumn {
     id: column.id,
     name: column.name,
     type: column.dataType,
-    length: null,
+    length: column.length ?? null,
     nullable: column.nullable,
     primaryKey: column.primaryKey,
-    unique: false,
+    unique: column.unique ?? false,
     defaultValue: column.defaultValue ?? null,
-    comment: null,
+    comment: column.comment ?? null,
   };
 }
 

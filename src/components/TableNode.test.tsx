@@ -400,8 +400,11 @@ describe('TableNode', () => {
     expect(onAddColumn).toHaveBeenCalledWith('t1', {
       name: 'new_column',
       dataType: 'text',
+      length: null,
       nullable: true,
       primaryKey: false,
+      unique: false,
+      comment: null,
     });
   });
 

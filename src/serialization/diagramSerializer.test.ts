@@ -129,6 +129,82 @@ describe('serializeDiagram', () => {
     expect(createdAtCol.defaultValue).toBe('CURRENT_TIMESTAMP');
   });
 
+  it('serializes column length for character-based types', () => {
+    const diagram = createEmptyDiagram('With Lengths');
+    diagram.tables.push({
+      id: 'table-users',
+      name: 'users',
+      x: 100,
+      y: 100,
+      width: 240,
+      height: 200,
+      columns: [
+        { id: 'col-users-id', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+        { id: 'col-users-email', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false, length: 255 },
+        { id: 'col-users-bio', name: 'bio', dataType: 'text', nullable: true, primaryKey: false, length: null },
+      ],
+      indexes: [],
+    });
+
+    const result = serializeDiagram(diagram);
+    const users = result.diagram.tables.find((t) => t.name === 'users')!;
+    const emailCol = users.columns.find((c) => c.name === 'email')!;
+    expect(emailCol.length).toBe(255);
+    const bioCol = users.columns.find((c) => c.name === 'bio')!;
+    expect(bioCol.length).toBeNull();
+    const idCol = users.columns.find((c) => c.name === 'id')!;
+    expect(idCol.length).toBeNull();
+  });
+
+  it('serializes column unique flag', () => {
+    const diagram = createEmptyDiagram('With Unique');
+    diagram.tables.push({
+      id: 'table-users',
+      name: 'users',
+      x: 100,
+      y: 100,
+      width: 240,
+      height: 200,
+      columns: [
+        { id: 'col-users-id', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+        { id: 'col-users-email', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false, unique: true },
+        { id: 'col-users-name', name: 'name', dataType: 'text', nullable: true, primaryKey: false, unique: false },
+      ],
+      indexes: [],
+    });
+
+    const result = serializeDiagram(diagram);
+    const users = result.diagram.tables.find((t) => t.name === 'users')!;
+    const emailCol = users.columns.find((c) => c.name === 'email')!;
+    expect(emailCol.unique).toBe(true);
+    const nameCol = users.columns.find((c) => c.name === 'name')!;
+    expect(nameCol.unique).toBe(false);
+  });
+
+  it('serializes column comment', () => {
+    const diagram = createEmptyDiagram('With Comments');
+    diagram.tables.push({
+      id: 'table-users',
+      name: 'users',
+      x: 100,
+      y: 100,
+      width: 240,
+      height: 200,
+      columns: [
+        { id: 'col-users-id', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+        { id: 'col-users-email', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false, comment: 'User email address' },
+        { id: 'col-users-name', name: 'name', dataType: 'text', nullable: true, primaryKey: false, comment: null },
+      ],
+    });
+
+    const result = serializeDiagram(diagram);
+    const users = result.diagram.tables.find((t) => t.name === 'users')!;
+    const emailCol = users.columns.find((c) => c.name === 'email')!;
+    expect(emailCol.comment).toBe('User email address');
+    const nameCol = users.columns.find((c) => c.name === 'name')!;
+    expect(nameCol.comment).toBeNull();
+  });
+
   it('serializes all relationships between tables', () => {
     const diagram = buildDiagram();
     const result = serializeDiagram(diagram);
