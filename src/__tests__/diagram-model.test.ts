@@ -30,6 +30,9 @@ import {
   type Relationship,
   type Table,
   validatePrimaryKeyUniqueness,
+  validateReferentialIntegrity,
+  type ReferentialAction,
+  type ReferentialIntegrityViolation,
 } from '../types/diagram';
 import { deserializeDiagram } from '../serialization/diagramDeserializer';
 import { serializeDiagram } from '../serialization/diagramSerializer';
@@ -208,6 +211,192 @@ describe('Diagram data model (TASK-005)', () => {
 
       expect(relationship.sourceColumnId).toBeUndefined();
       expect(relationship.targetColumnId).toBeUndefined();
+    });
+  });
+
+  describe('createRelationship with referential integrity (TASK-014)', () => {
+    it('creates a relationship with custom onDelete and onUpdate actions', () => {
+      const relationship = createRelationship(
+        'rel-1',
+        'table-1',
+        'col-2',
+        'table-2',
+        'col-1',
+        'cascade',
+        'set null',
+      );
+
+      expect(relationship.onDelete).toBe('cascade');
+      expect(relationship.onUpdate).toBe('set null');
+    });
+
+    it('defaults onDelete and onUpdate to "no action"', () => {
+      const relationship = createRelationship(
+        'rel-2',
+        'table-1',
+        undefined,
+        'table-2',
+        undefined,
+      );
+
+      expect(relationship.onDelete).toBe('no action');
+      expect(relationship.onUpdate).toBe('no action');
+    });
+  });
+
+  describe('validateReferentialIntegrity (TASK-014)', () => {
+    function makeValidDiagram(): Diagram {
+      return {
+        ...createEmptyDiagram(),
+        tables: [
+          {
+            id: 't1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 220,
+            height: 120,
+            columns: [
+              { id: 'c1', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+            ],
+            indexes: [],
+          },
+          {
+            id: 't2',
+            name: 'orders',
+            x: 0,
+            y: 0,
+            width: 220,
+            height: 120,
+            columns: [
+              { id: 'c2', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+              { id: 'c3', name: 'user_id', dataType: 'integer', nullable: false, primaryKey: false },
+            ],
+            indexes: [],
+          },
+        ],
+        relationships: [
+          createRelationship(
+            'r1',
+            't2',
+            'c3',
+            't1',
+            'c1',
+            'cascade',
+            'no action',
+          ),
+        ],
+      };
+    }
+
+    it('returns no violations for a valid foreign key relationship', () => {
+      const diagram = makeValidDiagram();
+      const violations = validateReferentialIntegrity(diagram);
+      expect(violations).toEqual([]);
+    });
+
+    it('reports a violation when the source table is unknown', () => {
+      const diagram = {
+        ...createEmptyDiagram(),
+        tables: [],
+        relationships: [
+          createRelationship('r1', 'missing-table', undefined, 't2', undefined),
+        ],
+      };
+
+      const violations = validateReferentialIntegrity(diagram);
+      expect(violations).toHaveLength(1);
+      expect(violations[0].relationshipId).toBe('r1');
+      expect(violations[0].message).toContain('unknown source table');
+    });
+
+    it('reports a violation when the target table is unknown', () => {
+      const diagram = {
+        ...createEmptyDiagram(),
+        tables: [{ id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] }],
+        relationships: [
+          createRelationship('r1', 't1', undefined, 'missing-table', undefined),
+        ],
+      };
+
+      const violations = validateReferentialIntegrity(diagram);
+      expect(violations).toHaveLength(1);
+      expect(violations[0].message).toContain('unknown target table');
+    });
+
+    it('reports a violation when the source column does not exist', () => {
+      const diagram = {
+        ...createEmptyDiagram(),
+        tables: [
+          { id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+          { id: 't2', name: 'orders', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+        ],
+        relationships: [
+          createRelationship('r1', 't1', 'missing-col', 't2', undefined),
+        ],
+      };
+
+      const violations = validateReferentialIntegrity(diagram);
+      expect(violations).toHaveLength(1);
+      expect(violations[0].message).toContain('unknown source column');
+    });
+
+    it('reports a violation when the target column does not exist', () => {
+      const diagram = {
+        ...createEmptyDiagram(),
+        tables: [
+          { id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+          { id: 't2', name: 'orders', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+        ],
+        relationships: [
+          createRelationship('r1', 't1', undefined, 't2', 'missing-col'),
+        ],
+      };
+
+      const violations = validateReferentialIntegrity(diagram);
+      expect(violations).toHaveLength(1);
+      expect(violations[0].message).toContain('unknown target column');
+    });
+
+    it('reports a violation when the target column is not a primary key', () => {
+      const diagram = {
+        ...createEmptyDiagram(),
+        tables: [
+          {
+            id: 't1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 220,
+            height: 120,
+            columns: [
+              { id: 'c1', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+            ],
+            indexes: [],
+          },
+          {
+            id: 't2',
+            name: 'orders',
+            x: 0,
+            y: 0,
+            width: 220,
+            height: 120,
+            columns: [
+              { id: 'c2', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+              { id: 'c3', name: 'user_id', dataType: 'integer', nullable: false, primaryKey: false },
+            ],
+            indexes: [],
+          },
+        ],
+        relationships: [
+          // user_id is NOT a primary key -> referential integrity violation
+          createRelationship('r1', 't2', 'c3', 't2', 'c3'),
+        ],
+      };
+
+      const violations = validateReferentialIntegrity(diagram);
+      expect(violations).toHaveLength(1);
+      expect(violations[0].message).toContain('not part of the primary key');
     });
   });
 

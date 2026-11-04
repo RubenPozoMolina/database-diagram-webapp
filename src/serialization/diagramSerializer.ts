@@ -13,7 +13,14 @@
  * reach the JSON export.
  */
 
-import type { Column, Diagram, Index, Relationship, Table } from '../types/diagram';
+import type {
+  Column,
+  Diagram,
+  Index,
+  Relationship,
+  ReferentialAction,
+  Table,
+} from '../types/diagram';
 
 export const DIAGRAM_JSON_VERSION = '1.0.0';
 
@@ -55,13 +62,6 @@ export function stripCredentials<T>(value: T): T {
   }
   return value;
 }
-
-export type ReferentialAction =
-  | 'cascade'
-  | 'set null'
-  | 'set default'
-  | 'restrict'
-  | 'no action';
 
 export interface SerializedColumn {
   id: string;
@@ -161,8 +161,8 @@ function serializeRelationship(
     sourceColumnId: relationship.sourceColumnId ?? null,
     targetTableId: relationship.targetTableId,
     targetColumnId: relationship.targetColumnId ?? null,
-    onDelete: 'no action',
-    onUpdate: 'no action',
+    onDelete: relationship.onDelete ?? 'no action',
+    onUpdate: relationship.onUpdate ?? 'no action',
   };
 }
 

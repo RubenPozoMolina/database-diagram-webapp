@@ -46,6 +46,8 @@ export type DdlRelationship = {
   sourceColumnId: string;
   targetTableId: string;
   targetColumnId: string;
+  onDelete: string;
+  onUpdate: string;
 };
 
 export type DdlUniqueConstraint = {
@@ -241,6 +243,8 @@ function buildForeignKey(
   const constraintName = quoteIdentifier(
     `fk_${sourceTable.name}_${sourceColumn.name}`,
   );
+  const onDeleteSql = rel.onDelete === 'no action' ? 'NO ACTION' : rel.onDelete.toUpperCase();
+  const onUpdateSql = rel.onUpdate === 'no action' ? 'NO ACTION' : rel.onUpdate.toUpperCase();
   return (
     `ALTER TABLE ${quoteIdentifier(sourceTable.name)} ` +
     `ADD CONSTRAINT ${constraintName} ` +
@@ -248,7 +252,7 @@ function buildForeignKey(
     `REFERENCES ${quoteIdentifier(targetTable.name)}(${quoteIdentifier(
       targetColumn.name,
     )}) ` +
-    `ON DELETE NO ACTION ON UPDATE NO ACTION`
+    `ON DELETE ${onDeleteSql} ON UPDATE ${onUpdateSql}`
   );
 }
 
@@ -333,6 +337,8 @@ function convertDiagram(diagram: Diagram): DdlDiagram {
       sourceColumnId: rel.sourceColumnId ?? '',
       targetTableId: rel.targetTableId,
       targetColumnId: rel.targetColumnId ?? '',
+      onDelete: rel.onDelete ?? 'no action',
+      onUpdate: rel.onUpdate ?? 'no action',
     })),
     uniqueConstraints: [],
     indexes: [],

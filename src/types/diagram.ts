@@ -32,12 +32,26 @@ export type UniqueConstraint = {
   name?: string;
 };
 
+/**
+ * Referential action applied by the database when the referenced (target)
+ * row is deleted or updated. Matches PostgreSQL's ON DELETE / ON UPDATE
+ * options and the diagram serialization schema.
+ */
+export type ReferentialAction =
+  | 'cascade'
+  | 'set null'
+  | 'set default'
+  | 'restrict'
+  | 'no action';
+
 export type Relationship = {
   id: string;
   sourceTableId: string;
   sourceColumnId?: string;
   targetTableId: string;
   targetColumnId?: string;
+  onDelete?: ReferentialAction;
+  onUpdate?: ReferentialAction;
 };
 
 export type Diagram = {
@@ -186,7 +200,9 @@ export function createUniqueConstraint(
  *
  * Used by STORY-005 / TASK-014: a relationship records the source table
  * (foreign key side) and target table (referenced side), plus the optional
- * column-to-column mapping that defines which column references which.
+ * column-to-column mapping that defines which column references which, and
+ * the referential integrity actions (onDelete / onUpdate) that the database
+ * should enforce when the referenced row changes.
  */
 export function createRelationship(
   id: string,
@@ -194,6 +210,8 @@ export function createRelationship(
   sourceColumnId: string | undefined,
   targetTableId: string,
   targetColumnId: string | undefined,
+  onDelete: ReferentialAction = 'no action',
+  onUpdate: ReferentialAction = 'no action',
 ): Relationship {
   return {
     id,
@@ -201,6 +219,8 @@ export function createRelationship(
     sourceColumnId,
     targetTableId,
     targetColumnId,
+    onDelete,
+    onUpdate,
   };
 }
 
@@ -214,6 +234,100 @@ export function findRelationshipsByTable(
   return diagram.relationships.filter(
     (r) => r.sourceTableId === tableId || r.targetTableId === tableId,
   );
+}
+
+/**
+ * Referential integrity violation detected on a relationship.
+ */
+export interface ReferentialIntegrityViolation {
+  relationshipId: string;
+  sourceTableId: string;
+  targetTableId: string;
+  message: string;
+}
+
+/**
+ * Validates referential integrity for all relationships in a diagram.
+ *
+ * Checks that every relationship:
+ *   * references an existing source table,
+ *   * references an existing target table,
+ *   * references an existing source column (when sourceColumnId is set),
+ *   * references an existing target column (when targetColumnId is set),
+ *   * references a target column that is part of the target table's primary
+ *     key (referential integrity requires the referenced column(s) to be
+ *     unique).
+ *
+ * Returns the list of violations so callers can report or repair them.
+ *
+ * Used by TASK-014 (AC3): "Referential integrity constraints are tracked".
+ */
+export function validateReferentialIntegrity(
+  diagram: Diagram,
+): ReferentialIntegrityViolation[] {
+  const violations: ReferentialIntegrityViolation[] = [];
+
+  for (const rel of diagram.relationships) {
+    const sourceTable = findTableById(diagram, rel.sourceTableId);
+    const targetTable = findTableById(diagram, rel.targetTableId);
+
+    if (!sourceTable) {
+      violations.push({
+        relationshipId: rel.id,
+        sourceTableId: rel.sourceTableId,
+        targetTableId: rel.targetTableId,
+        message: `Relationship ${rel.id} references an unknown source table ${rel.sourceTableId}.`,
+      });
+      continue;
+    }
+
+    if (!targetTable) {
+      violations.push({
+        relationshipId: rel.id,
+        sourceTableId: rel.sourceTableId,
+        targetTableId: rel.targetTableId,
+        message: `Relationship ${rel.id} references an unknown target table ${rel.targetTableId}.`,
+      });
+      continue;
+    }
+
+    if (rel.sourceColumnId !== undefined) {
+      const sourceColumn = findColumnById(sourceTable, rel.sourceColumnId);
+      if (!sourceColumn) {
+        violations.push({
+          relationshipId: rel.id,
+          sourceTableId: rel.sourceTableId,
+          targetTableId: rel.targetTableId,
+          message: `Relationship ${rel.id} references an unknown source column ${rel.sourceColumnId} on table ${sourceTable.name}.`,
+        });
+      }
+    }
+
+    if (rel.targetColumnId !== undefined) {
+      const targetColumn = findColumnById(targetTable, rel.targetColumnId);
+      if (!targetColumn) {
+        violations.push({
+          relationshipId: rel.id,
+          sourceTableId: rel.sourceTableId,
+          targetTableId: rel.targetTableId,
+          message: `Relationship ${rel.id} references an unknown target column ${rel.targetColumnId} on table ${targetTable.name}.`,
+        });
+        continue;
+      }
+      // Referential integrity: the referenced column must be part of the
+      // target table's primary key (a unique key).
+      if (!targetColumn.primaryKey) {
+        violations.push({
+          relationshipId: rel.id,
+          sourceTableId: rel.sourceTableId,
+          targetTableId: rel.targetTableId,
+          message: `Relationship ${rel.id} targets column ${targetColumn.name} on table ${targetTable.name} which is not part of the primary key.`,
+        });
+      }
+    }
+  }
+
+  return violations;
 }
 
 /**

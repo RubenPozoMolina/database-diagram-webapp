@@ -97,6 +97,14 @@ function deserializeRelationship(
       relationship.targetColumnId !== undefined
         ? relationship.targetColumnId
         : undefined,
+    onDelete:
+      relationship.onDelete !== null && relationship.onDelete !== undefined
+        ? relationship.onDelete
+        : 'no action',
+    onUpdate:
+      relationship.onUpdate !== null && relationship.onUpdate !== undefined
+        ? relationship.onUpdate
+        : 'no action',
   };
 }
 

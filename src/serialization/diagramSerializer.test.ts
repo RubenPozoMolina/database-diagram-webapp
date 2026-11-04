@@ -142,6 +142,17 @@ describe('serializeDiagram', () => {
     expect(rel.onUpdate).toBe('no action');
   });
 
+  it('serializes custom referential actions from the model', () => {
+    const diagram = buildDiagram();
+    diagram.relationships[0].onDelete = 'cascade';
+    diagram.relationships[0].onUpdate = 'set null';
+
+    const result = serializeDiagram(diagram);
+    const rel = result.diagram.relationships[0];
+    expect(rel.onDelete).toBe('cascade');
+    expect(rel.onUpdate).toBe('set null');
+  });
+
   it('serializes indexes from all tables', () => {
     const diagram = createEmptyDiagram('With Indexes');
     diagram.tables.push({

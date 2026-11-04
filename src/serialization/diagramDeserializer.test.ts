@@ -110,6 +110,8 @@ function buildDiagramWithContent(): Diagram {
     sourceColumnId: 'col-orders-user-id',
     targetTableId: 'table-users',
     targetColumnId: 'col-users-id',
+    onDelete: 'cascade',
+    onUpdate: 'no action',
   });
   return diagram;
 }
