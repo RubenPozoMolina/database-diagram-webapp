@@ -10,6 +10,8 @@ describe('DiagramCanvas', () => {
         diagram={createEmptyDiagram()}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
@@ -43,6 +45,8 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
@@ -72,6 +76,8 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
@@ -117,6 +123,8 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
@@ -171,6 +179,8 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
@@ -233,6 +243,8 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}
@@ -295,6 +307,8 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
         onAddColumn={() => {}}
         onRemoveColumn={() => {}}
         onUpdateColumn={() => {}}

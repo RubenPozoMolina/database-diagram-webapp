@@ -28,6 +28,8 @@ export function App() {
     addUniqueConstraint,
     updateTable,
     updateTablePosition,
+    removeTable,
+    removeRelationship,
     addColumn,
     removeColumn,
     updateColumn,
@@ -166,6 +168,17 @@ export function App() {
   ) => {
     updateTable(id, updates);
   };
+
+  const handleDeleteTable = useCallback((tableId: string) => {
+    removeTable(tableId);
+  }, [removeTable]);
+
+  const handleDeleteRelationship = useCallback(
+    (relationshipId: string) => {
+      removeRelationship(relationshipId);
+    },
+    [removeRelationship],
+  );
 
   const handleAddColumn = useCallback(
     (tableId: string, column: Omit<Column, 'id'>) => {
@@ -413,6 +426,8 @@ export function App() {
             onTablePositionUpdate={handleTablePositionUpdate}
             onColumnPositionUpdate={handleColumnPositionUpdate}
             onTableUpdate={handleTableUpdate}
+            onDeleteTable={handleDeleteTable}
+            onDeleteRelationship={handleDeleteRelationship}
             onAddColumn={handleAddColumn}
             onRemoveColumn={handleRemoveColumn}
             onUpdateColumn={handleUpdateColumn}

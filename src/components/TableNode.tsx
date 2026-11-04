@@ -1,8 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import type { Column, Table, UniqueConstraint } from '../types/diagram';
 
 /* Common SQL data types offered when editing a column inline. */
 const DATA_TYPES = ['integer', 'varchar', 'text', 'boolean', 'date', 'timestamp', 'decimal'];
+
+// Minimum table size enforced while resizing.
+const MIN_TABLE_WIDTH = 200;
+const MIN_TABLE_HEIGHT = 100;
 
 interface TableNodeProps {
   table: Table;
@@ -13,6 +17,7 @@ interface TableNodeProps {
     columnPositions: Map<string, { x: number; y: number }>,
   ) => void;
   onUpdateTable: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
+  onDeleteTable: (tableId: string) => void;
   onAddColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
   onRemoveColumn: (tableId: string, columnId: string) => void;
   onUpdateColumn: (
@@ -38,6 +43,7 @@ export function TableNode({
   onUpdatePosition,
   onColumnPositionUpdate,
   onUpdateTable,
+  onDeleteTable,
   onAddColumn,
   onRemoveColumn,
   onUpdateColumn,
@@ -58,6 +64,20 @@ export function TableNode({
   const [editingConstraint, setEditingConstraint] = useState<string | null>(null);
   const [newConstraintName, setNewConstraintName] = useState('');
   const [newConstraintColumnIds, setNewConstraintColumnIds] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const dragStartRef = useRef<{
+    x: number;
+    y: number;
+    clientX: number;
+    clientY: number;
+  } | null>(null);
+  const resizeStartRef = useRef<{
+    width: number;
+    height: number;
+    clientX: number;
+    clientY: number;
+  } | null>(null);
 
   const getColumnRef = React.useCallback(
     (columnId: string): React.RefObject<HTMLDivElement> => {
@@ -68,6 +88,99 @@ export function TableNode({
     },
     [],
   );
+
+  /* ---- Drag to move ---- */
+  const handleDragStart = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      // Only left-click initiates a drag; ignore double-clicks (name editing).
+      if (event.button !== 0 || event.detail !== 1) return;
+      event.preventDefault();
+      setIsDragging(true);
+      dragStartRef.current = {
+        x: table.x,
+        y: table.y,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+    },
+    [table.x, table.y],
+  );
+
+  const handleDragMove = useCallback(
+    (event: PointerEvent) => {
+      if (!dragStartRef.current) return;
+      const dx = event.clientX - dragStartRef.current.clientX;
+      const dy = event.clientY - dragStartRef.current.clientY;
+      onUpdatePosition(
+        table.id,
+        dragStartRef.current.x + dx,
+        dragStartRef.current.y + dy,
+      );
+    },
+    [table.id, onUpdatePosition],
+  );
+
+  const handleDragEnd = useCallback(() => {
+    dragStartRef.current = null;
+    setIsDragging(false);
+  }, []);
+
+  /* ---- Resize ---- */
+  const handleResizeStart = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation(); // do not trigger table drag
+      setIsResizing(true);
+      resizeStartRef.current = {
+        width: table.width,
+        height: table.height,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+    },
+    [table.width, table.height],
+  );
+
+  const handleResizeMove = useCallback(
+    (event: PointerEvent) => {
+      if (!resizeStartRef.current) return;
+      const dx = event.clientX - resizeStartRef.current.clientX;
+      const dy = event.clientY - resizeStartRef.current.clientY;
+      const newWidth = Math.max(
+        MIN_TABLE_WIDTH,
+        resizeStartRef.current.width + dx,
+      );
+      const newHeight = Math.max(
+        MIN_TABLE_HEIGHT,
+        resizeStartRef.current.height + dy,
+      );
+      onUpdateTable(table.id, { width: newWidth, height: newHeight });
+    },
+    [table.id, onUpdateTable],
+  );
+
+  const handleResizeEnd = useCallback(() => {
+    resizeStartRef.current = null;
+    setIsResizing(false);
+  }, []);
+
+  /* ---- Delete ---- */
+  const handleDeleteTable = useCallback(() => {
+    onDeleteTable(table.id);
+  }, [table.id, onDeleteTable]);
+
+  React.useEffect(() => {
+    window.addEventListener('pointermove', handleDragMove);
+    window.addEventListener('pointerup', handleDragEnd);
+    window.addEventListener('pointermove', handleResizeMove);
+    window.addEventListener('pointerup', handleResizeEnd);
+    return () => {
+      window.removeEventListener('pointermove', handleDragMove);
+      window.removeEventListener('pointerup', handleDragEnd);
+      window.removeEventListener('pointermove', handleResizeMove);
+      window.removeEventListener('pointerup', handleResizeEnd);
+    };
+  }, [handleDragMove, handleDragEnd, handleResizeMove, handleResizeEnd]);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -272,28 +385,48 @@ export function TableNode({
       role="region"
       aria-label={`Table ${table.name}`}
     >
-      <div className="table-header" onDoubleClick={() => setEditingName(true)}>
-        {editingName ? (
-          <input
-            className="table-name-input"
-            autoFocus
-            value={nameInput}
-            onChange={(event) => setNameInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                saveName();
-              }
-              if (event.key === 'Escape') {
-                setNameInput(table.name);
-                setEditingName(false);
-              }
-            }}
-            onBlur={saveName}
-          />
-        ) : (
-          <span className="table-name">{table.name}</span>
-        )}
+      <div
+        className="table-header"
+        onDoubleClick={() => setEditingName(true)}
+        onPointerDown={handleDragStart}
+        style={{
+          cursor: isDragging ? 'grabbing' : 'grab',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {editingName ? (
+            <input
+              className="table-name-input"
+              autoFocus
+              value={nameInput}
+              onChange={(event) => setNameInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  saveName();
+                }
+                if (event.key === 'Escape') {
+                  setNameInput(table.name);
+                  setEditingName(false);
+                }
+              }}
+              onBlur={saveName}
+            />
+          ) : (
+            <span className="table-name">{table.name}</span>
+          )}
+        </div>
+        <button
+          type="button"
+          className="delete-table"
+          onClick={handleDeleteTable}
+          aria-label={`Delete table ${table.name}`}
+        >
+          Delete
+        </button>
       </div>
       <div className="table-columns">
         {table.columns.map((column) => (
@@ -644,6 +777,15 @@ export function TableNode({
           })}
         </div>
       )}
+
+      <div
+        className="resize-handle"
+        onPointerDown={handleResizeStart}
+        aria-label="Resize table"
+        style={{
+          cursor: isResizing ? 'nwse-resize' : 'nwse-resize',
+        }}
+      />
     </div>
   );
 }

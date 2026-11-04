@@ -117,6 +117,57 @@ body {
   user-select: none;
 }
 
+/* Drag handle: grab cursor on the table header. */
+.table-header {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-header:active,
+.table-header.dragging {
+  cursor: grabbing;
+}
+
+/* Resize handle at the bottom-right corner of a table node. */
+.resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: #cbd5e1;
+  cursor: nwse-resize;
+  border-bottom-right-radius: var(--radius);
+}
+
+.resize-handle:hover {
+  background: #94a3b8;
+}
+
+/* Delete table button in the header. */
+.delete-table {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.delete-table:hover {
+  background: #fee2e2;
+}
+
+.delete-table:focus-visible {
+  outline: 2px solid #991b1b;
+  outline-offset: 2px;
+}
+
 .table-node:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
