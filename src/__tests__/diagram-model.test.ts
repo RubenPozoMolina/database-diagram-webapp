@@ -22,6 +22,8 @@ import {
   findRelationshipById,
   findRelationshipsByTable,
   findTableById,
+  findUniqueConstraintsByTable,
+  createUniqueConstraint,
   hasPrimaryKey,
   setPrimaryKeyColumn,
   togglePrimaryKeyColumn,
@@ -313,6 +315,84 @@ describe('Diagram data model (TASK-005)', () => {
       expect(table.columns[0].dataType).toBe('integer');
       expect(table.columns[1].name).toBe('name');
       expect(table.columns[1].dataType).toBe('varchar');
+    });
+  });
+
+  describe('createUniqueConstraint factory (STORY-006 / TASK-017)', () => {
+    it('creates a unique constraint tracking a single column', () => {
+      const constraint = createUniqueConstraint(
+        'uc-1',
+        'table-1',
+        ['col-1'],
+        'users_email_key',
+      );
+
+      expect(constraint.id).toBe('uc-1');
+      expect(constraint.tableId).toBe('table-1');
+      expect(constraint.columnIds).toEqual(['col-1']);
+      expect(constraint.name).toBe('users_email_key');
+    });
+
+    it('creates a composite unique constraint tracking multiple columns', () => {
+      const constraint = createUniqueConstraint(
+        'uc-2',
+        'table-1',
+        ['col-1', 'col-2'],
+      );
+
+      expect(constraint.columnIds).toHaveLength(2);
+      expect(constraint.columnIds).toEqual(['col-1', 'col-2']);
+      expect(constraint.name).toBeUndefined();
+    });
+
+    it('does not include the name property when it is undefined', () => {
+      const constraint = createUniqueConstraint('uc-3', 'table-1', ['col-1']);
+
+      expect('name' in constraint).toBe(false);
+    });
+  });
+
+  describe('findUniqueConstraintsByTable', () => {
+    it('returns all unique constraints defined on a given table', () => {
+      const diagram: Diagram = {
+        ...createEmptyDiagram(),
+        tables: [
+          { id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+          { id: 't2', name: 'orders', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+        ],
+        uniqueConstraints: [
+          createUniqueConstraint('uc-1', 't1', ['col-1'], 'users_email_key'),
+          createUniqueConstraint('uc-2', 't2', ['col-3'], 'orders_total_key'),
+          createUniqueConstraint('uc-3', 't1', ['col-2', 'col-4']),
+        ],
+      };
+
+      const t1Constraints = findUniqueConstraintsByTable(diagram, 't1');
+      expect(t1Constraints).toHaveLength(2);
+      expect(t1Constraints.map((c) => c.id)).toEqual(['uc-1', 'uc-3']);
+
+      const t2Constraints = findUniqueConstraintsByTable(diagram, 't2');
+      expect(t2Constraints).toHaveLength(1);
+      expect(t2Constraints[0].id).toBe('uc-2');
+
+      expect(findUniqueConstraintsByTable(diagram, 'missing')).toHaveLength(0);
+    });
+
+    it('only returns constraints whose tableId matches exactly', () => {
+      const diagram: Diagram = {
+        ...createEmptyDiagram(),
+        tables: [
+          { id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+          { id: 't10', name: 'users_archive', x: 0, y: 0, width: 220, height: 120, columns: [], indexes: [] },
+        ],
+        uniqueConstraints: [
+          createUniqueConstraint('uc-1', 't1', ['col-1']),
+          createUniqueConstraint('uc-2', 't10', ['col-2']),
+        ],
+      };
+
+      expect(findUniqueConstraintsByTable(diagram, 't1')).toHaveLength(1);
+      expect(findUniqueConstraintsByTable(diagram, 't10')).toHaveLength(1);
     });
   });
 

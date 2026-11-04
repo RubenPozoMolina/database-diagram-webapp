@@ -191,6 +191,33 @@ describe('serializeDiagram', () => {
     expect(ordersIdx!.columnIds).toEqual(['col-orders-user-id']);
   });
 
+  it('serializes unique constraints from the diagram', () => {
+    const diagram = createEmptyDiagram('With Constraints');
+    diagram.uniqueConstraints.push(
+      { id: 'uc-1', tableId: 'table-users', columnIds: ['col-users-email'], name: 'users_email_key' },
+      { id: 'uc-2', tableId: 'table-orders', columnIds: ['col-orders-user-id', 'col-orders-total'] },
+    );
+
+    const result = serializeDiagram(diagram);
+    expect(result.diagram.uniqueConstraints).toHaveLength(2);
+
+    const usersConstraint = result.diagram.uniqueConstraints.find(
+      (c) => c.id === 'uc-1',
+    );
+    expect(usersConstraint).toBeDefined();
+    expect(usersConstraint!.tableId).toBe('table-users');
+    expect(usersConstraint!.columnIds).toEqual(['col-users-email']);
+    expect(usersConstraint!.name).toBe('users_email_key');
+
+    const ordersConstraint = result.diagram.uniqueConstraints.find(
+      (c) => c.id === 'uc-2',
+    );
+    expect(ordersConstraint).toBeDefined();
+    expect(ordersConstraint!.tableId).toBe('table-orders');
+    expect(ordersConstraint!.columnIds).toEqual(['col-orders-user-id', 'col-orders-total']);
+    expect(ordersConstraint!.name).toBeNull();
+  });
+
   it('includes empty constraints and indexes arrays', () => {
     const result = serializeDiagram(createEmptyDiagram());
     expect(result.diagram.uniqueConstraints).toEqual([]);

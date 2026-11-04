@@ -13,7 +13,7 @@
  * reach the JSON export.
  */
 
-import type { Column, Diagram, Index, Relationship, Table } from '../types/diagram';
+import type { Column, Diagram, Index, Relationship, Table, UniqueConstraint } from '../types/diagram';
 
 export const DIAGRAM_JSON_VERSION = '1.0.0';
 
@@ -185,6 +185,21 @@ function serializeIndex(index: Index, tableId: string): SerializedIndex {
 }
 
 /**
+ * Serialize a single in-memory {@link UniqueConstraint} into a
+ * {@link SerializedUniqueConstraint}. The owning table's ID is carried so the
+ * constraint can be redistributed to the correct table on deserialization,
+ * and the column ID array supports composite (multi-column) constraints.
+ */
+function serializeUniqueConstraint(constraint: UniqueConstraint): SerializedUniqueConstraint {
+  return {
+    id: constraint.id,
+    tableId: constraint.tableId,
+    columnIds: constraint.columnIds,
+    name: constraint.name ?? null,
+  };
+}
+
+/**
  * Serialize a diagram into the JSON export payload. The returned object is
  * JSON.stringify-safe and conforms to the diagram serialization schema. It
  * contains no database credentials (host, port, database, user, password) by
@@ -206,7 +221,7 @@ export function serializeDiagram(diagram: Diagram): SerializedExport {
       name: diagram.name,
       tables: diagram.tables.map(serializeTable),
       relationships: diagram.relationships.map(serializeRelationship),
-      uniqueConstraints: [],
+      uniqueConstraints: diagram.uniqueConstraints.map(serializeUniqueConstraint),
       indexes,
       createdAt: now,
       updatedAt: now,
