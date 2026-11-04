@@ -333,6 +333,90 @@ describe('useConnection', () => {
     });
   });
 
+  describe('credentials are cleared on session end (TASK-048)', () => {
+    it('clears credentials when beforeunload fires (page refresh)', async () => {
+      setFetchResponse(
+        new Response(JSON.stringify({ message: 'Connected' }), {
+          status: 200,
+          statusText: 'OK',
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const { result } = renderHook(() => useConnection());
+
+      await act(async () => {
+        await result.current.connect(config);
+      });
+      expect(result.current.status).toBe('connected');
+      expect(result.current.config).toEqual(config);
+
+      act(() => {
+        window.dispatchEvent(new Event('beforeunload'));
+      });
+
+      expect(result.current.status).toBe('disconnected');
+      expect(result.current.isConnected).toBe(false);
+      expect(result.current.config).toBeNull();
+      expect(result.current.error).toBeNull();
+      expect(result.current.message).toBeNull();
+    });
+
+    it('clears credentials when pagehide fires (page close / navigation away)', async () => {
+      setFetchResponse(
+        new Response(JSON.stringify({ message: 'Connected' }), {
+          status: 200,
+          statusText: 'OK',
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const { result } = renderHook(() => useConnection());
+
+      await act(async () => {
+        await result.current.connect(config);
+      });
+      expect(result.current.status).toBe('connected');
+      expect(result.current.config).toEqual(config);
+
+      act(() => {
+        window.dispatchEvent(new Event('pagehide'));
+      });
+
+      expect(result.current.status).toBe('disconnected');
+      expect(result.current.isConnected).toBe(false);
+      expect(result.current.config).toBeNull();
+    });
+
+    it('requires a new connection after session end', async () => {
+      setFetchResponse(
+        new Response(JSON.stringify({ message: 'Connected' }), {
+          status: 200,
+          statusText: 'OK',
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const { result } = renderHook(() => useConnection());
+
+      await act(async () => {
+        await result.current.connect(config);
+      });
+      expect(result.current.isConnected).toBe(true);
+      expect(result.current.config).toEqual(config);
+
+      act(() => {
+        window.dispatchEvent(new Event('beforeunload'));
+      });
+
+      // After session end the connection is gone and credentials are not
+      // recoverable: a new connection is required.
+      expect(result.current.isConnected).toBe(false);
+      expect(result.current.config).toBeNull();
+      expect(result.current.status).toBe('disconnected');
+    });
+  });
+
   describe('EMPTY_CONFIG export', () => {
     it('provides an empty connection config with default port', () => {
       expect(EMPTY_CONFIG).toEqual({
