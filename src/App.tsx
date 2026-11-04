@@ -31,6 +31,9 @@ export function App() {
     addColumn,
     removeColumn,
     updateColumn,
+    addUniqueConstraint,
+    removeUniqueConstraint,
+    updateUniqueConstraint,
   } = useDiagram();
 
   const {
@@ -174,6 +177,27 @@ export function App() {
       updateColumn(tableId, columnId, updates);
     },
     [updateColumn],
+  );
+
+  const handleAddUniqueConstraint = useCallback(
+    (tableId: string, columnIds: string[], name?: string) => {
+      addUniqueConstraint(tableId, columnIds, name);
+    },
+    [addUniqueConstraint],
+  );
+
+  const handleRemoveUniqueConstraint = useCallback(
+    (constraintId: string) => {
+      removeUniqueConstraint(constraintId);
+    },
+    [removeUniqueConstraint],
+  );
+
+  const handleUpdateUniqueConstraint = useCallback(
+    (constraintId: string, updates: Partial<Omit<UniqueConstraint, 'id'>>) => {
+      updateUniqueConstraint(constraintId, updates);
+    },
+    [updateUniqueConstraint],
   );
 
   const handleImportSchema = async () => {
@@ -378,6 +402,9 @@ export function App() {
             onAddColumn={handleAddColumn}
             onRemoveColumn={handleRemoveColumn}
             onUpdateColumn={handleUpdateColumn}
+            onAddUniqueConstraint={handleAddUniqueConstraint}
+            onRemoveUniqueConstraint={handleRemoveUniqueConstraint}
+            onUpdateUniqueConstraint={handleUpdateUniqueConstraint}
             style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           />
           {isAddTableModalOpen && (

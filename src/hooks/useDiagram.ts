@@ -41,6 +41,10 @@ interface UseDiagramReturn {
     name?: string,
   ) => void;
   removeUniqueConstraint: (constraintId: string) => void;
+  updateUniqueConstraint: (
+    constraintId: string,
+    updates: Partial<Omit<UniqueConstraint, 'id'>>,
+  ) => void;
   addColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
   removeColumn: (tableId: string, columnId: string) => void;
   updateColumn: (
@@ -209,6 +213,21 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     }));
   }, []);
 
+  const updateUniqueConstraint = useCallback(
+    (
+      constraintId: string,
+      updates: Partial<Omit<UniqueConstraint, 'id'>>,
+    ) => {
+      setDiagram((prev) => ({
+        ...prev,
+        uniqueConstraints: prev.uniqueConstraints.map((uc) =>
+          uc.id === constraintId ? { ...uc, ...updates } : uc,
+        ),
+      }));
+    },
+    [],
+  );
+
   const addColumn = useCallback(
     (tableId: string, column: Omit<Column, 'id'>) => {
       const newColumn: Column = createColumn(
@@ -295,6 +314,7 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     updateIndex,
     addUniqueConstraint,
     removeUniqueConstraint,
+    updateUniqueConstraint,
     addColumn,
     removeColumn,
     updateColumn,

@@ -16,6 +16,16 @@ interface TableNodeProps {
     columnId: string,
     updates: Partial<Omit<Column, 'id'>>,
   ) => void;
+  onAddUniqueConstraint: (
+    tableId: string,
+    columnIds: string[],
+    name?: string,
+  ) => void;
+  onRemoveUniqueConstraint: (constraintId: string) => void;
+  onUpdateUniqueConstraint: (
+    constraintId: string,
+    updates: Partial<Omit<UniqueConstraint, 'id'>>,
+  ) => void;
 }
 
 export function TableNode({
@@ -26,6 +36,9 @@ export function TableNode({
   onAddColumn,
   onRemoveColumn,
   onUpdateColumn,
+  onAddUniqueConstraint,
+  onRemoveUniqueConstraint,
+  onUpdateUniqueConstraint,
 }: TableNodeProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [editingName, setEditingName] = useState(false);
@@ -34,6 +47,9 @@ export function TableNode({
   const [editingIndex, setEditingIndex] = useState<string | null>(null);
   const [newIndexName, setNewIndexName] = useState('');
   const [newIndexColumnId, setNewIndexColumnId] = useState<string | null>(null);
+  const [editingConstraint, setEditingConstraint] = useState<string | null>(null);
+  const [newConstraintName, setNewConstraintName] = useState('');
+  const [newConstraintColumnIds, setNewConstraintColumnIds] = useState<string[]>([]);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -143,6 +159,75 @@ export function TableNode({
     setNewIndexColumnId(null);
     setEditingIndex(null);
   };
+
+  const constraintColumnIds = useCallback(
+    (constraintId: string) => {
+      const constraint = uniqueConstraints.find((uc) => uc.id === constraintId);
+      return constraint ? constraint.columnIds : [];
+    },
+    [uniqueConstraints],
+  );
+
+  const addUniqueConstraint = useCallback(() => {
+    if (!newConstraintName.trim() || newConstraintColumnIds.length === 0) return;
+    onAddUniqueConstraint(
+      table.id,
+      newConstraintColumnIds,
+      newConstraintName.trim(),
+    );
+    setNewConstraintName('');
+    setNewConstraintColumnIds([]);
+    setEditingConstraint(null);
+  }, [
+    table.id,
+    newConstraintName,
+    newConstraintColumnIds,
+    onAddUniqueConstraint,
+  ]);
+
+  const removeUniqueConstraint = useCallback(
+    (constraintId: string) => {
+      onRemoveUniqueConstraint(constraintId);
+      if (editingConstraint === constraintId) {
+        setEditingConstraint(null);
+      }
+    },
+    [onRemoveUniqueConstraint, editingConstraint],
+  );
+
+  const startConstraintEdit = (constraintId: string) => {
+    const constraint = uniqueConstraints.find((uc) => uc.id === constraintId);
+    if (constraint) {
+      setNewConstraintName(constraint.name ?? '');
+      setNewConstraintColumnIds([...constraint.columnIds]);
+      setEditingConstraint(constraintId);
+    }
+  };
+
+  const saveConstraintEdit = (constraintId: string) => {
+    if (!newConstraintName.trim() || newConstraintColumnIds.length === 0) return;
+    onUpdateUniqueConstraint(constraintId, {
+      name: newConstraintName.trim(),
+      columnIds: newConstraintColumnIds,
+    });
+    setNewConstraintName('');
+    setNewConstraintColumnIds([]);
+    setEditingConstraint(null);
+  };
+
+  const cancelConstraintEdit = () => {
+    setNewConstraintName('');
+    setNewConstraintColumnIds([]);
+    setEditingConstraint(null);
+  };
+
+  const toggleConstraintColumn = useCallback((columnId: string) => {
+    setNewConstraintColumnIds((prev) =>
+      prev.includes(columnId)
+        ? prev.filter((cid) => cid !== columnId)
+        : [...prev, columnId],
+    );
+  }, []);
 
   return (
     <div
@@ -387,6 +472,114 @@ export function TableNode({
               aria-label="Add a new index to this table"
             >
               + Add index
+            </button>
+          </div>
+
+          <div className="table-unique-constraints">
+            <h3 className="constraints-title">Unique constraints</h3>
+            {editingConstraint !== null ? (
+              <div className="constraint-edit-row">
+                <input
+                  className="constraint-name-input"
+                  autoFocus
+                  value={newConstraintName}
+                  onChange={(event) =>
+                    setNewConstraintName(event.target.value)
+                  }
+                  placeholder="Constraint name"
+                  aria-label="Unique constraint name"
+                />
+                {table.columns.map((column) => (
+                  <label
+                    key={column.id}
+                    className="constraint-checkbox-label"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={
+                        newConstraintColumnIds.includes(column.id)
+                      }
+                      onChange={() => toggleConstraintColumn(column.id)}
+                      aria-label={`Include ${column.name} in unique constraint`}
+                    />
+                    <span className="constraint-checkbox-text">
+                      {column.name}
+                    </span>
+                  </label>
+                ))}
+                <button
+                  type="button"
+                  className="save-constraint"
+                  onClick={() =>
+                    editingConstraint === 'new'
+                      ? addUniqueConstraint()
+                      : saveConstraintEdit(editingConstraint as string)
+                  }
+                  disabled={
+                    !newConstraintName.trim() ||
+                    newConstraintColumnIds.length === 0
+                  }
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  className="cancel-constraint"
+                  onClick={cancelConstraintEdit}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : null}
+            <ul className="constraint-list">
+              {uniqueConstraints.map((constraint) => {
+                const columnNames = table.columns
+                  .filter((c) => constraint.columnIds.includes(c.id))
+                  .map((c) => c.name)
+                  .join(', ');
+                return (
+                  <li key={constraint.id} className="constraint-item">
+                    <span className="constraint-name">
+                      {constraint.name || 'Unnamed constraint'}
+                    </span>
+                    <span className="constraint-columns">
+                      on {columnNames}
+                    </span>
+                    {editingConstraint === constraint.id ? null : (
+                      <>
+                        <button
+                          type="button"
+                          className="edit-constraint"
+                          onClick={() => startConstraintEdit(constraint.id)}
+                          aria-label={`Edit unique constraint ${constraint.name || constraint.id}`}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="remove-constraint"
+                          onClick={() => removeUniqueConstraint(constraint.id)}
+                          aria-label={`Remove unique constraint ${constraint.name || constraint.id}`}
+                        >
+                          Remove
+                        </button>
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              className="add-constraint"
+              onClick={() => {
+                setNewConstraintName('');
+                setNewConstraintColumnIds([]);
+                setEditingConstraint('new');
+              }}
+              aria-label="Add a new unique constraint to this table"
+            >
+              + Add unique constraint
             </button>
           </div>
 

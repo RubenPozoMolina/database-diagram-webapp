@@ -334,6 +334,148 @@ button.add-index:focus-visible {
   outline-offset: 2px;
 }
 
+/* Unique constraint section. */
+.table-unique-constraints {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+
+.constraints-title {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.constraint-edit-row {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.constraint-edit-row .constraint-name-input {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: #ffffff;
+  min-width: 110px;
+}
+
+.constraint-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.constraint-edit-row input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.constraint-checkbox-text {
+  user-select: none;
+}
+
+.constraint-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.constraint-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.constraint-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.constraint-columns {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.constraint-item button.edit-constraint,
+.constraint-item button.remove-constraint {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  margin-left: auto;
+}
+
+.constraint-item button.edit-constraint {
+  color: var(--color-text);
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  margin-right: 0.25rem;
+}
+
+.constraint-item button.edit-constraint:hover {
+  background: #e5e7eb;
+}
+
+.constraint-item button.remove-constraint {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.constraint-item button.remove-constraint:hover {
+  background: #fee2e2;
+}
+
+button.add-constraint {
+  margin-top: 0.4rem;
+  width: max-content;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.add-constraint:hover {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+button.add-constraint:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .table-column:global([title]) {
   font-weight: 600;
   color: var(--color-primary);

@@ -699,8 +699,277 @@ describe('TableNode', () => {
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
         onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
       />,
     );
     expect(screen.getAllByText('UQ')).toHaveLength(2);
+  });
+
+  /* ---- Unique constraint management ---- */
+
+  it('renders the unique constraints section and Add unique constraint button', () => {
+    const onAddUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={onAddUniqueConstraint}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Unique constraints')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('adds a unique constraint to a single column', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-uc-uuid' },
+    });
+    const onAddUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={onAddUniqueConstraint}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    );
+    const nameInput = screen.getByPlaceholderText('Constraint name');
+    fireEvent.change(nameInput, { target: { value: 'users_email_key' } });
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Include email in unique constraint',
+    });
+    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onAddUniqueConstraint).toHaveBeenCalledWith('t1', ['c2'], 'users_email_key');
+  });
+
+  it('adds a unique constraint to a group of columns', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-uc-uuid' },
+    });
+    const onAddUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'user_id', dataType: 'integer' }),
+              makeColumn({ id: 'c3', name: 'product_id', dataType: 'integer' }),
+            ],
+          })
+        }
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={onAddUniqueConstraint}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    );
+    const nameInput = screen.getByPlaceholderText('Constraint name');
+    fireEvent.change(nameInput, { target: { value: 'orders_user_product_key' } });
+    const checkbox1 = screen.getByRole('checkbox', {
+      name: 'Include user_id in unique constraint',
+    });
+    const checkbox2 = screen.getByRole('checkbox', {
+      name: 'Include product_id in unique constraint',
+    });
+    fireEvent.click(checkbox1);
+    fireEvent.click(checkbox2);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onAddUniqueConstraint).toHaveBeenCalledWith(
+      't1',
+      ['c2', 'c3'],
+      'orders_user_product_key',
+    );
+  });
+
+  it('disables Save when no name or no columns are selected', () => {
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    );
+    const saveButton = screen.getByRole('button', { name: /save/i });
+    expect(saveButton).toBeDisabled();
+  });
+
+  it('removes a unique constraint when Remove is clicked', () => {
+    const onRemoveUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[
+          { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+        ]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={onRemoveUniqueConstraint}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /Remove unique constraint uc1/i }),
+    );
+    expect(onRemoveUniqueConstraint).toHaveBeenCalledWith('uc1');
+  });
+
+  it('edits a unique constraint name and columns when Edit and Save are clicked', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-uc-uuid' },
+    });
+    const onUpdateUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+              makeColumn({ id: 'c3', name: 'name', dataType: 'text' }),
+            ],
+          })
+        }
+        uniqueConstraints={[
+          {
+            id: 'uc1',
+            tableId: 't1',
+            columnIds: ['c2'],
+            name: 'users_email_key',
+          },
+        ]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={onUpdateUniqueConstraint}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Edit unique constraint/i }));
+    const nameInput = screen.getByPlaceholderText('Constraint name');
+    expect(nameInput).toHaveValue('users_email_key');
+    fireEvent.change(nameInput, { target: { value: 'users_email_name_key' } });
+    // Deselect email, select name instead
+    const emailCheckbox = screen.getByRole('checkbox', {
+      name: 'Include email in unique constraint',
+    });
+    fireEvent.click(emailCheckbox);
+    const nameCheckbox = screen.getByRole('checkbox', {
+      name: 'Include name in unique constraint',
+    });
+    fireEvent.click(nameCheckbox);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onUpdateUniqueConstraint).toHaveBeenCalledWith('uc1', {
+      name: 'users_email_name_key',
+      columnIds: ['c3'],
+    });
+  });
+
+  it('cancels unique constraint editing without calling onUpdateUniqueConstraint', () => {
+    const onUpdateUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[
+          { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+        ]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={onUpdateUniqueConstraint}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Edit unique constraint/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onUpdateUniqueConstraint).not.toHaveBeenCalled();
   });
 });

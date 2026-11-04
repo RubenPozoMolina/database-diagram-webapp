@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Column, Diagram, Table } from '../types/diagram';
+import type { Column, Diagram, Table, UniqueConstraint } from '../types/diagram';
 import { TableNode } from './TableNode';
 import { RelationshipLine } from './RelationshipLine';
 import { findUniqueConstraintsByTable } from '../types/diagram';
@@ -15,6 +15,16 @@ interface DiagramCanvasProps {
     columnId: string,
     updates: Partial<Omit<Column, 'id'>>,
   ) => void;
+  onAddUniqueConstraint: (
+    tableId: string,
+    columnIds: string[],
+    name?: string,
+  ) => void;
+  onRemoveUniqueConstraint: (constraintId: string) => void;
+  onUpdateUniqueConstraint: (
+    constraintId: string,
+    updates: Partial<Omit<UniqueConstraint, 'id'>>,
+  ) => void;
   style?: React.CSSProperties;
 }
 
@@ -28,6 +38,9 @@ export function DiagramCanvas({
   onAddColumn,
   onRemoveColumn,
   onUpdateColumn,
+  onAddUniqueConstraint,
+  onRemoveUniqueConstraint,
+  onUpdateUniqueConstraint,
   style,
 }: DiagramCanvasProps) {
   const lineEndpoints = React.useMemo(() => {
@@ -77,6 +90,9 @@ export function DiagramCanvas({
           onAddColumn={onAddColumn}
           onRemoveColumn={onRemoveColumn}
           onUpdateColumn={onUpdateColumn}
+          onAddUniqueConstraint={onAddUniqueConstraint}
+          onRemoveUniqueConstraint={onRemoveUniqueConstraint}
+          onUpdateUniqueConstraint={onUpdateUniqueConstraint}
         />
       ))}
       {diagram.tables.length === 0 && (
