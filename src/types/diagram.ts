@@ -220,3 +220,109 @@ export function findUniqueConstraintsByTable(
 ): UniqueConstraint[] {
   return diagram.uniqueConstraints.filter((uc) => uc.tableId === tableId);
 }
+
+/**
+ * Returns all columns of a table that are designated as the primary key.
+ *
+ * Used by TASK-011 (AC1): the table model tracks which column is the primary
+ * key. Under entity integrity there is at most one, but this function returns
+ * all matches so callers can detect and repair violations.
+ */
+export function findPrimaryKeyColumns(table: Table): Column[] {
+  return table.columns.filter((column) => column.primaryKey);
+}
+
+/**
+ * Returns the single primary key column of a table, or undefined when the
+ * table has no primary key or more than one (an entity integrity violation
+ * that callers should handle).
+ *
+ * Used by TASK-011 (AC1): consumers that expect exactly one primary key
+ * column (for example DDL generation and foreign key targeting) use this
+ * helper.
+ */
+export function findPrimaryKeyColumn(table: Table): Column | undefined {
+  const pks = findPrimaryKeyColumns(table);
+  return pks.length === 1 ? pks[0] : undefined;
+}
+
+/**
+ * Returns true when the table has at least one primary key column.
+ *
+ * Used by TASK-011 (AC1).
+ */
+export function hasPrimaryKey(table: Table): boolean {
+  return table.columns.some((column) => column.primaryKey);
+}
+
+/**
+ * Designates a column as the primary key of a table, enforcing entity
+ * integrity: only one column can be the primary key per table, so every
+ * other column has its primaryKey flag cleared.
+ *
+ * Returns a new table object (immutable update). When columnId does not
+ * match any column of the table, all primary key flags are cleared so no
+ * column remains designated.
+ *
+ * Used by TASK-011 (AC2): "Only one column can be designated as primary key
+ * per table".
+ */
+export function setPrimaryKeyColumn(
+  table: Table,
+  columnId: string,
+): Table {
+  return {
+    ...table,
+    columns: table.columns.map((column) =>
+      column.id === columnId
+        ? { ...column, primaryKey: true }
+        : { ...column, primaryKey: false },
+    ),
+  };
+}
+
+/**
+ * Toggles the primary key designation of a column, enforcing entity
+ * integrity: when the column becomes the primary key, every other column of
+ * the table is cleared; when the column is already the primary key, its
+ * designation is removed, leaving the table with no primary key.
+ *
+ * Returns a new table object (immutable update).
+ *
+ * Used by TASK-011 (AC2): the UI checkbox toggle calls this so that checking
+ * a new PK column automatically unsets the previous one.
+ */
+export function togglePrimaryKeyColumn(
+  table: Table,
+  columnId: string,
+): Table {
+  const currentPk = findPrimaryKeyColumn(table);
+  if (currentPk?.id === columnId) {
+    // Already the PK: remove the designation.
+    return {
+      ...table,
+      columns: table.columns.map((column) =>
+        column.id === columnId ? { ...column, primaryKey: false } : column,
+      ),
+    };
+  }
+  return setPrimaryKeyColumn(table, columnId);
+}
+
+/**
+ * Validates entity integrity for primary keys: a table must have at most one
+ * primary key column. Returns the list of primary key columns so callers can
+ * report or repair violations.
+ *
+ * Used by TASK-011: enforces the entity integrity constraint on primary keys.
+ */
+export function validatePrimaryKeyUniqueness(table: Table): {
+  valid: boolean;
+  primaryKeyColumns: Column[];
+} {
+  const primaryKeyColumns = findPrimaryKeyColumns(table);
+  return {
+    valid: primaryKeyColumns.length <= 1,
+    primaryKeyColumns,
+  };
+}

@@ -17,14 +17,22 @@ import {
   createEmptyDiagram,
   createRelationship,
   createTable,
+  findPrimaryKeyColumn,
+  findPrimaryKeyColumns,
   findRelationshipById,
   findRelationshipsByTable,
   findTableById,
+  hasPrimaryKey,
+  setPrimaryKeyColumn,
+  togglePrimaryKeyColumn,
   type Column,
   type Diagram,
   type Relationship,
   type Table,
+  validatePrimaryKeyUniqueness,
 } from '../types/diagram';
+import { deserializeDiagram } from '../serialization/diagramDeserializer';
+import { serializeDiagram } from '../serialization/diagramSerializer';
 
 function makeColumn(overrides: Partial<Column> = {}): Column {
   return {
@@ -305,6 +313,175 @@ describe('Diagram data model (TASK-005)', () => {
       expect(table.columns[0].dataType).toBe('integer');
       expect(table.columns[1].name).toBe('name');
       expect(table.columns[1].dataType).toBe('varchar');
+    });
+  });
+
+  describe('Primary key model (TASK-011)', () => {
+    function makePkTable(): Table {
+      return makeTable({
+        columns: [
+          makeColumn({
+            id: 'c1',
+            name: 'id',
+            dataType: 'integer',
+            nullable: false,
+            primaryKey: true,
+          }),
+          makeColumn({
+            id: 'c2',
+            name: 'email',
+            dataType: 'varchar',
+            nullable: false,
+            primaryKey: false,
+          }),
+          makeColumn({
+            id: 'c3',
+            name: 'name',
+            dataType: 'text',
+            nullable: true,
+            primaryKey: false,
+          }),
+        ],
+      });
+    }
+
+    // AC1: Table model tracks primary key column
+    it('findPrimaryKeyColumns returns the columns marked as primary key', () => {
+      const table = makePkTable();
+      const pks = findPrimaryKeyColumns(table);
+
+      expect(pks).toHaveLength(1);
+      expect(pks[0].id).toBe('c1');
+      expect(pks[0].name).toBe('id');
+    });
+
+    it('findPrimaryKeyColumn returns the single primary key column', () => {
+      const table = makePkTable();
+
+      expect(findPrimaryKeyColumn(table)!.name).toBe('id');
+    });
+
+    it('findPrimaryKeyColumn returns undefined when there is no primary key', () => {
+      const table = makeTable({
+        columns: [
+          makeColumn({ id: 'c1', name: 'id', primaryKey: false }),
+          makeColumn({ id: 'c2', name: 'email', primaryKey: false }),
+        ],
+      });
+
+      expect(findPrimaryKeyColumn(table)).toBeUndefined();
+    });
+
+    it('findPrimaryKeyColumn returns undefined when multiple columns are primary keys', () => {
+      const table = makeTable({
+        columns: [
+          makeColumn({ id: 'c1', name: 'id', primaryKey: true }),
+          makeColumn({ id: 'c2', name: 'email', primaryKey: true }),
+        ],
+      });
+
+      expect(findPrimaryKeyColumn(table)).toBeUndefined();
+    });
+
+    it('hasPrimaryKey returns true when a primary key column exists', () => {
+      expect(hasPrimaryKey(makePkTable())).toBe(true);
+      expect(
+        hasPrimaryKey(
+          makeTable({ columns: [makeColumn({ primaryKey: false })] }),
+        ),
+      ).toBe(false);
+    });
+
+    // AC2: Only one column can be designated as primary key per table
+    it('setPrimaryKeyColumn designates one column and clears all others', () => {
+      const table = makePkTable();
+      const updated = setPrimaryKeyColumn(table, 'c2');
+
+      const pks = findPrimaryKeyColumns(updated);
+      expect(pks).toHaveLength(1);
+      expect(pks[0].name).toBe('email');
+      expect(updated.columns.find((c) => c.id === 'c1')!.primaryKey).toBe(
+        false,
+      );
+      expect(updated.columns.find((c) => c.id === 'c3')!.primaryKey).toBe(
+        false,
+      );
+    });
+
+    it('setPrimaryKeyColumn does not mutate the original table', () => {
+      const table = makePkTable();
+      setPrimaryKeyColumn(table, 'c2');
+
+      expect(findPrimaryKeyColumn(table)!.name).toBe('id');
+    });
+
+    it('setPrimaryKeyColumn clears all primary key flags for an unknown column id', () => {
+      const table = makePkTable();
+      const updated = setPrimaryKeyColumn(table, 'nonexistent');
+
+      expect(findPrimaryKeyColumns(updated)).toHaveLength(0);
+      expect(hasPrimaryKey(updated)).toBe(false);
+    });
+
+    it('togglePrimaryKeyColumn designates a non-primary-key column and clears others', () => {
+      const table = makePkTable();
+      const updated = togglePrimaryKeyColumn(table, 'c2');
+
+      expect(findPrimaryKeyColumn(updated)!.name).toBe('email');
+      expect(updated.columns.find((c) => c.id === 'c1')!.primaryKey).toBe(
+        false,
+      );
+    });
+
+    it('togglePrimaryKeyColumn removes the primary key designation from the current primary key', () => {
+      const table = makePkTable();
+      const updated = togglePrimaryKeyColumn(table, 'c1');
+
+      expect(findPrimaryKeyColumns(updated)).toHaveLength(0);
+      expect(hasPrimaryKey(updated)).toBe(false);
+    });
+
+    // Entity integrity
+    it('validatePrimaryKeyUniqueness is valid when there is at most one primary key', () => {
+      expect(validatePrimaryKeyUniqueness(makePkTable()).valid).toBe(true);
+      expect(
+        validatePrimaryKeyUniqueness(
+          makeTable({ columns: [makeColumn({ primaryKey: false })] }),
+        ).valid,
+      ).toBe(true);
+    });
+
+    it('validatePrimaryKeyUniqueness is invalid when multiple columns are primary keys', () => {
+      const table = makeTable({
+        columns: [
+          makeColumn({ id: 'c1', name: 'id', primaryKey: true }),
+          makeColumn({ id: 'c2', name: 'email', primaryKey: true }),
+        ],
+      });
+
+      const result = validatePrimaryKeyUniqueness(table);
+      expect(result.valid).toBe(false);
+      expect(result.primaryKeyColumns).toHaveLength(2);
+    });
+
+    // AC3: Primary key designation is persisted in the diagram model
+    it('primary key designation survives a serialize/deserialize round-trip', () => {
+      const table = makePkTable();
+      const updated = setPrimaryKeyColumn(table, 'c2');
+      const diagram = {
+        ...createEmptyDiagram('Pk Diagram'),
+        tables: [updated],
+      };
+
+      const serialized = serializeDiagram(diagram);
+      const deserialized = deserializeDiagram(serialized);
+
+      const roundTrippedTable = deserialized.tables[0];
+      expect(findPrimaryKeyColumn(roundTrippedTable)!.name).toBe('email');
+      expect(findPrimaryKeyColumns(roundTrippedTable)).toHaveLength(1);
+      expect(roundTrippedTable.columns.find((c) => c.id === 'c1')!.primaryKey).toBe(
+        false,
+      );
     });
   });
 });
