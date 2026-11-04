@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
+  Column,
+  createColumn,
   createEmptyDiagram,
   createIndex,
   createUniqueConstraint,
@@ -39,6 +41,13 @@ interface UseDiagramReturn {
     name?: string,
   ) => void;
   removeUniqueConstraint: (constraintId: string) => void;
+  addColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
+  removeColumn: (tableId: string, columnId: string) => void;
+  updateColumn: (
+    tableId: string,
+    columnId: string,
+    updates: Partial<Omit<Column, 'id'>>,
+  ) => void;
 }
 
 export function useDiagram(initialName?: string): UseDiagramReturn {
@@ -200,6 +209,77 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     }));
   }, []);
 
+  const addColumn = useCallback(
+    (tableId: string, column: Omit<Column, 'id'>) => {
+      const newColumn: Column = createColumn(
+        crypto.randomUUID(),
+        column.name,
+        column.dataType,
+        column.nullable,
+        column.defaultValue,
+        column.primaryKey,
+      );
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? { ...t, columns: [...t.columns, newColumn] }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const removeColumn = useCallback(
+    (tableId: string, columnId: string) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? {
+                ...t,
+                columns: t.columns.filter((c) => c.id !== columnId),
+                indexes: t.indexes.filter((i) => i.columnId !== columnId),
+              }
+            : t,
+        ),
+        uniqueConstraints: prev.uniqueConstraints.map((uc) =>
+          uc.tableId === tableId
+            ? {
+                ...uc,
+                columnIds: uc.columnIds.filter((cid) => cid !== columnId),
+              }
+            : uc,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const updateColumn = useCallback(
+    (
+      tableId: string,
+      columnId: string,
+      updates: Partial<Omit<Column, 'id'>>,
+    ) => {
+      setDiagram((prev) => ({
+        ...prev,
+        tables: prev.tables.map((t) =>
+          t.id === tableId
+            ? {
+                ...t,
+                columns: t.columns.map((c) =>
+                  c.id === columnId ? { ...c, ...updates } : c,
+                ),
+              }
+            : t,
+        ),
+      }));
+    },
+    [],
+  );
+
   return {
     diagram,
     createNewDiagram,
@@ -215,5 +295,8 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     updateIndex,
     addUniqueConstraint,
     removeUniqueConstraint,
+    addColumn,
+    removeColumn,
+    updateColumn,
   };
 }

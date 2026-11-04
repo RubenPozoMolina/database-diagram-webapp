@@ -30,6 +30,9 @@ const renderTableNode = (table = makeTable()) =>
       table={table}
       onUpdatePosition={vi.fn()}
       onUpdateTable={vi.fn()}
+      onAddColumn={vi.fn()}
+      onRemoveColumn={vi.fn()}
+      onUpdateColumn={vi.fn()}
     />,
   );
 
@@ -54,6 +57,9 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.doubleClick(screen.getByText('users'));
@@ -70,6 +76,9 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.doubleClick(screen.getByText('users'));
@@ -81,52 +90,57 @@ describe('TableNode', () => {
   });
 
   it('makes a column editable on double click and updates name and type', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable()}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
     const nameInput = screen.getAllByRole('textbox')[0];
     fireEvent.change(nameInput, { target: { value: 'user_id' } });
     fireEvent.blur(nameInput);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'user_id', dataType: 'integer' }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      name: 'user_id',
     });
   });
 
   it('changes a column data type via the select', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable()}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
     const selects = screen.getAllByRole('combobox');
     fireEvent.change(selects[0], { target: { value: 'text' } });
     fireEvent.blur(selects[0]);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'id', dataType: 'text' }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      dataType: 'text',
     });
   });
 
   it('toggles column nullable via the checkbox', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable({ columns: [makeColumn({ nullable: false })] })}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
@@ -135,20 +149,21 @@ describe('TableNode', () => {
     });
     fireEvent.click(checkbox);
     fireEvent.blur(checkbox);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'id', nullable: true }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      nullable: true,
     });
   });
 
   it('toggles a column nullable flag via the checkbox', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable()}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
@@ -157,36 +172,21 @@ describe('TableNode', () => {
     });
     fireEvent.click(checkbox);
     fireEvent.blur(screen.getAllByRole('textbox')[0]);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({
-          name: 'id',
-          dataType: 'integer',
-          nullable: true,
-        }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      nullable: true,
     });
   });
 
-  it('shows a PK badge next to primary key columns', () => {
-    renderTableNode(
-      makeTable({
-        columns: [makeColumn({ name: 'id', primaryKey: true })],
-      }),
-    );
-    const columnText = screen.getByText(/id: integer/);
-    expect(columnText.parentElement).toContainElement(
-      screen.getByText('PK'),
-    );
-  });
-
   it('toggles column primary key via the checkbox', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable({ columns: [makeColumn({ primaryKey: false })] })}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
@@ -195,24 +195,21 @@ describe('TableNode', () => {
     });
     fireEvent.click(checkbox);
     fireEvent.blur(screen.getAllByRole('textbox')[0]);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({
-          name: 'id',
-          dataType: 'integer',
-          primaryKey: true,
-        }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      primaryKey: true,
     });
   });
 
   it('edits column default value via the text input', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable()}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
@@ -220,20 +217,21 @@ describe('TableNode', () => {
     const defaultInput = inputs[inputs.length - 1];
     fireEvent.change(defaultInput, { target: { value: '0' } });
     fireEvent.blur(defaultInput);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'id', defaultValue: '0' }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      defaultValue: '0',
     });
   });
 
   it('edits a column default value', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable()}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
@@ -242,24 +240,21 @@ describe('TableNode', () => {
       target: { value: 'CURRENT_TIMESTAMP' },
     });
     fireEvent.blur(screen.getAllByRole('textbox')[0]);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({
-          name: 'id',
-          dataType: 'integer',
-          defaultValue: 'CURRENT_TIMESTAMP',
-        }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      defaultValue: 'CURRENT_TIMESTAMP',
     });
   });
 
   it('clears column default value when input is emptied', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={makeTable({ columns: [makeColumn({ defaultValue: '0' })] })}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
@@ -267,15 +262,13 @@ describe('TableNode', () => {
     const defaultInput = inputs[inputs.length - 1];
     fireEvent.change(defaultInput, { target: { value: '' } });
     fireEvent.blur(defaultInput);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'id', defaultValue: undefined }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      defaultValue: undefined,
     });
   });
 
   it('clears a column default value when the input is emptied', () => {
-    const onUpdateTable = vi.fn();
+    const onUpdateColumn = vi.fn();
     render(
       <TableNode
         table={
@@ -291,21 +284,18 @@ describe('TableNode', () => {
           })
         }
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/created_at: timestamp/));
     const defaultInput = screen.getByPlaceholderText('Default');
     fireEvent.change(defaultInput, { target: { value: '' } });
     fireEvent.blur(screen.getAllByRole('textbox')[0]);
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({
-          name: 'created_at',
-          dataType: 'timestamp',
-          defaultValue: undefined,
-        }),
-      ]),
+    expect(onUpdateColumn).toHaveBeenCalledWith('t1', 'c1', {
+      defaultValue: undefined,
     });
   });
 
@@ -316,12 +306,15 @@ describe('TableNode', () => {
       configurable: true,
       value: { randomUUID: () => 'test-column-uuid' },
     });
-    const onUpdateTable = vi.fn();
+    const onAddColumn = vi.fn();
     render(
       <TableNode
         table={makeTable()}
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={onAddColumn}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.click(
@@ -329,21 +322,16 @@ describe('TableNode', () => {
         name: /add a new column to this table/i,
       }),
     );
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({
-          id: 'test-column-uuid',
-          name: 'new_column',
-          dataType: 'text',
-          nullable: true,
-          primaryKey: false,
-        }),
-      ]),
+    expect(onAddColumn).toHaveBeenCalledWith('t1', {
+      name: 'new_column',
+      dataType: 'text',
+      nullable: true,
+      primaryKey: false,
     });
   });
 
   it('removes a column from the table', () => {
-    const onUpdateTable = vi.fn();
+    const onRemoveColumn = vi.fn();
     render(
       <TableNode
         table={
@@ -355,21 +343,15 @@ describe('TableNode', () => {
           })
         }
         onUpdatePosition={vi.fn()}
-        onUpdateTable={onUpdateTable}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={onRemoveColumn}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
     fireEvent.click(screen.getByRole('button', { name: /Remove column id/i }));
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.not.arrayContaining([
-        expect.objectContaining({ name: 'id', dataType: 'integer' }),
-      ]),
-    });
-    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
-      columns: expect.arrayContaining([
-        expect.objectContaining({ name: 'email', dataType: 'varchar' }),
-      ]),
-    });
+    expect(onRemoveColumn).toHaveBeenCalledWith('t1', 'c1');
   });
 
   /* ---- STORY-007: index tests ---- */
@@ -386,6 +368,9 @@ describe('TableNode', () => {
         }
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     expect(screen.getByTitle(/IX/)).toBeInTheDocument();
@@ -404,6 +389,9 @@ describe('TableNode', () => {
         }
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     expect(screen.getByText('Indexes')).toBeInTheDocument();
@@ -422,6 +410,9 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     expect(screen.getByText('Indexes')).toBeInTheDocument();
@@ -449,6 +440,9 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /add a new index to this table/i }));
@@ -481,6 +475,9 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /Remove index idx_id/i }));
@@ -505,6 +502,9 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /Edit index idx_id/i }));
@@ -538,6 +538,9 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /Edit index idx_id/i }));
@@ -555,6 +558,9 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     expect(screen.queryByText('UQ')).toBeNull();
@@ -578,6 +584,9 @@ describe('TableNode', () => {
         uniqueConstraints={uniqueConstraints}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     expect(screen.getByText('UQ')).toBeInTheDocument();
@@ -609,6 +618,9 @@ describe('TableNode', () => {
         uniqueConstraints={uniqueConstraints}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     const badges = screen.getAllByText('UQ');
@@ -637,6 +649,9 @@ describe('TableNode', () => {
         uniqueConstraints={uniqueConstraints}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
       />,
     );
     expect(screen.getAllByText('UQ')).toHaveLength(2);

@@ -9,6 +9,13 @@ interface TableNodeProps {
   uniqueConstraints?: UniqueConstraint[];
   onUpdatePosition: (id: string, x: number, y: number) => void;
   onUpdateTable: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
+  onAddColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
+  onRemoveColumn: (tableId: string, columnId: string) => void;
+  onUpdateColumn: (
+    tableId: string,
+    columnId: string,
+    updates: Partial<Omit<Column, 'id'>>,
+  ) => void;
 }
 
 export function TableNode({
@@ -16,6 +23,9 @@ export function TableNode({
   uniqueConstraints = [],
   onUpdatePosition,
   onUpdateTable,
+  onAddColumn,
+  onRemoveColumn,
+  onUpdateColumn,
 }: TableNodeProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [editingName, setEditingName] = useState(false);
@@ -42,39 +52,29 @@ export function TableNode({
 
   const updateColumnField = useCallback(
     (columnId: string, updates: Partial<Column>) => {
-      onUpdateTable(table.id, {
-        columns: table.columns.map((column) =>
-          column.id === columnId ? { ...column, ...updates } : column,
-        ),
-      });
+      onUpdateColumn(table.id, columnId, updates);
     },
-    [table.id, table.columns, onUpdateTable],
+    [table.id, onUpdateColumn],
   );
 
   const addColumn = useCallback(() => {
-    const newColumn: Column = {
-      id: crypto.randomUUID(),
+    const newColumn: Omit<Column, 'id'> = {
       name: 'new_column',
       dataType: 'text',
       nullable: true,
       primaryKey: false,
     };
-    onUpdateTable(table.id, {
-      columns: [...table.columns, newColumn],
-    });
-    setEditingColumn(newColumn.id);
-  }, [table.id, table.columns, onUpdateTable]);
+    onAddColumn(table.id, newColumn);
+  }, [table.id, onAddColumn]);
 
   const removeColumn = useCallback(
     (columnId: string) => {
-      onUpdateTable(table.id, {
-        columns: table.columns.filter((column) => column.id !== columnId),
-      });
+      onRemoveColumn(table.id, columnId);
       if (editingColumn === columnId) {
         setEditingColumn(null);
       }
     },
-    [table.id, table.columns, editingColumn, onUpdateTable],
+    [table.id, onRemoveColumn, editingColumn],
   );
 
   const exitColumnEdit = () => {

@@ -25,6 +25,9 @@ export function App() {
     addUniqueConstraint,
     updateTable,
     updateTablePosition,
+    addColumn,
+    removeColumn,
+    updateColumn,
   } = useDiagram();
 
   const {
@@ -122,6 +125,31 @@ export function App() {
   ) => {
     updateTable(id, updates);
   };
+
+  const handleAddColumn = useCallback(
+    (tableId: string, column: Omit<Column, 'id'>) => {
+      addColumn(tableId, column);
+    },
+    [addColumn],
+  );
+
+  const handleRemoveColumn = useCallback(
+    (tableId: string, columnId: string) => {
+      removeColumn(tableId, columnId);
+    },
+    [removeColumn],
+  );
+
+  const handleUpdateColumn = useCallback(
+    (
+      tableId: string,
+      columnId: string,
+      updates: Partial<Omit<Column, 'id'>>,
+    ) => {
+      updateColumn(tableId, columnId, updates);
+    },
+    [updateColumn],
+  );
 
   const handleImportSchema = async () => {
     if (!config) return;
@@ -271,6 +299,9 @@ export function App() {
             diagram={diagram}
             onTablePositionUpdate={handleTablePositionUpdate}
             onTableUpdate={handleTableUpdate}
+            onAddColumn={handleAddColumn}
+            onRemoveColumn={handleRemoveColumn}
+            onUpdateColumn={handleUpdateColumn}
             style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           />
           {isAddTableModalOpen && (

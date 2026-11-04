@@ -10,6 +10,9 @@ describe('DiagramCanvas', () => {
         diagram={createEmptyDiagram()}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     const message = screen.getByText(
@@ -37,6 +40,9 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();
@@ -60,6 +66,9 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     expect(screen.queryByText(/Empty diagram canvas/i)).not.toBeInTheDocument();
@@ -99,6 +108,9 @@ describe('DiagramCanvas', () => {
         diagram={diagram}
         onTablePositionUpdate={() => {}}
         onTableUpdate={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
       />,
     );
     expect(screen.getByText('users')).toBeInTheDocument();
