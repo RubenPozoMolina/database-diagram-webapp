@@ -24,6 +24,13 @@ export type Table = {
   indexes: Index[];
 };
 
+export type UniqueConstraint = {
+  id: string;
+  tableId: string;
+  columnIds: string[];
+  name?: string;
+};
+
 export type Relationship = {
   id: string;
   sourceTableId: string;
@@ -37,6 +44,7 @@ export type Diagram = {
   name: string;
   tables: Table[];
   relationships: Relationship[];
+  uniqueConstraints: UniqueConstraint[];
 };
 
 export type DiagramBounds = {
@@ -55,6 +63,7 @@ export function createEmptyDiagram(name = 'New Diagram'): Diagram {
     name,
     tables: [],
     relationships: [],
+    uniqueConstraints: [],
   };
 }
 
@@ -144,4 +153,35 @@ export function findRelationshipById(
   relationshipId: string,
 ): Relationship | undefined {
   return diagram.relationships.find((rel) => rel.id === relationshipId);
+}
+
+/**
+ * Creates a unique constraint with the given properties.
+ *
+ * Used by STORY-006 / TASK-017: unique constraints track which columns
+ * or column groups have a uniqueness rule applied, and are stored at
+ * the diagram level so composite (multi-column) constraints are supported.
+ */
+export function createUniqueConstraint(
+  id: string,
+  tableId: string,
+  columnIds: string[],
+  name?: string,
+): UniqueConstraint {
+  return {
+    id,
+    tableId,
+    columnIds,
+    ...(name ? { name } : {}),
+  };
+}
+
+/**
+ * Returns all unique constraints defined on a given table.
+ */
+export function findUniqueConstraintsByTable(
+  diagram: Diagram,
+  tableId: string,
+): UniqueConstraint[] {
+  return diagram.uniqueConstraints.filter((uc) => uc.tableId === tableId);
 }

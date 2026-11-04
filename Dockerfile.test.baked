@@ -1,0 +1,25 @@
+# Dockerfile for running unit tests with source baked into the image
+# Used when bind mounts are blocked by the host environment
+FROM node:20-alpine
+
+# Install build dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
+WORKDIR /work
+
+# Give the app user a writable home
+ENV HOME=/tmp
+ENV npm_config_cache=/tmp/.npm
+
+# Install dependencies as root (can create /work/node_modules)
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+
+# Non-root user for running tests
+USER node
+
+# Copy source code and test configuration
+COPY src ./src
+COPY vitest.config.ts vitest.setup.ts tsconfig.json vite.config.ts index.html ./
+
+CMD ["sh"]

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TableNode } from './TableNode';
-import type { Column, Table } from '../types/diagram';
+import type { Column, Table, UniqueConstraint } from '../types/diagram';
 
 const makeColumn = (overrides: Partial<Column> = {}): Column => ({
   id: 'c1',
@@ -152,7 +152,9 @@ describe('TableNode', () => {
       />,
     );
     fireEvent.doubleClick(screen.getByText(/id: integer/));
-    const checkbox = screen.getByRole('checkbox');
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Nullable for id',
+    });
     fireEvent.click(checkbox);
     fireEvent.blur(screen.getAllByRole('textbox')[0]);
     expect(onUpdateTable).toHaveBeenCalledWith('t1', {
@@ -161,6 +163,44 @@ describe('TableNode', () => {
           name: 'id',
           dataType: 'integer',
           nullable: true,
+        }),
+      ]),
+    });
+  });
+
+  it('shows a PK badge next to primary key columns', () => {
+    renderTableNode(
+      makeTable({
+        columns: [makeColumn({ name: 'id', primaryKey: true })],
+      }),
+    );
+    const columnText = screen.getByText(/id: integer/);
+    expect(columnText.parentElement).toContainElement(
+      screen.getByText('PK'),
+    );
+  });
+
+  it('toggles column primary key via the checkbox', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ columns: [makeColumn({ primaryKey: false })] })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Primary key for id',
+    });
+    fireEvent.click(checkbox);
+    fireEvent.blur(screen.getAllByRole('textbox')[0]);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', {
+      columns: expect.arrayContaining([
+        expect.objectContaining({
+          name: 'id',
+          dataType: 'integer',
+          primaryKey: true,
         }),
       ]),
     });
@@ -332,6 +372,8 @@ describe('TableNode', () => {
     });
   });
 
+  /* ---- STORY-007: index tests ---- */
+
   it('shows an IX badge on indexed columns', () => {
     const onUpdateTable = vi.fn();
     render(
@@ -377,6 +419,7 @@ describe('TableNode', () => {
     render(
       <TableNode
         table={makeTable()}
+        uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
       />,
@@ -403,6 +446,7 @@ describe('TableNode', () => {
             ],
           })
         }
+        uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
       />,
@@ -434,6 +478,7 @@ describe('TableNode', () => {
             indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
           })
         }
+        uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
       />,
@@ -457,6 +502,7 @@ describe('TableNode', () => {
             indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
           })
         }
+        uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
       />,
@@ -489,6 +535,7 @@ describe('TableNode', () => {
             indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
           })
         }
+        uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
       />,
@@ -496,5 +543,102 @@ describe('TableNode', () => {
     fireEvent.click(screen.getByRole('button', { name: /Edit index idx_id/i }));
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onUpdateTable).not.toHaveBeenCalled();
+  });
+
+  /* ---- Unique constraint tests from trunk ---- */
+
+  it('renders no unique constraint badge when there are no constraints', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.queryByText('UQ')).toBeNull();
+  });
+
+  it('renders a unique constraint badge for a single-column constraint', () => {
+    const onUpdateTable = vi.fn();
+    const uniqueConstraints: UniqueConstraint[] = [
+      { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+    ];
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={uniqueConstraints}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.getByText('UQ')).toBeInTheDocument();
+    expect(screen.getByTitle(/users_email_key/)).toBeInTheDocument();
+    expect(screen.getByTitle(/email/)).toBeInTheDocument();
+  });
+
+  it('renders a unique constraint badge for a composite column-group constraint', () => {
+    const onUpdateTable = vi.fn();
+    const uniqueConstraints: UniqueConstraint[] = [
+      {
+        id: 'uc1',
+        tableId: 't1',
+        columnIds: ['c2', 'c3'],
+        name: 'orders_user_product_key',
+      },
+    ];
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'user_id', dataType: 'integer' }),
+              makeColumn({ id: 'c3', name: 'product_id', dataType: 'integer' }),
+            ],
+          })
+        }
+        uniqueConstraints={uniqueConstraints}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    const badges = screen.getAllByText('UQ');
+    expect(badges).toHaveLength(1);
+    expect(screen.getByTitle(/orders_user_product_key/)).toBeInTheDocument();
+    expect(screen.getByTitle(/user_id/)).toBeInTheDocument();
+    expect(screen.getByTitle(/product_id/)).toBeInTheDocument();
+  });
+
+  it('renders multiple unique constraint badges for multiple constraints', () => {
+    const onUpdateTable = vi.fn();
+    const uniqueConstraints: UniqueConstraint[] = [
+      { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+      { id: 'uc2', tableId: 't1', columnIds: ['c1', 'c2'], name: 'users_id_email_key' },
+    ];
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={uniqueConstraints}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+      />,
+    );
+    expect(screen.getAllByText('UQ')).toHaveLength(2);
   });
 });

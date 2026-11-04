@@ -1,17 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDiagram } from './hooks/useDiagram';
 import { useConnection } from './hooks/useConnection';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import { ExportButton } from './components/ExportButton';
+import { ImportButton } from './components/ImportButton';
 import { DdlPreview } from './components/DdlPreview';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
 import { readSchema } from './connection/readSchemaApi';
-import type { Column, Table } from './types/diagram';
-import type {
-  ConnectionConfig,
-  ConnectionResult,
-} from './types';
+import type { Column, Diagram, Table, UniqueConstraint } from './types/diagram';
+import type { ConnectionConfig, ConnectionResult } from './types';
 import type { ReadSchemaResponse } from './connection/readSchemaApi';
 
 const CANVAS_WIDTH = 1200;
@@ -22,7 +20,9 @@ export function App() {
   const {
     diagram,
     createNewDiagram,
+    setDiagram,
     addTable,
+    addUniqueConstraint,
     updateTable,
     updateTablePosition,
   } = useDiagram();
@@ -41,6 +41,12 @@ export function App() {
   const connectionFormRef = useRef<HTMLDivElement | null>(null);
   const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
+  const [importError, setImportErrorState] = useState<string | null>(null);
+
+  const handleImportError = useCallback((message: string) => {
+    setImportErrorState(message);
+  }, []);
+
   const [isDdlPreviewOpen, setIsDdlPreviewOpen] = useState(false);
   const [isImportingSchema, setIsImportingSchema] = useState(false);
   const [importSchemaError, setImportSchemaError] = useState<string | null>(null);
@@ -67,21 +73,30 @@ export function App() {
 
   const handleNewDiagram = () => {
     createNewDiagram();
+    setImportErrorState(null);
   };
 
-  const handleTablePositionUpdate = (
-    id: string,
-    x: number,
-    y: number,
-  ) => {
-    updateTablePosition(id, { x, y });
+  const handleImport = (importedDiagram: Diagram) => {
+    setDiagram(importedDiagram);
+    setImportErrorState(null);
   };
+
+  const handleTablePositionUpdate = useCallback(
+    (id: string, x: number, y: number) => {
+      updateTablePosition(id, { x, y });
+    },
+    [updateTablePosition],
+  );
 
   const handleAddTable = () => {
     setIsAddTableModalOpen(true);
   };
 
-  const handleCreateTable = (table: { name: string; columns: Column[] }) => {
+  const handleCreateTable = (table: {
+    name: string;
+    columns: Column[];
+    uniqueConstraints: UniqueConstraint[];
+  }) => {
     const offset = diagram.tables.length * 30;
     addTable({
       name: table.name,
@@ -92,6 +107,12 @@ export function App() {
       columns: table.columns,
       indexes: [],
     });
+    const newTable = diagram.tables.find((t) => t.name === table.name);
+    if (newTable) {
+      table.uniqueConstraints.forEach((uc) => {
+        addUniqueConstraint(newTable.id, uc.columnIds, uc.name);
+      });
+    }
     setIsAddTableModalOpen(false);
   };
 
@@ -157,6 +178,7 @@ export function App() {
             New Diagram
           </button>
           <ExportButton diagram={diagram} />
+          <ImportButton onImport={handleImport} onError={handleImportError} />
           {isConnected && config && (
             <>
               <button
@@ -197,6 +219,19 @@ export function App() {
               onClick={clearMessage}
               className="connection-status-dismiss"
               aria-label="Dismiss error message"
+            >
+              ×
+            </button>
+          </div>
+        )}
+        {importError && (
+          <div className="connection-status connection-status--error" role="alert" aria-live="polite">
+            {importError}
+            <button
+              type="button"
+              onClick={() => setImportErrorState(null)}
+              className="connection-status-dismiss"
+              aria-label="Dismiss import error"
             >
               ×
             </button>

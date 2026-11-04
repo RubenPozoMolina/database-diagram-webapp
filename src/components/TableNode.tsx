@@ -1,16 +1,22 @@
 import React, { useCallback, useState } from 'react';
-import type { Column, Table } from '../types/diagram';
+import type { Column, Table, UniqueConstraint } from '../types/diagram';
 
 /* Common SQL data types offered when editing a column inline. */
 const DATA_TYPES = ['integer', 'varchar', 'text', 'boolean', 'date', 'timestamp', 'decimal'];
 
 interface TableNodeProps {
   table: Table;
+  uniqueConstraints?: UniqueConstraint[];
   onUpdatePosition: (id: string, x: number, y: number) => void;
   onUpdateTable: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
 }
 
-export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeProps) {
+export function TableNode({
+  table,
+  uniqueConstraints = [],
+  onUpdatePosition,
+  onUpdateTable,
+}: TableNodeProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(table.name);
@@ -228,6 +234,20 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                   />
                   <span className="nullable-checkbox-text">Nullable</span>
                 </label>
+                <label className="pk-checkbox-label">
+                  <input
+                    type="checkbox"
+                    className="pk-checkbox"
+                    checked={column.primaryKey}
+                    onChange={(event) =>
+                      updateColumnField(column.id, {
+                        primaryKey: event.target.checked,
+                      })
+                    }
+                    aria-label={`Primary key for ${column.name}`}
+                  />
+                  <span className="pk-checkbox-text">PK</span>
+                </label>
                 <input
                   className="column-default-input"
                   type="text"
@@ -261,6 +281,11 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
                 onDoubleClick={() => setEditingColumn(column.id)}
               >
                 {column.name}: {column.dataType}
+                {column.primaryKey && (
+                  <span className="pk-badge" aria-label="Primary key">
+                    PK
+                  </span>
+                )}
                 {columnHasIndex(column.id) && (
                   <span className="index-badge" aria-label="Indexed">IX</span>
                 )}
@@ -374,6 +399,27 @@ export function TableNode({ table, onUpdatePosition, onUpdateTable }: TableNodeP
           + Add column
         </button>
       </div>
+
+      {uniqueConstraints.length > 0 && (
+        <div className="table-unique-constraints">
+          <span className="unique-constraints-label">Unique constraints:</span>
+          {uniqueConstraints.map((uc) => {
+            const columnNames = table.columns
+              .filter((c) => uc.columnIds.includes(c.id))
+              .map((c) => c.name)
+              .join(', ');
+            return (
+              <span
+                key={uc.id}
+                className="unique-constraint-badge"
+                title={`Unique constraint${uc.name ? ` (${uc.name})` : ''} on ${columnNames}`}
+              >
+                UQ
+              </span>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
