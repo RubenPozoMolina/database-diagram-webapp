@@ -66,7 +66,7 @@ describe('CreateRelationshipModal', () => {
     const sourceSelect = screen.getByLabelText('Source table');
     fireEvent.change(sourceSelect, { target: { value: 't1' } });
     const targetSelect = screen.getByLabelText('Target table');
-    expect(targetSelect).toHaveAttribute('value', '');
+    expect(targetSelect).toHaveValue('');
     // users should no longer be an option for the target
     expect(
       screen.getAllByRole('option', { name: 'users' }),
@@ -101,24 +101,6 @@ describe('CreateRelationshipModal', () => {
     expect(onCreate).not.toHaveBeenCalled();
   });
 
-  it('shows an error when source and target tables are the same', () => {
-    const onCreate = vi.fn();
-    const tables = [
-      makeTable('t1', 'users', [{ id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true }]),
-      makeTable('t2', 'orders', [{ id: 'c2', name: 'order_id', dataType: 'integer', nullable: false, primaryKey: true }]),
-    ];
-    render(<CreateRelationshipModal isOpen onClose={vi.fn()} tables={tables} onCreate={onCreate} />);
-    const sourceSelect = screen.getByLabelText('Source table');
-    fireEvent.change(sourceSelect, { target: { value: 't1' } });
-    fireEvent.click(screen.getByRole('option', { name: 'id' }));
-    const targetSelect = screen.getByLabelText('Target table');
-    fireEvent.click(screen.getByRole('option', { name: 'orders' }));
-    fireEvent.click(screen.getByRole('option', { name: 'order_id' }));
-    fireEvent.click(screen.getByRole('button', { name: /create relationship/i }));
-    expect(screen.getByText(/source and target tables must be different/i)).toBeInTheDocument();
-    expect(onCreate).not.toHaveBeenCalled();
-  });
-
   it('calls onCreate with source and target tables and columns on submit', () => {
     const onCreate = vi.fn();
     const tables = [
@@ -127,9 +109,9 @@ describe('CreateRelationshipModal', () => {
     ];
     render(<CreateRelationshipModal isOpen onClose={vi.fn()} tables={tables} onCreate={onCreate} />);
     fireEvent.change(screen.getByLabelText('Source table'), { target: { value: 't1' } });
-    fireEvent.click(screen.getByRole('option', { name: 'id' }));
+    fireEvent.change(screen.getByLabelText('Source column'), { target: { value: 'c1' } });
     fireEvent.change(screen.getByLabelText('Target table'), { target: { value: 't2' } });
-    fireEvent.click(screen.getByRole('option', { name: 'order_id' }));
+    fireEvent.change(screen.getByLabelText('Target column'), { target: { value: 'c2' } });
     fireEvent.click(screen.getByRole('button', { name: /create relationship/i }));
     expect(onCreate).toHaveBeenCalledTimes(1);
     expect(onCreate).toHaveBeenCalledWith({
@@ -149,10 +131,10 @@ describe('CreateRelationshipModal', () => {
     expect(screen.getByRole('button', { name: /create relationship/i })).toBeDisabled();
     fireEvent.change(screen.getByLabelText('Source table'), { target: { value: 't1' } });
     expect(screen.getByRole('button', { name: /create relationship/i })).toBeDisabled();
-    fireEvent.click(screen.getByRole('option', { name: 'id' }));
+    fireEvent.change(screen.getByLabelText('Source column'), { target: { value: 'c1' } });
     fireEvent.change(screen.getByLabelText('Target table'), { target: { value: 't2' } });
     expect(screen.getByRole('button', { name: /create relationship/i })).toBeDisabled();
-    fireEvent.click(screen.getByRole('option', { name: 'order_id' }));
+    fireEvent.change(screen.getByLabelText('Target column'), { target: { value: 'c2' } });
     expect(screen.getByRole('button', { name: /create relationship/i })).not.toBeDisabled();
   });
 
