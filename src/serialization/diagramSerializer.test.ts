@@ -142,6 +142,55 @@ describe('serializeDiagram', () => {
     expect(rel.onUpdate).toBe('no action');
   });
 
+  it('serializes indexes from all tables', () => {
+    const diagram = createEmptyDiagram('With Indexes');
+    diagram.tables.push({
+      id: 'table-users',
+      name: 'users',
+      x: 100,
+      y: 100,
+      width: 240,
+      height: 200,
+      columns: [
+        { id: 'col-users-id', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+        { id: 'col-users-email', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false },
+      ],
+      indexes: [
+        { id: 'idx-users-email', name: 'users_email_idx', columnId: 'col-users-email' },
+      ],
+    });
+    diagram.tables.push({
+      id: 'table-orders',
+      name: 'orders',
+      x: 450,
+      y: 100,
+      width: 240,
+      height: 200,
+      columns: [
+        { id: 'col-orders-id', name: 'id', dataType: 'serial', nullable: false, primaryKey: true },
+        { id: 'col-orders-user-id', name: 'user_id', dataType: 'integer', nullable: false, primaryKey: false },
+      ],
+      indexes: [
+        { id: 'idx-orders-user-id', name: 'orders_user_id_idx', columnId: 'col-orders-user-id' },
+      ],
+    });
+
+    const result = serializeDiagram(diagram);
+    expect(result.diagram.indexes).toHaveLength(2);
+
+    const usersIdx = result.diagram.indexes.find((i) => i.name === 'users_email_idx');
+    expect(usersIdx).toBeDefined();
+    expect(usersIdx!.tableId).toBe('table-users');
+    expect(usersIdx!.columnIds).toEqual(['col-users-email']);
+    expect(usersIdx!.unique).toBe(false);
+    expect(usersIdx!.name).toBe('users_email_idx');
+
+    const ordersIdx = result.diagram.indexes.find((i) => i.name === 'orders_user_id_idx');
+    expect(ordersIdx).toBeDefined();
+    expect(ordersIdx!.tableId).toBe('table-orders');
+    expect(ordersIdx!.columnIds).toEqual(['col-orders-user-id']);
+  });
+
   it('includes empty constraints and indexes arrays', () => {
     const result = serializeDiagram(createEmptyDiagram());
     expect(result.diagram.uniqueConstraints).toEqual([]);

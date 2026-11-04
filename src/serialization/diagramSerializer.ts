@@ -13,7 +13,7 @@
  * reach the JSON export.
  */
 
-import type { Column, Diagram, Relationship, Table } from '../types/diagram';
+import type { Column, Diagram, Index, Relationship, Table } from '../types/diagram';
 
 export const DIAGRAM_JSON_VERSION = '1.0.0';
 
@@ -167,6 +167,24 @@ function serializeRelationship(
 }
 
 /**
+ * Serialize a single in-memory {@link Index} into a {@link SerializedIndex}.
+ *
+ * The in-memory index model stores a single column per index; the serialized
+ * form uses an array of column IDs (future-proof for composite indexes) plus
+ * the owning table's ID so indexes can be redistributed to tables on
+ * deserialization.
+ */
+function serializeIndex(index: Index, tableId: string): SerializedIndex {
+  return {
+    id: index.id,
+    tableId,
+    columnIds: [index.columnId],
+    unique: false,
+    name: index.name,
+  };
+}
+
+/**
  * Serialize a diagram into the JSON export payload. The returned object is
  * JSON.stringify-safe and conforms to the diagram serialization schema. It
  * contains no database credentials (host, port, database, user, password) by
@@ -174,6 +192,13 @@ function serializeRelationship(
  */
 export function serializeDiagram(diagram: Diagram): SerializedExport {
   const now = new Date().toISOString();
+  // Collect indexes from all tables into the diagram-level serialized array.
+  const indexes: SerializedIndex[] = [];
+  for (const table of diagram.tables) {
+    for (const index of table.indexes) {
+      indexes.push(serializeIndex(index, table.id));
+    }
+  }
   const exportPayload: SerializedExport = {
     version: DIAGRAM_JSON_VERSION,
     diagram: {
@@ -182,7 +207,7 @@ export function serializeDiagram(diagram: Diagram): SerializedExport {
       tables: diagram.tables.map(serializeTable),
       relationships: diagram.relationships.map(serializeRelationship),
       uniqueConstraints: [],
-      indexes: [],
+      indexes,
       createdAt: now,
       updatedAt: now,
     },

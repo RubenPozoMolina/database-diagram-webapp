@@ -9,6 +9,7 @@ import {
   serializeDiagram,
   type SerializedDiagram,
   type SerializedExport,
+  type SerializedIndex,
   type SerializedTable,
 } from './diagramSerializer';
 import { createEmptyDiagram, type Diagram } from '../types/diagram';
@@ -62,7 +63,13 @@ function buildDiagramWithContent(): Diagram {
         primaryKey: false,
       },
     ],
-    indexes: [],
+    indexes: [
+      {
+        id: 'idx-users-email',
+        name: 'users_email_idx',
+        columnId: 'col-users-email',
+      },
+    ],
   });
   diagram.tables.push({
     id: 'table-orders',
@@ -87,7 +94,13 @@ function buildDiagramWithContent(): Diagram {
         primaryKey: false,
       },
     ],
-    indexes: [],
+    indexes: [
+      {
+        id: 'idx-orders-user-id',
+        name: 'orders_user_id_idx',
+        columnId: 'col-orders-user-id',
+      },
+    ],
   });
   diagram.relationships.push({
     id: 'rel-orders-users',
@@ -144,6 +157,263 @@ describe('deserializeDiagram', () => {
     const serialized = serializeDiagram(original);
     const deserialized = deserializeDiagram(serialized);
     expect(deserialized).toEqual(original);
+  });
+
+  it('restores indexes from diagram-level indexes array onto tables', () => {
+    const payload = buildSerializedExport({
+      diagram: {
+        ...buildSerializedDiagram(),
+        tables: [
+          {
+            id: 'table-1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            columns: [
+              {
+                id: 'col-1',
+                name: 'id',
+                type: 'serial',
+                length: null,
+                nullable: false,
+                primaryKey: true,
+                unique: false,
+                defaultValue: null,
+                comment: null,
+              },
+            ],
+          },
+        ],
+        relationships: [],
+        uniqueConstraints: [],
+        indexes: [
+          {
+            id: 'idx-1',
+            tableId: 'table-1',
+            columnIds: ['col-1'],
+            unique: false,
+            name: 'users_id_idx',
+          },
+        ],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    });
+    const diagram = deserializeDiagram(payload);
+    expect(diagram.tables).toHaveLength(1);
+    const table = diagram.tables[0];
+    expect(table.indexes).toHaveLength(1);
+    expect(table.indexes[0].id).toBe('idx-1');
+    expect(table.indexes[0].name).toBe('users_id_idx');
+    expect(table.indexes[0].columnId).toBe('col-1');
+  });
+
+  it('restores multiple indexes on the same table', () => {
+    const payload = buildSerializedExport({
+      diagram: {
+        ...buildSerializedDiagram(),
+        tables: [
+          {
+            id: 'table-1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            columns: [
+              {
+                id: 'col-1',
+                name: 'id',
+                type: 'serial',
+                length: null,
+                nullable: false,
+                primaryKey: true,
+                unique: false,
+                defaultValue: null,
+                comment: null,
+              },
+              {
+                id: 'col-2',
+                name: 'email',
+                type: 'varchar',
+                length: null,
+                nullable: false,
+                primaryKey: false,
+                unique: false,
+                defaultValue: null,
+                comment: null,
+              },
+            ],
+          },
+        ],
+        relationships: [],
+        uniqueConstraints: [],
+        indexes: [
+          {
+            id: 'idx-1',
+            tableId: 'table-1',
+            columnIds: ['col-1'],
+            unique: true,
+            name: 'users_id_idx',
+          },
+          {
+            id: 'idx-2',
+            tableId: 'table-1',
+            columnIds: ['col-2'],
+            unique: false,
+            name: 'users_email_idx',
+          },
+        ],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    });
+    const diagram = deserializeDiagram(payload);
+    const table = diagram.tables[0];
+    expect(table.indexes).toHaveLength(2);
+    expect(table.indexes.map((i) => i.name)).toEqual([
+      'users_id_idx',
+      'users_email_idx',
+    ]);
+    expect(table.indexes.map((i) => i.columnId)).toEqual(['col-1', 'col-2']);
+  });
+
+  it('generates a synthetic name when serialized index name is null', () => {
+    const payload = buildSerializedExport({
+      diagram: {
+        ...buildSerializedDiagram(),
+        tables: [
+          {
+            id: 'table-1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            columns: [
+              {
+                id: 'col-1',
+                name: 'id',
+                type: 'serial',
+                length: null,
+                nullable: false,
+                primaryKey: true,
+                unique: false,
+                defaultValue: null,
+                comment: null,
+              },
+            ],
+          },
+        ],
+        relationships: [],
+        uniqueConstraints: [],
+        indexes: [
+          {
+            id: 'idx-1',
+            tableId: 'table-1',
+            columnIds: ['col-1'],
+            unique: false,
+            name: null,
+          },
+        ],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    });
+    const diagram = deserializeDiagram(payload);
+    expect(diagram.tables[0].indexes[0].name).toBe('idx_col-1');
+  });
+
+  it('leaves tables without indexes with an empty indexes array', () => {
+    const payload = buildSerializedExport({
+      diagram: {
+        ...buildSerializedDiagram(),
+        tables: [
+          {
+            id: 'table-1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            columns: [],
+          },
+        ],
+        relationships: [],
+        uniqueConstraints: [],
+        indexes: [],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    });
+    const diagram = deserializeDiagram(payload);
+    expect(diagram.tables[0].indexes).toEqual([]);
+  });
+
+  it('throws DiagramImportError for index missing required fields', () => {
+    const payload = buildSerializedExport({
+      diagram: {
+        ...buildSerializedDiagram(),
+        tables: [
+          {
+            id: 'table-1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            columns: [],
+          },
+        ],
+        relationships: [],
+        uniqueConstraints: [],
+        indexes: [{ id: 'idx-1' } as unknown as SerializedIndex],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    });
+    expect(() => deserializeDiagram(payload)).toThrow(DiagramImportError);
+    expect(() => deserializeDiagram(payload)).toThrow(
+      /index is missing required fields/i,
+    );
+  });
+
+  it('throws DiagramImportError for index with unexpected types', () => {
+    const payload = buildSerializedExport({
+      diagram: {
+        ...buildSerializedDiagram(),
+        tables: [
+          {
+            id: 'table-1',
+            name: 'users',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            columns: [],
+          },
+        ],
+        relationships: [],
+        uniqueConstraints: [],
+        indexes: [
+          {
+            id: 123,
+            tableId: 'table-1',
+            columnIds: ['col-1'],
+            unique: false,
+            name: 'idx',
+          } as unknown as SerializedIndex,
+        ],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    });
+    expect(() => deserializeDiagram(payload)).toThrow(DiagramImportError);
+    expect(() => deserializeDiagram(payload)).toThrow(
+      /index has fields with unexpected types/i,
+    );
   });
 
   it('handles tables with defaultValue null vs undefined', () => {
