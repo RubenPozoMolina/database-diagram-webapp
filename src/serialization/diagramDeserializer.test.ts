@@ -62,6 +62,7 @@ function buildDiagramWithContent(): Diagram {
         primaryKey: false,
       },
     ],
+    indexes: [],
   });
   diagram.tables.push({
     id: 'table-orders',
@@ -86,6 +87,7 @@ function buildDiagramWithContent(): Diagram {
         primaryKey: false,
       },
     ],
+    indexes: [],
   });
   diagram.relationships.push({
     id: 'rel-orders-users',
