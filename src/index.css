@@ -122,6 +122,27 @@ body {
   outline-offset: 2px;
 }
 
+/* Resize handle shown at the bottom-right corner of a table node. */
+.table-resize-handle {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 12px;
+  height: 12px;
+  background: #cbd5e1;
+  border: 1px solid #94a3b8;
+  border-radius: 2px;
+  cursor: nwse-resize;
+  z-index: 5;
+}
+.table-resize-handle:hover {
+  background: #94a3b8;
+}
+.table-resize-handle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .table-header {
   padding: 0.5rem 0.75rem;
   font-weight: 700;

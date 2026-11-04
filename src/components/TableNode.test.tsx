@@ -1126,4 +1126,99 @@ describe('TableNode', () => {
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onUpdateUniqueConstraint).not.toHaveBeenCalled();
   });
+
+  /* ---- TASK-022: drag and resize ---- */
+
+  it('drags the table to a new position', () => {
+    const onUpdatePosition = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ x: 100, y: 100 })}
+        onUpdatePosition={onUpdatePosition}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    const tableEl = screen.getByRole('region', { name: 'Table users' });
+    fireEvent.mouseDown(tableEl, { clientX: 100, clientY: 100, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 160, clientY: 210 });
+    fireEvent.mouseUp(window);
+    expect(onUpdatePosition).toHaveBeenCalledWith('t1', 160, 210);
+  });
+
+  it('does not start a drag when clicking on an input', () => {
+    const onUpdatePosition = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={onUpdatePosition}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText('users'));
+    const input = screen.getByRole('textbox');
+    // Clear the mount-time call (getBoundingClientRect reports (0,0) in jsdom).
+    onUpdatePosition.mockClear();
+    fireEvent.mouseDown(input, { clientX: 50, clientY: 50, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 100, clientY: 100 });
+    fireEvent.mouseUp(window);
+    expect(onUpdatePosition).not.toHaveBeenCalled();
+  });
+
+  it('resizes the table when the resize handle is dragged', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ width: 220, height: 120 })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    const handle = screen.getByTestId('table-resize-handle');
+    fireEvent.mouseDown(handle, { clientX: 320, clientY: 120, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 400, clientY: 220 });
+    fireEvent.mouseUp(window);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', { width: 300, height: 220 });
+  });
+
+  it('clamps table size to the minimum when resizing smaller', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ width: 200, height: 100 })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    const handle = screen.getByTestId('table-resize-handle');
+    fireEvent.mouseDown(handle, { clientX: 360, clientY: 180, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 100, clientY: 50 });
+    fireEvent.mouseUp(window);
+    // width = 200 + (100 - 360) = -60 -> clamped to 160
+    // height = 100 + (50 - 180) = -30 -> clamped to 80
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', { width: 160, height: 80 });
+  });
 });

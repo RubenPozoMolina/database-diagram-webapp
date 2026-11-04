@@ -4,6 +4,11 @@ import type { Column, Table, UniqueConstraint } from '../types/diagram';
 /* Common SQL data types offered when editing a column inline. */
 const DATA_TYPES = ['integer', 'varchar', 'text', 'boolean', 'date', 'timestamp', 'decimal'];
 
+// Minimum size a table can be resized to. Keeps the header and at least one
+// column row visible so the table remains usable after a resize.
+const MIN_TABLE_WIDTH = 160;
+const MIN_TABLE_HEIGHT = 80;
+
 interface TableNodeProps {
   table: Table;
   uniqueConstraints?: UniqueConstraint[];
@@ -53,6 +58,22 @@ export function TableNode({
   const [nameInput, setNameInput] = useState(table.name);
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<string | null>(null);
+
+  // Drag / resize interaction state.
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = React.useRef<{
+    x: number;
+    y: number;
+    clientX: number;
+    clientY: number;
+  } | null>(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartRef = React.useRef<{
+    width: number;
+    height: number;
+    clientX: number;
+    clientY: number;
+  } | null>(null);
   const [newIndexName, setNewIndexName] = useState('');
   const [newIndexColumnId, setNewIndexColumnId] = useState<string | null>(null);
   const [editingConstraint, setEditingConstraint] = useState<string | null>(null);
@@ -94,6 +115,52 @@ export function TableNode({
     onColumnPositionUpdate(table.id, columnPositions);
   }, [table.id, columnIds, onColumnPositionUpdate]);
 
+  // Drag: follow the mouse and report the new position to the diagram so the
+  // canvas updates when a table is moved.
+  React.useEffect(() => {
+    if (!isDragging || !dragStartRef.current) return;
+    const start = dragStartRef.current;
+    const handleMouseMove = (event: MouseEvent) => {
+      const dx = event.clientX - start.clientX;
+      const dy = event.clientY - start.clientY;
+      onUpdatePosition(table.id, start.x + dx, start.y + dy);
+    };
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      dragStartRef.current = null;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, table.id, onUpdatePosition]);
+
+  // Resize: follow the mouse and report the new size to the diagram so the
+  // canvas updates when a table is resized.
+  React.useEffect(() => {
+    if (!isResizing || !resizeStartRef.current) return;
+    const start = resizeStartRef.current;
+    const handleMouseMove = (event: MouseEvent) => {
+      const dw = event.clientX - start.clientX;
+      const dh = event.clientY - start.clientY;
+      const newWidth = Math.max(MIN_TABLE_WIDTH, start.width + dw);
+      const newHeight = Math.max(MIN_TABLE_HEIGHT, start.height + dh);
+      onUpdateTable(table.id, { width: newWidth, height: newHeight });
+    };
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      resizeStartRef.current = null;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, table.id, onUpdateTable, MIN_TABLE_WIDTH, MIN_TABLE_HEIGHT]);
+
   const saveName = () => {
     const trimmed = nameInput.trim();
     if (trimmed && trimmed !== table.name) {
@@ -107,6 +174,53 @@ export function TableNode({
       onUpdateColumn(table.id, columnId, updates);
     },
     [table.id, onUpdateColumn],
+  );
+
+  const handleTableMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      if (event.button !== 0) return;
+      // Never start a drag from an interactive element (input, button, select).
+      const target = event.target as HTMLElement;
+      if (
+        target.closest('input, button, select, textarea, [contenteditable="true"]')
+      ) {
+        return;
+      }
+      // Don't drag while a field is being edited.
+      if (editingName || editingColumn || editingIndex || editingConstraint) {
+        return;
+      }
+      setIsDragging(true);
+      dragStartRef.current = {
+        x: table.x,
+        y: table.y,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+    },
+    [
+      table.x,
+      table.y,
+      editingName,
+      editingColumn,
+      editingIndex,
+      editingConstraint,
+    ],
+  );
+
+  const handleResizeMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      if (event.button !== 0) return;
+      setIsResizing(true);
+      resizeStartRef.current = {
+        width: table.width,
+        height: table.height,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+    },
+    [table.width, table.height],
   );
 
   const addColumn = useCallback(() => {
@@ -268,9 +382,13 @@ export function TableNode({
         top: table.y,
         width: table.width,
         height: table.height,
+        cursor: isDragging ? 'grabbing' : 'grab',
+        touchAction: 'none',
       }}
       role="region"
       aria-label={`Table ${table.name}`}
+      aria-grabbed={isDragging}
+      onMouseDown={handleTableMouseDown}
     >
       <div className="table-header" onDoubleClick={() => setEditingName(true)}>
         {editingName ? (
@@ -644,6 +762,14 @@ export function TableNode({
           })}
         </div>
       )}
+      <div
+        data-testid="table-resize-handle"
+        className="table-resize-handle"
+        onMouseDown={handleResizeMouseDown}
+        aria-label="Resize table"
+        role="button"
+        aria-roledescription="resize handle"
+      />
     </div>
   );
 }
