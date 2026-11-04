@@ -2,6 +2,7 @@ import React from 'react';
 import type { Diagram, Table } from '../types/diagram';
 import { TableNode } from './TableNode';
 import { RelationshipLine } from './RelationshipLine';
+import { findUniqueConstraintsByTable } from '../types/diagram';
 
 interface DiagramCanvasProps {
   diagram: Diagram;
@@ -60,6 +61,7 @@ export function DiagramCanvas({
         <TableNode
           key={table.id}
           table={table}
+          uniqueConstraints={findUniqueConstraintsByTable(diagram, table.id)}
           onUpdatePosition={onTablePositionUpdate}
           onUpdateTable={onTableUpdate}
         />

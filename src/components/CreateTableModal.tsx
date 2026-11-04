@@ -1,10 +1,14 @@
 import React, { useCallback, useState } from 'react';
-import type { Column } from '../types/diagram';
+import type { Column, UniqueConstraint } from '../types/diagram';
 
 interface CreateTableModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (table: { name: string; columns: Column[] }) => void;
+  onCreate: (table: {
+    name: string;
+    columns: Column[];
+    uniqueConstraints: UniqueConstraint[];
+  }) => void;
 }
 
 /* Common SQL data types offered when creating a column. */
@@ -20,6 +24,14 @@ function newColumn(): Column {
   };
 }
 
+function newUniqueConstraint(): UniqueConstraint {
+  return {
+    id: crypto.randomUUID(),
+    tableId: '',
+    columnIds: [],
+  };
+}
+
 export function CreateTableModal({
   isOpen,
   onClose,
@@ -27,6 +39,7 @@ export function CreateTableModal({
 }: CreateTableModalProps) {
   const [name, setName] = useState('');
   const [columns, setColumns] = useState<Column[]>([]);
+  const [uniqueConstraints, setUniqueConstraints] = useState<UniqueConstraint[]>([]);
   const [error, setError] = useState('');
 
   const addColumn = useCallback(() => {
@@ -35,6 +48,13 @@ export function CreateTableModal({
 
   const removeColumn = useCallback((id: string) => {
     setColumns((prev) => prev.filter((column) => column.id !== id));
+    // Remove column from any unique constraint columnIds
+    setUniqueConstraints((prev) =>
+      prev.map((uc) => ({
+        ...uc,
+        columnIds: uc.columnIds.filter((cid) => cid !== id),
+      })),
+    );
   }, []);
 
   const updateColumn = useCallback(
@@ -48,6 +68,32 @@ export function CreateTableModal({
     [],
   );
 
+  const addUniqueConstraint = useCallback(() => {
+    setUniqueConstraints((prev) => [...prev, newUniqueConstraint()]);
+  }, []);
+
+  const removeUniqueConstraint = useCallback((id: string) => {
+    setUniqueConstraints((prev) => prev.filter((uc) => uc.id !== id));
+  }, []);
+
+  const toggleConstraintColumn = useCallback(
+    (constraintId: string, columnId: string) => {
+      setUniqueConstraints((prev) =>
+        prev.map((uc) => {
+          if (uc.id !== constraintId) return uc;
+          const already = uc.columnIds.includes(columnId);
+          return {
+            ...uc,
+            columnIds: already
+              ? uc.columnIds.filter((cid) => cid !== columnId)
+              : [...uc.columnIds, columnId],
+          };
+        }),
+      );
+    },
+    [],
+  );
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
@@ -55,7 +101,10 @@ export function CreateTableModal({
       setError('Table name is required.');
       return;
     }
-    onCreate({ name: name.trim(), columns });
+    const validConstraints = uniqueConstraints.filter(
+      (uc) => uc.columnIds.length > 0,
+    );
+    onCreate({ name: name.trim(), columns, uniqueConstraints: validConstraints });
     onClose();
   };
 
@@ -123,6 +172,20 @@ export function CreateTableModal({
                       </option>
                     ))}
                   </select>
+                  <label className="pk-checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="pk-checkbox"
+                      checked={column.primaryKey}
+                      onChange={(event) =>
+                        updateColumn(column.id, {
+                          primaryKey: event.target.checked,
+                        })
+                      }
+                      aria-label={`Primary key for ${column.name || column.id}`}
+                    />
+                    <span className="pk-checkbox-text">PK</span>
+                  </label>
                   <button
                     type="button"
                     className="remove-column"
@@ -140,6 +203,53 @@ export function CreateTableModal({
               >
                 + Add column
               </button>
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label>Unique Constraints</label>
+            <div className="columns-list">
+              {uniqueConstraints.map((uc) => (
+                <div
+                  key={uc.id}
+                  className="column-row unique-constraint-row"
+                >
+                  <label className="constraint-label">UQ on:</label>
+                  {columns.map((column) => (
+                    <label
+                      key={column.id}
+                      className="constraint-checkbox-label"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={uc.columnIds.includes(column.id)}
+                        onChange={() => toggleConstraintColumn(uc.id, column.id)}
+                        aria-label={`Include ${column.name} in unique constraint`}
+                      />
+                      <span className="constraint-checkbox-text">
+                        {column.name}
+                      </span>
+                    </label>
+                  ))}
+                  <button
+                    type="button"
+                    className="remove-column"
+                    onClick={() => removeUniqueConstraint(uc.id)}
+                    aria-label="Remove unique constraint"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              {columns.length > 0 && (
+                <button
+                  type="button"
+                  className="add-column"
+                  onClick={addUniqueConstraint}
+                >
+                  + Add unique constraint
+                </button>
+              )}
             </div>
           </div>
 

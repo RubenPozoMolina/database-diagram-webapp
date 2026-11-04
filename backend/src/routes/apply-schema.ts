@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { RequestHandler } from "express";
 import { validateDDLSafety } from "../services/ddl-safety-validator";
 import { ApplySchemaRequestSchema, type ApplySchemaResult } from "../types/apply-schema";
+import { validateDdlSafety } from "../services/ddl-safety";
 
 /**
  * Default DDL execution timeout in milliseconds (30 seconds per spec §4.6).
@@ -30,15 +31,22 @@ const handleApplySchema: RequestHandler = async (req, res) => {
     return;
   }
 
-  // Safety validation: reject any DDL that contains destructive statements
-  // (DROP, TRUNCATE, DELETE, or ALTER that modifies existing objects) before
-  // connecting to the database. Fail fast — no connection is attempted for
-  // unsafe DDL.
+  // Safety validation: reject any DDL that would modify or drop existing objects.
+  // Both safety validators run: the ticket's validateDdlSafety (returns the
+  // offending statement) and the trunk's validateDDLSafety (returns a list of
+  // errors). Either rejection fails the request before any database connection,
+  // and the response carries both shapes so every caller is satisfied.
+  const safety = validateDdlSafety(ddl);
   const validation = validateDDLSafety(ddl);
-  if (!validation.valid) {
+
+  if (!safety.safe || !validation.valid) {
     res.status(400).json({
       error: "Rejected",
-      message: "DDL contains destructive statements. Existing objects are never dropped or altered.",
+      message: [
+        safety.error ?? "DDL failed safety validation.",
+        "DDL contains destructive statements. Existing objects are never dropped or altered."
+      ].join(" "),
+      statement: safety.statement,
       details: validation.errors,
       ddlPreview: ddl
     });
@@ -73,8 +81,7 @@ const handleApplySchema: RequestHandler = async (req, res) => {
       await client.query("SELECT set_config('search_path', $1, false)", [schema]);
 
       // Split DDL by semicolons and execute each statement against the schema.
-      // All statements have already passed validateDDLSafety(), so only CREATE
-      // and ALTER TABLE ... ADD CONSTRAINT statements reach the database.
+      // All statements have already passed the safety checks above.
       const statements = ddl
         .split(";")
         .map((s) => s.trim())

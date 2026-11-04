@@ -20,13 +20,14 @@ describe('CreateTableModal', () => {
     expect(container.querySelector('.modal')).toBeNull();
   });
 
-  it('renders the table name input and columns list when open', () => {
+  it('renders the table name input, columns list, and unique constraints section when open', () => {
     renderModal();
     expect(screen.getByLabelText('Table name')).toBeInTheDocument();
     expect(screen.getByText('Columns')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /add column/i }),
     ).toBeInTheDocument();
+    expect(screen.getByText('Unique Constraints')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /create table/i }),
     ).toBeInTheDocument();
@@ -49,29 +50,78 @@ describe('CreateTableModal', () => {
     expect(screen.queryAllByPlaceholderText('Column name')).toHaveLength(0);
   });
 
-  it('calls onCreate with the name and columns on submit', () => {
+  it('calls onCreate with the name, columns, and empty unique constraints on submit', () => {
     const onCreate = vi.fn();
     render(<CreateTableModal isOpen onClose={vi.fn()} onCreate={onCreate} />);
     const nameInput = screen.getByLabelText('Table name');
     fireEvent.change(nameInput, { target: { value: 'users' } });
     fireEvent.click(screen.getByRole('button', { name: /create table/i }));
     expect(onCreate).toHaveBeenCalledTimes(1);
-    expect(onCreate).toHaveBeenCalledWith({ name: 'users', columns: [] });
+    expect(onCreate).toHaveBeenCalledWith({
+      name: 'users',
+      columns: [],
+      uniqueConstraints: [],
+    });
   });
 
-  it('includes added columns in the onCreate payload', () => {
+  it('toggles primary key on a column via the PK checkbox', () => {
     const onCreate = vi.fn();
     render(<CreateTableModal isOpen onClose={vi.fn()} onCreate={onCreate} />);
     fireEvent.click(screen.getByRole('button', { name: /add column/i }));
     const columnName = screen.getAllByPlaceholderText('Column name')[0];
     fireEvent.change(columnName, { target: { value: 'id' } });
+
+    const pkCheckbox = screen.getByRole('checkbox', {
+      name: 'Primary key for id',
+    });
+    fireEvent.click(pkCheckbox);
+
     fireEvent.change(screen.getByLabelText('Table name'), {
       target: { value: 'users' },
     });
     fireEvent.click(screen.getByRole('button', { name: /create table/i }));
     expect(onCreate).toHaveBeenCalledWith({
       name: 'users',
-      columns: expect.arrayContaining([expect.objectContaining({ name: 'id' })]),
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id', primaryKey: true }),
+      ]),
+      uniqueConstraints: [],
+    });
+  });
+
+  it('includes added columns and unique constraints in the onCreate payload', () => {
+    const onCreate = vi.fn();
+    render(<CreateTableModal isOpen onClose={vi.fn()} onCreate={onCreate} />);
+
+    // Add two columns
+    fireEvent.click(screen.getByRole('button', { name: /add column/i }));
+    fireEvent.click(screen.getByRole('button', { name: /add column/i }));
+    const columnNames = screen.getAllByPlaceholderText('Column name');
+    fireEvent.change(columnNames[0], { target: { value: 'id' } });
+    fireEvent.change(columnNames[1], { target: { value: 'email' } });
+
+    // Add a unique constraint and select the email column
+    fireEvent.click(screen.getByRole('button', { name: /add unique constraint/i }));
+    fireEvent.click(
+      screen.getByRole('checkbox', {
+        name: 'Include email in unique constraint',
+      }),
+    );
+
+    fireEvent.change(screen.getByLabelText('Table name'), {
+      target: { value: 'users' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create table/i }));
+
+    expect(onCreate).toHaveBeenCalledWith({
+      name: 'users',
+      columns: expect.arrayContaining([
+        expect.objectContaining({ name: 'id' }),
+        expect.objectContaining({ name: 'email' }),
+      ]),
+      uniqueConstraints: expect.arrayContaining([
+        expect.objectContaining({ columnIds: expect.arrayContaining([expect.any(String)]) }),
+      ]),
     });
   });
 
@@ -105,5 +155,53 @@ describe('CreateTableModal', () => {
     render(<CreateTableModal isOpen onClose={onClose} onCreate={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('toggles a column in and out of a unique constraint via checkbox', () => {
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: /add column/i }));
+    const columnName = screen.getAllByPlaceholderText('Column name')[0];
+    fireEvent.change(columnName, { target: { value: 'email' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /add unique constraint/i }));
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(2);
+
+    // Select the column
+    fireEvent.click(checkboxes[0]);
+    expect(checkboxes[0]).toBeChecked();
+
+    // Deselect the column
+    fireEvent.click(checkboxes[0]);
+    expect(checkboxes[0]).not.toBeChecked();
+  });
+
+  it('removes a unique constraint when its Remove button is clicked', () => {
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: /add column/i }));
+    fireEvent.click(screen.getByRole('button', { name: /add unique constraint/i }));
+    fireEvent.click(screen.getByRole('button', { name: /add unique constraint/i }));
+    expect(
+      screen.getAllByRole('button', { name: /remove unique constraint/i }),
+    ).toHaveLength(2);
+    fireEvent.click(screen.getAllByRole('button', { name: /remove unique constraint/i })[0]);
+    expect(
+      screen.getAllByRole('button', { name: /remove unique constraint/i }),
+    ).toHaveLength(1);
+  });
+
+  it('hides the Add unique constraint button when no columns exist', () => {
+    renderModal();
+    expect(
+      screen.queryByRole('button', { name: /add unique constraint/i }),
+    ).toBeNull();
+  });
+
+  it('shows the Add unique constraint button when columns exist', () => {
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: /add column/i }));
+    expect(
+      screen.getByRole('button', { name: /add unique constraint/i }),
+    ).toBeInTheDocument();
   });
 });

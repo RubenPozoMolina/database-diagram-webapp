@@ -17,6 +17,7 @@ import type {
   Diagram,
   Relationship,
   Table,
+  UniqueConstraint,
 } from '../types/diagram';
 import {
   DIAGRAM_JSON_VERSION,
@@ -24,6 +25,7 @@ import {
   type SerializedExport,
   type SerializedRelationship,
   type SerializedTable,
+  type SerializedUniqueConstraint,
 } from './diagramSerializer';
 
 /**
@@ -88,6 +90,23 @@ function deserializeRelationship(
       relationship.targetColumnId !== undefined
         ? relationship.targetColumnId
         : undefined,
+  };
+}
+
+/**
+ * Deserialize a single serialized unique constraint into the internal
+ * UniqueConstraint model. Serialized null names become undefined.
+ */
+function deserializeUniqueConstraint(
+  constraint: SerializedUniqueConstraint,
+): UniqueConstraint {
+  return {
+    id: constraint.id,
+    tableId: constraint.tableId,
+    columnIds: constraint.columnIds,
+    ...(constraint.name !== null && constraint.name !== undefined
+      ? { name: constraint.name }
+      : {}),
   };
 }
 
@@ -220,11 +239,38 @@ export function deserializeDiagram(payload: SerializedExport): Diagram {
     },
   );
 
+  const uniqueConstraints: UniqueConstraint[] = (
+    serializedDiagram.uniqueConstraints || []
+  ).map((c): UniqueConstraint => {
+    if (
+      typeof c !== 'object' ||
+      c === null ||
+      !('id' in c) ||
+      !('tableId' in c) ||
+      !('columnIds' in c)
+    ) {
+      throw new DiagramImportError(
+        'Invalid diagram file: unique constraint is missing required fields.',
+      );
+    }
+    if (
+      typeof (c as { id: unknown }).id !== 'string' ||
+      typeof (c as { tableId: unknown }).tableId !== 'string' ||
+      !Array.isArray((c as { columnIds: unknown }).columnIds)
+    ) {
+      throw new DiagramImportError(
+        'Invalid diagram file: unique constraint has fields with unexpected types.',
+      );
+    }
+    return deserializeUniqueConstraint(c as SerializedUniqueConstraint);
+  });
+
   return {
     id: serializedDiagram.id,
     name: serializedDiagram.name,
     tables,
     relationships,
+    uniqueConstraints,
   };
 }
 
