@@ -92,7 +92,7 @@ export function DdlPreview({
   }, []);
 
   const handleExecute = useCallback(async (): Promise<void> => {
-    if (!state.ddl || !connection) return;
+    if (state.ddl === null || !connection) return;
     if (!state.confirmed) return;
 
     setState((prev) => ({ ...prev, executing: true }));

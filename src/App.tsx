@@ -55,6 +55,8 @@ export function App() {
   }, []);
 
   const [isDdlPreviewOpen, setIsDdlPreviewOpen] = useState(false);
+  const [ddlApplyMessage, setDdlApplyMessage] = useState<string | null>(null);
+  const [ddlApplyError, setDdlApplyError] = useState<string | null>(null);
   const [isImportingSchema, setIsImportingSchema] = useState(false);
   const [importSchemaError, setImportSchemaError] = useState<string | null>(null);
   const [importedSchema, setImportedSchema] = useState<ReadSchemaResponse | null>(null);
@@ -198,6 +200,22 @@ export function App() {
     setImportSchemaError(null);
   };
 
+  const handleDdlExecute = useCallback((_ddl: string): void => {
+    setIsDdlPreviewOpen(false);
+    setDdlApplyMessage('Schema applied successfully');
+  }, []);
+
+  const handleDdlClose = useCallback((): void => {
+    setIsDdlPreviewOpen(false);
+    setDdlApplyMessage(null);
+    setDdlApplyError(null);
+  }, []);
+
+  const dismissDdlApplyMessage = () => {
+    setDdlApplyMessage(null);
+    setDdlApplyError(null);
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -310,6 +328,32 @@ export function App() {
             </button>
           </div>
         )}
+        {ddlApplyError && (
+          <div className="connection-status connection-status--error" role="alert" aria-live="polite">
+            {ddlApplyError}
+            <button
+              type="button"
+              onClick={dismissDdlApplyMessage}
+              className="connection-status-dismiss"
+              aria-label="Dismiss apply error"
+            >
+              ×
+            </button>
+          </div>
+        )}
+        {ddlApplyMessage && (
+          <div className="connection-status connection-status--success" role="status" aria-live="polite">
+            {ddlApplyMessage}
+            <button
+              type="button"
+              onClick={dismissDdlApplyMessage}
+              className="connection-status-dismiss"
+              aria-label="Dismiss apply message"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </header>
       <main className="app-main">
         <section className="connection-panel">
@@ -356,7 +400,8 @@ export function App() {
               diagram={diagram}
               connection={config}
               isOpen={isDdlPreviewOpen}
-              onClose={() => setIsDdlPreviewOpen(false)}
+              onClose={handleDdlClose}
+              onExecute={handleDdlExecute}
             />
           )}
         </div>
