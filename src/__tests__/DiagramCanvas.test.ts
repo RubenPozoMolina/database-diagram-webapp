@@ -211,3 +211,156 @@ describe('DiagramCanvas', () => {
     });
   });
 });
+
+/**
+ * Unit tests for table addition to canvas (TASK-006).
+ *
+ * Acceptance criteria:
+ *  1. Unit tests verify table appears on canvas after addition.
+ *  2. Unit tests verify table has correct name and columns.
+ */
+describe('table addition to canvas (TASK-006)', () => {
+  function createCanvas(): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 800;
+    return canvas;
+  }
+
+  it('table appears on canvas after addition', () => {
+    const canvas = createCanvas();
+    const diagram = new DiagramCanvas(canvas);
+
+    expect(diagram.tableCount).toBe(0);
+    expect(diagram.isEmpty).toBe(true);
+
+    diagram.addTable({
+      id: 't1',
+      name: 'users',
+      position: { x: 100, y: 200 },
+      columns: [],
+    });
+
+    expect(diagram.tableCount).toBe(1);
+    expect(diagram.isEmpty).toBe(false);
+
+    const state = diagram.getState();
+    expect(state.tables).toHaveLength(1);
+    expect(state.tables[0]!.id).toBe('t1');
+    expect(state.tables[0]!.position).toEqual({ x: 100, y: 200 });
+  });
+
+  it('table has correct name after addition', () => {
+    const canvas = createCanvas();
+    const diagram = new DiagramCanvas(canvas);
+
+    diagram.addTable({
+      id: 't1',
+      name: 'users',
+      columns: [],
+    });
+
+    const state = diagram.getState();
+    expect(state.tables[0]!.name).toBe('users');
+
+    diagram.addTable({
+      id: 't2',
+      name: 'orders',
+      columns: [],
+    });
+
+    const tables = diagram.getState().tables;
+    expect(tables).toHaveLength(2);
+    expect(tables[0]!.name).toBe('users');
+    expect(tables[1]!.name).toBe('orders');
+  });
+
+  it('table has correct columns after addition', () => {
+    const canvas = createCanvas();
+    const diagram = new DiagramCanvas(canvas);
+
+    diagram.addTable({
+      id: 't1',
+      name: 'users',
+      columns: [
+        { name: 'id', type: 'integer', isPrimaryKey: true, isNullable: false },
+        { name: 'email', type: 'text', isPrimaryKey: false, isNullable: false },
+        { name: 'created_at', type: 'timestamp', isPrimaryKey: false, isNullable: true },
+      ],
+    });
+
+    const state = diagram.getState();
+    const table = state.tables[0]!;
+    expect(table.columns).toHaveLength(3);
+
+    expect(table.columns[0]).toEqual({
+      name: 'id',
+      type: 'integer',
+      isPrimaryKey: true,
+      isNullable: false,
+    });
+    expect(table.columns[1]).toEqual({
+      name: 'email',
+      type: 'text',
+      isPrimaryKey: false,
+      isNullable: false,
+    });
+    expect(table.columns[2]).toEqual({
+      name: 'created_at',
+      type: 'timestamp',
+      isPrimaryKey: false,
+      isNullable: true,
+    });
+  });
+
+  it('table with empty column list appears on canvas', () => {
+    const canvas = createCanvas();
+    const diagram = new DiagramCanvas(canvas);
+
+    diagram.addTable({ id: 't1', name: 'empty_table', columns: [] });
+
+    const state = diagram.getState();
+    expect(state.tables).toHaveLength(1);
+    expect(state.tables[0]!.name).toBe('empty_table');
+    expect(state.tables[0]!.columns).toEqual([]);
+  });
+
+  it('multiple tables can be added independently with their own columns', () => {
+    const canvas = createCanvas();
+    const diagram = new DiagramCanvas(canvas);
+
+    diagram.addTable({
+      id: 't1',
+      name: 'users',
+      columns: [
+        { name: 'id', type: 'integer', isPrimaryKey: true, isNullable: false },
+      ],
+    });
+    diagram.addTable({
+      id: 't2',
+      name: 'orders',
+      columns: [
+        { name: 'order_id', type: 'integer', isPrimaryKey: true, isNullable: false },
+        { name: 'user_id', type: 'integer', isPrimaryKey: false, isNullable: false },
+        { name: 'total', type: 'numeric', isPrimaryKey: false, isNullable: true },
+      ],
+    });
+
+    const state = diagram.getState();
+    expect(state.tables).toHaveLength(2);
+
+    const users = state.tables.find((t) => t.id === 't1')!;
+    expect(users.name).toBe('users');
+    expect(users.columns).toHaveLength(1);
+    expect(users.columns[0].name).toBe('id');
+
+    const orders = state.tables.find((t) => t.id === 't2')!;
+    expect(orders.name).toBe('orders');
+    expect(orders.columns).toHaveLength(3);
+    expect(orders.columns.map((c) => c.name)).toEqual([
+      'order_id',
+      'user_id',
+      'total',
+    ]);
+  });
+});
