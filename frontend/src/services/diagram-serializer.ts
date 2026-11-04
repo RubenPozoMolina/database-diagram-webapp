@@ -1,7 +1,7 @@
 // Diagram JSON serialization utilities
 // Ensures no database credentials are ever serialized to JSON
 
-import type { Diagram, DiagramJSON } from "./diagram";
+import type { Diagram, DiagramJSON } from "../types/diagram";
 
 export const DIAGRAM_JSON_VERSION = "1.0.0";
 

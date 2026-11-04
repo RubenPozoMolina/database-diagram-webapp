@@ -1,0 +1,33 @@
+services:
+  frontend-tests:
+    image: node:20-alpine
+    working_dir: /work/frontend
+    volumes:
+      - .:/work:rw
+      - ./qa-artifacts:/artifacts
+    environment:
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
+    command: sh -c "npm ci --ignore-scripts && npm test"
+
+  frontend-build:
+    image: node:20-alpine
+    working_dir: /work/frontend
+    volumes:
+      - .:/work:rw
+    environment:
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
+    command: sh -c "npm ci --ignore-scripts && npm run build"
+
+  frontend-dev:
+    image: node:20-alpine
+    working_dir: /work/frontend
+    volumes:
+      - .:/work:rw
+    environment:
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
+    ports:
+      - "5173:5173"
+    command: sh -c "npm ci --ignore-scripts && npm run dev -- --host"

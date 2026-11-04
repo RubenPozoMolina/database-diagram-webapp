@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
+import type { Diagram } from "../types/diagram";
 import { serializeDiagram, deserializeDiagram, hasCredentials, DIAGRAM_JSON_VERSION } from "../index";
 
 describe("diagram serializer", () => {
   it("serializes and deserializes a diagram without data loss", () => {
-    const original = {
+    const original: Diagram = {
       id: "diag-1",
       name: "Test Diagram",
       tables: [
