@@ -271,6 +271,20 @@ describe('Diagram data model (TASK-005)', () => {
       expect(column.nullable).toBe(true);
       expect(column.defaultValue).toBeUndefined();
     });
+
+    it('creates a column designated as primary key', () => {
+      const column = createColumn(
+        'col-4',
+        'id',
+        'integer',
+        false,
+        undefined,
+        true,
+      );
+
+      expect(column.primaryKey).toBe(true);
+      expect(column.nullable).toBe(false);
+    });
   });
 
   describe('createTable factory (TASK-005)', () => {

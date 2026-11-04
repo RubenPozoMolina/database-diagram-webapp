@@ -224,6 +224,28 @@ describe('TableNode', () => {
     });
   });
 
+  it('renders the PK checkbox checked when the column is a primary key', () => {
+    const onUpdateColumn = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ columns: [makeColumn({ primaryKey: true })] })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Primary key for id',
+    });
+    expect(checkbox).toBeChecked();
+  });
+
   it('edits column default value via the text input', () => {
     const onUpdateColumn = vi.fn();
     render(
