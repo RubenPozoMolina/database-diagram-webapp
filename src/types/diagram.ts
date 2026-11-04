@@ -143,6 +143,41 @@ export function createUniqueConstraint(
 }
 
 /**
+ * Creates a foreign key relationship between two tables.
+ *
+ * Used by STORY-005 / TASK-014: a relationship records the source table
+ * (foreign key side) and target table (referenced side), plus the optional
+ * column-to-column mapping that defines which column references which.
+ */
+export function createRelationship(
+  id: string,
+  sourceTableId: string,
+  sourceColumnId: string | undefined,
+  targetTableId: string,
+  targetColumnId: string | undefined,
+): Relationship {
+  return {
+    id,
+    sourceTableId,
+    sourceColumnId,
+    targetTableId,
+    targetColumnId,
+  };
+}
+
+/**
+ * Returns all relationships that involve a given table (as source or target).
+ */
+export function findRelationshipsByTable(
+  diagram: Diagram,
+  tableId: string,
+): Relationship[] {
+  return diagram.relationships.filter(
+    (r) => r.sourceTableId === tableId || r.targetTableId === tableId,
+  );
+}
+
+/**
  * Returns all unique constraints defined on a given table.
  */
 export function findUniqueConstraintsByTable(

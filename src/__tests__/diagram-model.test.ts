@@ -15,9 +15,11 @@ import { describe, it, expect } from 'vitest';
 import {
   createColumn,
   createEmptyDiagram,
+  createRelationship,
   createTable,
-  findTableById,
   findRelationshipById,
+  findRelationshipsByTable,
+  findTableById,
   type Column,
   type Diagram,
   type Relationship,
@@ -166,6 +168,60 @@ describe('Diagram data model (TASK-005)', () => {
 
       expect(findRelationshipById(diagram, 'rel-1')!.id).toBe('rel-1');
       expect(findRelationshipById(diagram, 'missing')).toBeUndefined();
+    });
+  });
+
+  describe('createRelationship factory (STORY-005 / TASK-014)', () => {
+    it('creates a relationship with column-to-column mapping', () => {
+      const relationship = createRelationship(
+        'rel-1',
+        'table-1',
+        'col-2',
+        'table-2',
+        'col-1',
+      );
+
+      expect(relationship.id).toBe('rel-1');
+      expect(relationship.sourceTableId).toBe('table-1');
+      expect(relationship.sourceColumnId).toBe('col-2');
+      expect(relationship.targetTableId).toBe('table-2');
+      expect(relationship.targetColumnId).toBe('col-1');
+    });
+
+    it('creates a relationship without column mapping when column ids are undefined', () => {
+      const relationship = createRelationship(
+        'rel-2',
+        'table-1',
+        undefined,
+        'table-2',
+        undefined,
+      );
+
+      expect(relationship.sourceColumnId).toBeUndefined();
+      expect(relationship.targetColumnId).toBeUndefined();
+    });
+  });
+
+  describe('findRelationshipsByTable', () => {
+    it('returns relationships where the table is source or target', () => {
+      const diagram: Diagram = {
+        ...createEmptyDiagram(),
+        tables: [
+          { id: 't1', name: 'users', x: 0, y: 0, width: 220, height: 120, columns: [] },
+          { id: 't2', name: 'orders', x: 0, y: 0, width: 220, height: 120, columns: [] },
+          { id: 't3', name: 'products', x: 0, y: 0, width: 220, height: 120, columns: [] },
+        ],
+        relationships: [
+          createRelationship('r1', 't1', 'c1', 't2', 'c2'),
+          createRelationship('r2', 't3', 'c3', 't1', 'c4'),
+          createRelationship('r3', 't2', 'c5', 't3', 'c6'),
+        ],
+      };
+
+      expect(findRelationshipsByTable(diagram, 't1')).toHaveLength(2);
+      expect(findRelationshipsByTable(diagram, 't2')).toHaveLength(2);
+      expect(findRelationshipsByTable(diagram, 't3')).toHaveLength(2);
+      expect(findRelationshipsByTable(diagram, 'missing')).toHaveLength(0);
     });
   });
 

@@ -6,6 +6,7 @@ import { ExportButton } from './components/ExportButton';
 import { DdlPreview } from './components/DdlPreview';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
+import { CreateRelationshipModal } from './components/CreateRelationshipModal';
 import { readSchema } from './connection/readSchemaApi';
 import type { Column, Table, UniqueConstraint } from './types/diagram';
 import type {
@@ -23,6 +24,7 @@ export function App() {
     diagram,
     createNewDiagram,
     addTable,
+    addRelationship,
     addUniqueConstraint,
     updateTable,
     updateTablePosition,
@@ -42,6 +44,7 @@ export function App() {
   const connectionFormRef = useRef<HTMLDivElement | null>(null);
   const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
+  const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
   const [isDdlPreviewOpen, setIsDdlPreviewOpen] = useState(false);
   const [isImportingSchema, setIsImportingSchema] = useState(false);
   const [importSchemaError, setImportSchemaError] = useState<string | null>(null);
@@ -105,6 +108,25 @@ export function App() {
     setIsAddTableModalOpen(false);
   };
 
+  const handleAddRelationship = () => {
+    setIsAddRelationshipModalOpen(true);
+  };
+
+  const handleCreateRelationship = (relationship: {
+    sourceTableId: string;
+    sourceColumnId: string;
+    targetTableId: string;
+    targetColumnId: string;
+  }) => {
+    addRelationship({
+      sourceTableId: relationship.sourceTableId,
+      sourceColumnId: relationship.sourceColumnId,
+      targetTableId: relationship.targetTableId,
+      targetColumnId: relationship.targetColumnId,
+    });
+    setIsAddRelationshipModalOpen(false);
+  };
+
   const handleTableUpdate = (
     id: string,
     updates: Partial<Omit<Table, 'id'>>,
@@ -157,6 +179,14 @@ export function App() {
             aria-label="Add a new table to the canvas"
           >
             Add Table
+          </button>
+          <button
+            type="button"
+            className="add-table-button"
+            onClick={handleAddRelationship}
+            aria-label="Add a relationship between tables"
+          >
+            Add Relationship
           </button>
           <button
             type="button"
@@ -253,6 +283,14 @@ export function App() {
               isOpen
               onClose={() => setIsAddTableModalOpen(false)}
               onCreate={handleCreateTable}
+            />
+          )}
+          {isAddRelationshipModalOpen && (
+            <CreateRelationshipModal
+              isOpen
+              onClose={() => setIsAddRelationshipModalOpen(false)}
+              tables={diagram.tables}
+              onCreate={handleCreateRelationship}
             />
           )}
           {isDdlPreviewOpen && (
