@@ -121,6 +121,7 @@ describe('ImportButton', () => {
           primaryKey: true,
         },
       ],
+      indexes: [],
     });
     const exportPayload = serializeDiagram(diagram);
     const jsonString = JSON.stringify(exportPayload);
@@ -234,6 +235,7 @@ describe('ImportButton', () => {
           primaryKey: false,
         },
       ],
+      indexes: [],
     });
     original.relationships.push({
       id: 'rel-1',

@@ -66,6 +66,7 @@ function deserializeTable(table: SerializedTable): Table {
     width: table.width,
     height: table.height,
     columns: table.columns.map(deserializeColumn),
+    indexes: [],
   };
 }
 
