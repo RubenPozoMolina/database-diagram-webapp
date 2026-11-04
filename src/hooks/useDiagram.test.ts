@@ -202,12 +202,12 @@ describe('useDiagram', () => {
     });
     const tableId = result.current.diagram.tables[0].id;
     act(() => {
-      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
     });
     const table = result.current.diagram.tables.find((t) => t.id === tableId);
     expect(table?.indexes).toHaveLength(1);
     expect(table?.indexes[0].name).toBe('idx_email');
-    expect(table?.indexes[0].columnId).toBe('c2');
+    expect(table?.indexes[0].columnIds).toEqual(['c2']);
     expect(table?.indexes[0].id).toBeDefined();
   });
 
@@ -256,7 +256,7 @@ describe('useDiagram', () => {
     });
     const tableId = result.current.diagram.tables[0].id;
     act(() => {
-      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
     });
     const indexId = result.current.diagram.tables[0].indexes[0].id;
     act(() => {
@@ -310,19 +310,19 @@ describe('useDiagram', () => {
     });
     const tableId = result.current.diagram.tables[0].id;
     act(() => {
-      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
     });
     const indexId = result.current.diagram.tables[0].indexes[0].id;
     act(() => {
       result.current.updateIndex(tableId, indexId, {
         name: 'idx_user_email',
-        columnId: 'c3',
+        columnIds: ['c3'],
       });
     });
     const table = result.current.diagram.tables.find((t) => t.id === tableId);
     expect(table?.indexes).toHaveLength(1);
     expect(table?.indexes[0].name).toBe('idx_user_email');
-    expect(table?.indexes[0].columnId).toBe('c3');
+    expect(table?.indexes[0].columnIds).toEqual(['c3']);
   });
 
   it('removes a unique constraint by id', () => {
@@ -644,7 +644,7 @@ describe('useDiagram', () => {
     });
     const tableId = result.current.diagram.tables[0].id;
     act(() => {
-      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
     });
     act(() => {
       result.current.removeColumn(tableId, 'c2');

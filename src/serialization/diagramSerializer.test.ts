@@ -142,6 +142,17 @@ describe('serializeDiagram', () => {
     expect(rel.onUpdate).toBe('no action');
   });
 
+  it('serializes custom referential actions from the model', () => {
+    const diagram = buildDiagram();
+    diagram.relationships[0].onDelete = 'cascade';
+    diagram.relationships[0].onUpdate = 'set null';
+
+    const result = serializeDiagram(diagram);
+    const rel = result.diagram.relationships[0];
+    expect(rel.onDelete).toBe('cascade');
+    expect(rel.onUpdate).toBe('set null');
+  });
+
   it('serializes indexes from all tables', () => {
     const diagram = createEmptyDiagram('With Indexes');
     diagram.tables.push({
@@ -156,7 +167,7 @@ describe('serializeDiagram', () => {
         { id: 'col-users-email', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false },
       ],
       indexes: [
-        { id: 'idx-users-email', name: 'users_email_idx', columnId: 'col-users-email' },
+        { id: 'idx-users-email', tableId: 'table-users', name: 'users_email_idx', columnIds: ['col-users-email'] },
       ],
     });
     diagram.tables.push({
@@ -171,7 +182,7 @@ describe('serializeDiagram', () => {
         { id: 'col-orders-user-id', name: 'user_id', dataType: 'integer', nullable: false, primaryKey: false },
       ],
       indexes: [
-        { id: 'idx-orders-user-id', name: 'orders_user_id_idx', columnId: 'col-orders-user-id' },
+        { id: 'idx-orders-user-id', tableId: 'table-orders', name: 'orders_user_id_idx', columnIds: ['col-orders-user-id'] },
       ],
     });
 

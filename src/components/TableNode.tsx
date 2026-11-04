@@ -134,7 +134,8 @@ export function TableNode({
   };
 
   const columnHasIndex = useCallback(
-    (columnId: string) => table.indexes.some((index) => index.columnId === columnId),
+    (columnId: string) =>
+      table.indexes.some((index) => index.columnIds.includes(columnId)),
     [table.indexes],
   );
 
@@ -145,8 +146,9 @@ export function TableNode({
         ...table.indexes,
         {
           id: crypto.randomUUID(),
+          tableId: table.id,
           name: newIndexName.trim(),
-          columnId: newIndexColumnId,
+          columnIds: [newIndexColumnId],
         },
       ],
     });
@@ -171,7 +173,7 @@ export function TableNode({
     const index = table.indexes.find((i) => i.id === indexId);
     if (index) {
       setNewIndexName(index.name);
-      setNewIndexColumnId(index.columnId);
+      setNewIndexColumnId(index.columnIds[0]);
       setEditingIndex(indexId);
     }
   };
@@ -181,7 +183,7 @@ export function TableNode({
     onUpdateTable(table.id, {
       indexes: table.indexes.map((index) =>
         index.id === indexId
-          ? { ...index, name: newIndexName.trim(), columnId: newIndexColumnId }
+          ? { ...index, name: newIndexName.trim(), columnIds: [newIndexColumnId] }
           : index,
       ),
     });
@@ -457,8 +459,8 @@ export function TableNode({
             ) : null}
             <ul className="index-list">
               {table.indexes.map((index) => {
-                const column = table.columns.find(
-                  (c) => c.id === index.columnId,
+                const column = table.columns.find((c) =>
+                  index.columnIds.includes(c.id),
                 );
                 return (
                   <li key={index.id} className="index-item">

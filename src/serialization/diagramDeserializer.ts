@@ -97,6 +97,14 @@ function deserializeRelationship(
       relationship.targetColumnId !== undefined
         ? relationship.targetColumnId
         : undefined,
+    onDelete:
+      relationship.onDelete !== null && relationship.onDelete !== undefined
+        ? relationship.onDelete
+        : 'no action',
+    onUpdate:
+      relationship.onUpdate !== null && relationship.onUpdate !== undefined
+        ? relationship.onUpdate
+        : 'no action',
   };
 }
 
@@ -121,17 +129,16 @@ function deserializeUniqueConstraint(
  * Deserialize a single serialized index into the internal Index model.
  *
  * The serialized form stores column IDs as an array (supporting composite
- * indexes) plus a unique flag and table ID; the in-memory model stores a
- * single column per index with no unique flag. The first column ID is used
- * for the in-memory columnId, and a synthetic name is generated when the
- * serialized name is null.
+ * indexes) plus a table ID; the in-memory model stores the same fields.
+ * A synthetic name is generated when the serialized name is null.
  */
 function deserializeIndex(index: SerializedIndex): Index {
-  const columnId = index.columnIds.length > 0 ? index.columnIds[0] : '';
+  const firstColumn = index.columnIds.length > 0 ? index.columnIds[0] : '';
   return {
     id: index.id,
-    name: index.name !== null && index.name !== undefined ? index.name : `idx_${columnId}`,
-    columnId,
+    tableId: index.tableId,
+    name: index.name !== null && index.name !== undefined ? index.name : `idx_${firstColumn}`,
+    columnIds: index.columnIds,
   };
 }
 

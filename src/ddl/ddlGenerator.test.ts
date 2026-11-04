@@ -108,6 +108,26 @@ describe('generateDDL', () => {
     expect(ddl).toContain('REFERENCES');
   });
 
+  it('emits ON DELETE CASCADE and ON UPDATE SET NULL when relationship has referential actions', () => {
+    const diagram = buildDiagram();
+    diagram.relationships[0].onDelete = 'cascade';
+    diagram.relationships[0].onUpdate = 'set null';
+
+    const ddl = generateDDL(diagram);
+    expect(ddl).toContain('ON DELETE CASCADE');
+    expect(ddl).toContain('ON UPDATE SET NULL');
+  });
+
+  it('emits ON DELETE RESTRICT and ON UPDATE NO ACTION when relationship has those referential actions', () => {
+    const diagram = buildDiagram();
+    diagram.relationships[0].onDelete = 'restrict';
+    diagram.relationships[0].onUpdate = 'no action';
+
+    const ddl = generateDDL(diagram);
+    expect(ddl).toContain('ON DELETE RESTRICT');
+    expect(ddl).toContain('ON UPDATE NO ACTION');
+  });
+
   it('quotes all identifiers with double quotes', () => {
     const ddl = generateDDL(buildDiagram());
     expect(ddl).toContain('"users"');

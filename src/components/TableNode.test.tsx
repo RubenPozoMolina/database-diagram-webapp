@@ -224,6 +224,28 @@ describe('TableNode', () => {
     });
   });
 
+  it('renders the PK checkbox checked when the column is a primary key', () => {
+    const onUpdateColumn = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ columns: [makeColumn({ primaryKey: true })] })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Primary key for id',
+    });
+    expect(checkbox).toBeChecked();
+  });
+
   it('edits column default value via the text input', () => {
     const onUpdateColumn = vi.fn();
     render(
@@ -458,7 +480,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         onUpdatePosition={vi.fn()}
@@ -482,7 +504,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         onUpdatePosition={vi.fn()}
@@ -562,8 +584,9 @@ describe('TableNode', () => {
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'test-index-uuid',
+          tableId: 't1',
           name: 'idx_email',
-          columnId: 'c2',
+          columnIds: ['c2'],
         }),
       ]),
     });
@@ -576,7 +599,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}
@@ -606,7 +629,7 @@ describe('TableNode', () => {
               makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
               makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
             ],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}
@@ -631,8 +654,9 @@ describe('TableNode', () => {
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'i1',
+          tableId: 't1',
           name: 'idx_user_id',
-          columnId: 'c1',
+          columnIds: ['c1'],
         }),
       ]),
     });
@@ -645,7 +669,7 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}

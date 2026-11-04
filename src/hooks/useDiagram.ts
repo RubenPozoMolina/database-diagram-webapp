@@ -28,7 +28,7 @@ interface UseDiagramReturn {
     tableId: string,
     position: { x: number; y: number },
   ) => void;
-  addIndex: (tableId: string, index: Omit<Index, 'id'>) => void;
+  addIndex: (tableId: string, index: Omit<Index, 'id' | 'tableId'>) => void;
   removeIndex: (tableId: string, indexId: string) => void;
   updateIndex: (
     tableId: string,
@@ -137,8 +137,13 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
   );
 
   const addIndex = useCallback(
-    (tableId: string, index: Omit<Index, 'id'>) => {
-      const newIndex: Index = createIndex(crypto.randomUUID(), index.name, index.columnId);
+    (tableId: string, index: Omit<Index, 'id' | 'tableId'>) => {
+      const newIndex: Index = createIndex(
+        crypto.randomUUID(),
+        tableId,
+        index.name,
+        index.columnIds,
+      );
       setDiagram((prev) => ({
         ...prev,
         tables: prev.tables.map((t) =>
@@ -259,7 +264,7 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
             ? {
                 ...t,
                 columns: t.columns.filter((c) => c.id !== columnId),
-                indexes: t.indexes.filter((i) => i.columnId !== columnId),
+                indexes: t.indexes.filter((i) => !i.columnIds.includes(columnId)),
               }
             : t,
         ),
