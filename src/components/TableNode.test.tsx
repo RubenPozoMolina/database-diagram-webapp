@@ -356,6 +356,53 @@ describe('TableNode', () => {
 
   /* ---- STORY-007: index tests ---- */
 
+  /* ---- STORY-004 / TASK-010: primary key badge tests ---- */
+
+  it('shows a PK badge with key icon next to primary key columns', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar', primaryKey: false }),
+            ],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText('Primary key')).toBeInTheDocument();
+    expect(screen.getByText(/🔑 PK/)).toBeInTheDocument();
+  });
+
+  it('does not show a PK badge on non-primary-key columns', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer', primaryKey: false }),
+            ],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    expect(screen.queryByTitle(/Primary key/)).toBeNull();
+    expect(screen.queryByText(/🔑 PK/)).toBeNull();
+  });
+
   it('shows an IX badge on indexed columns', () => {
     const onUpdateTable = vi.fn();
     render(

@@ -283,7 +283,7 @@ export function TableNode({
                 {column.name}: {column.dataType}
                 {column.primaryKey && (
                   <span className="pk-badge" aria-label="Primary key">
-                    PK
+                    🔑 PK
                   </span>
                 )}
                 {columnHasIndex(column.id) && (
