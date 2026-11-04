@@ -703,4 +703,48 @@ describe('TableNode', () => {
     );
     expect(screen.getAllByText('UQ')).toHaveLength(2);
   });
+
+  /* ---- TASK-013: column position tracking for relationship lines ---- */
+
+  it('reports column positions via onColumnPositionUpdate', () => {
+    const onColumnPositionUpdate = vi.fn();
+    const table = makeTable({
+      columns: [
+        makeColumn({ id: 'c1', name: 'id' }),
+        makeColumn({ id: 'c2', name: 'email' }),
+      ],
+    });
+    render(
+      <TableNode
+        table={table}
+        onUpdatePosition={vi.fn()}
+        onColumnPositionUpdate={onColumnPositionUpdate}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    expect(onColumnPositionUpdate).toHaveBeenCalledWith('t1', expect.any(Map));
+    const positions = onColumnPositionUpdate.mock.calls[0][1];
+    expect(positions.get('c1')).toBeDefined();
+    expect(positions.get('c2')).toBeDefined();
+  });
+
+  it('does not call onColumnPositionUpdate when not provided', () => {
+    const table = makeTable({
+      columns: [makeColumn({ id: 'c1', name: 'id' })],
+    });
+    const { container } = render(
+      <TableNode
+        table={table}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    expect(container.querySelectorAll('.table-column')).toHaveLength(1);
+  });
 });

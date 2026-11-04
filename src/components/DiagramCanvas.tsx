@@ -7,6 +7,10 @@ import { findUniqueConstraintsByTable } from '../types/diagram';
 interface DiagramCanvasProps {
   diagram: Diagram;
   onTablePositionUpdate: (id: string, x: number, y: number) => void;
+  onColumnPositionUpdate?: (
+    tableId: string,
+    columnPositions: Map<string, { x: number; y: number }>,
+  ) => void;
   onTableUpdate: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
   onAddColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
   onRemoveColumn: (tableId: string, columnId: string) => void;
@@ -15,6 +19,7 @@ interface DiagramCanvasProps {
     columnId: string,
     updates: Partial<Omit<Column, 'id'>>,
   ) => void;
+  columnPositions?: Map<string, Map<string, { x: number; y: number }>>;
   style?: React.CSSProperties;
 }
 
@@ -24,10 +29,12 @@ const TABLE_DEFAULT_HEIGHT = 120;
 export function DiagramCanvas({
   diagram,
   onTablePositionUpdate,
+  onColumnPositionUpdate,
   onTableUpdate,
   onAddColumn,
   onRemoveColumn,
   onUpdateColumn,
+  columnPositions,
   style,
 }: DiagramCanvasProps) {
   const lineEndpoints = React.useMemo(() => {
@@ -51,10 +58,34 @@ export function DiagramCanvas({
           const source = lineEndpoints.get(relationship.sourceTableId);
           const target = lineEndpoints.get(relationship.targetTableId);
           if (!source || !target) return null;
-          const sourceX = source.x + TABLE_DEFAULT_WIDTH / 2;
-          const sourceY = source.y + TABLE_DEFAULT_HEIGHT;
-          const targetX = target.x + TABLE_DEFAULT_WIDTH / 2;
-          const targetY = target.y;
+
+          // Default endpoints: bottom-center of source table, top-center of target table.
+          let sourceX = source.x + TABLE_DEFAULT_WIDTH / 2;
+          let sourceY = source.y + TABLE_DEFAULT_HEIGHT;
+          let targetX = target.x + TABLE_DEFAULT_WIDTH / 2;
+          let targetY = target.y;
+
+          // When column positions are available and the relationship references
+          // specific columns, anchor the line to those columns instead of table centres.
+          if (columnPositions && relationship.sourceColumnId) {
+            const sourceColPos = columnPositions
+              .get(relationship.sourceTableId)
+              ?.get(relationship.sourceColumnId);
+            if (sourceColPos) {
+              sourceX = sourceColPos.x;
+              sourceY = sourceColPos.y;
+            }
+          }
+          if (columnPositions && relationship.targetColumnId) {
+            const targetColPos = columnPositions
+              .get(relationship.targetTableId)
+              ?.get(relationship.targetColumnId);
+            if (targetColPos) {
+              targetX = targetColPos.x;
+              targetY = targetColPos.y;
+            }
+          }
+
           return (
             <RelationshipLine
               key={relationship.id}
@@ -73,6 +104,7 @@ export function DiagramCanvas({
           table={table}
           uniqueConstraints={findUniqueConstraintsByTable(diagram, table.id)}
           onUpdatePosition={onTablePositionUpdate}
+          onColumnPositionUpdate={onColumnPositionUpdate}
           onUpdateTable={onTableUpdate}
           onAddColumn={onAddColumn}
           onRemoveColumn={onRemoveColumn}

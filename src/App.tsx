@@ -48,6 +48,9 @@ export function App() {
   const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
   const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
+  const [columnPositions, setColumnPositions] = useState<
+    Map<string, Map<string, { x: number; y: number }>>
+  >(new Map());
   const [importError, setImportErrorState] = useState<string | null>(null);
 
   const handleImportError = useCallback((message: string) => {
@@ -95,6 +98,17 @@ export function App() {
       updateTablePosition(id, { x, y });
     },
     [updateTablePosition],
+  );
+
+  const handleColumnPositionUpdate = useCallback(
+    (tableId: string, positions: Map<string, { x: number; y: number }>) => {
+      setColumnPositions((prev) => {
+        const next = new Map(prev);
+        next.set(tableId, positions);
+        return next;
+      });
+    },
+    [],
   );
 
   const handleAddTable = () => {
@@ -374,10 +388,12 @@ export function App() {
           <DiagramCanvas
             diagram={diagram}
             onTablePositionUpdate={handleTablePositionUpdate}
+            onColumnPositionUpdate={handleColumnPositionUpdate}
             onTableUpdate={handleTableUpdate}
             onAddColumn={handleAddColumn}
             onRemoveColumn={handleRemoveColumn}
             onUpdateColumn={handleUpdateColumn}
+            columnPositions={columnPositions}
             style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           />
           {isAddTableModalOpen && (

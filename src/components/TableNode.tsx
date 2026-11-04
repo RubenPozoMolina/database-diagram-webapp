@@ -8,6 +8,10 @@ interface TableNodeProps {
   table: Table;
   uniqueConstraints?: UniqueConstraint[];
   onUpdatePosition: (id: string, x: number, y: number) => void;
+  onColumnPositionUpdate?: (
+    tableId: string,
+    columnPositions: Map<string, { x: number; y: number }>,
+  ) => void;
   onUpdateTable: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
   onAddColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
   onRemoveColumn: (tableId: string, columnId: string) => void;
@@ -22,12 +26,16 @@ export function TableNode({
   table,
   uniqueConstraints = [],
   onUpdatePosition,
+  onColumnPositionUpdate,
   onUpdateTable,
   onAddColumn,
   onRemoveColumn,
   onUpdateColumn,
 }: TableNodeProps) {
   const ref = React.useRef<HTMLDivElement>(null);
+  const columnRefs = React.useRef<Map<string, React.RefObject<HTMLDivElement>>>(
+    new Map(),
+  );
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(table.name);
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
@@ -35,12 +43,40 @@ export function TableNode({
   const [newIndexName, setNewIndexName] = useState('');
   const [newIndexColumnId, setNewIndexColumnId] = useState<string | null>(null);
 
+  const getColumnRef = React.useCallback(
+    (columnId: string): React.RefObject<HTMLDivElement> => {
+      if (!columnRefs.current.has(columnId)) {
+        columnRefs.current.set(columnId, React.createRef());
+      }
+      return columnRefs.current.get(columnId)!;
+    },
+    [],
+  );
+
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     onUpdatePosition(table.id, rect.left, rect.top);
   }, [table.id, table.width, table.height, onUpdatePosition]);
+
+  const columnIds = React.useMemo(
+    () => table.columns.map((c) => c.id).join(','),
+    [table.columns],
+  );
+
+  React.useEffect(() => {
+    if (!onColumnPositionUpdate) return;
+    const columnPositions = new Map<string, { x: number; y: number }>();
+    for (const [columnId, refObj] of columnRefs.current) {
+      const el = refObj.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        columnPositions.set(columnId, { x: rect.left, y: rect.top });
+      }
+    }
+    onColumnPositionUpdate(table.id, columnPositions);
+  }, [table.id, columnIds, onColumnPositionUpdate]);
 
   const saveName = () => {
     const trimmed = nameInput.trim();
@@ -184,6 +220,7 @@ export function TableNode({
         {table.columns.map((column) => (
           <div
             key={column.id}
+            ref={getColumnRef(column.id)}
             className={`table-column ${editingColumn === column.id ? 'editing' : ''}`}
             title={column.primaryKey ? 'PK' : ''}
           >
