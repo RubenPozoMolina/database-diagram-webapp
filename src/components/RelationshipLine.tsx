@@ -6,6 +6,7 @@ interface RelationshipLineProps {
   sourceY: number;
   targetX: number;
   targetY: number;
+  onDelete?: (relationshipId: string) => void;
 }
 
 export function RelationshipLine({
@@ -14,6 +15,7 @@ export function RelationshipLine({
   sourceY,
   targetX,
   targetY,
+  onDelete,
 }: RelationshipLineProps) {
   // Draw a slightly curved line from source to target.
   const cp1x = (sourceX + targetX) / 2;
@@ -21,6 +23,10 @@ export function RelationshipLine({
   const cp2x = (sourceX + targetX) / 2;
   const cp2y = targetY;
   const d = `M ${sourceX} ${sourceY} C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${targetX} ${targetY}`;
+
+  const handleClick = () => {
+    if (onDelete) onDelete(relationship.id);
+  };
 
   return (
     <path
@@ -30,6 +36,11 @@ export function RelationshipLine({
       stroke="#4f46e5"
       strokeWidth="2"
       className="relationship-line"
+      style={{
+        cursor: 'pointer',
+        pointerEvents: 'all',
+      }}
+      onClick={handleClick}
     />
   );
 }

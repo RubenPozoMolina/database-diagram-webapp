@@ -12,6 +12,8 @@ interface DiagramCanvasProps {
     columnPositions: Map<string, { x: number; y: number }>,
   ) => void;
   onTableUpdate: (id: string, updates: Partial<Omit<Table, 'id'>>) => void;
+  onDeleteTable: (tableId: string) => void;
+  onDeleteRelationship: (relationshipId: string) => void;
   onAddColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
   onRemoveColumn: (tableId: string, columnId: string) => void;
   onUpdateColumn: (
@@ -41,6 +43,8 @@ export function DiagramCanvas({
   onTablePositionUpdate,
   onColumnPositionUpdate,
   onTableUpdate,
+  onDeleteTable,
+  onDeleteRelationship,
   onAddColumn,
   onRemoveColumn,
   onUpdateColumn,
@@ -107,6 +111,7 @@ export function DiagramCanvas({
               sourceY={sourceY}
               targetX={targetX}
               targetY={targetY}
+              onDelete={onDeleteRelationship}
             />
           );
         })}
@@ -119,6 +124,7 @@ export function DiagramCanvas({
           onUpdatePosition={onTablePositionUpdate}
           onColumnPositionUpdate={onColumnPositionUpdate}
           onUpdateTable={onTableUpdate}
+          onDeleteTable={onDeleteTable}
           onAddColumn={onAddColumn}
           onRemoveColumn={onRemoveColumn}
           onUpdateColumn={onUpdateColumn}
