@@ -1,0 +1,50 @@
+{
+  "id": "STORY-012",
+  "type": "story",
+  "title": "Connect to PostgreSQL",
+  "description": "As a database designer, I want to connect to a PostgreSQL database by providing host, port, database, user, and password so that I can interact with a live database.",
+  "status": "to-do",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": "project-manager",
+  "parent": "EPIC-003",
+  "acceptanceCriteria": [
+    "Given the user enters connection details, when they attempt to connect, then the application tests the connection via the backend and indicates success or failure",
+    "And credentials are held only for the current session"
+  ],
+  "dependencies": [
+    "EPIC-004"
+  ],
+  "storyPoints": 5,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.1"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-03T23:49:54.491897+00:00",
+      "reason": "Planned for sprint 27",
+      "evidence": []
+    }
+  ],
+  "sprint": 27,
+  "requiresReview": true,
+  "updatedAt": "2026-11-03T23:49:54.491905+00:00",
+  "result": "completed",
+  "resultEvidence": [
+    "Implementation complete via child tasks TASK-036 (Connection Form UI), TASK-037 (Connection State Management), and backend dependency STORY-016 (test-connection endpoint).",
+    "Source files: src/connection/ConnectionForm.ts (host/port/database/user/password form), src/connection/connectionApi.ts (POST /api/v1/connections/test client), src/hooks/useConnection.ts (in-memory session credentials, status state machine), src/App.tsx (wiring + success/error banners), src/types.ts (ConnectionConfig, ConnectionResult types), backend/src/routes/test-connection.ts (testConnectionHandler at POST /api/v1/connections/test), backend/src/services/connection-test.service.ts (real pg.Client TCP+auth connection, bounded timeout, error categorization, password redaction).",
+    "Backend unit tests (Docker node:20-alpine): 177 passed, 17 skipped (integration tests self-skip without DB params), 0 failed across 9 test files. Command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$BACKEND_DIR\":/work -w /work node:20-alpine sh -c \"npx vitest run\".",
+    "Backend integration tests against throwaway PostgreSQL (Docker postgres:16-alpine on private network story-012-net): 194 passed, 0 failed across 12 test files. Command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --network story-012-net --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$PROJECT_DIR\":/work -w /work/backend -e PG_HOST=story-012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 node:20-alpine sh -c \"npx vitest run\". Container and network cleaned up after run.",
+    "Backend TypeScript type check (Docker node:20-alpine): Passed, exit code 0. Command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$BACKEND_DIR\":/work -w /work node:20-alpine sh -c \"npx tsc --noEmit\".",
+    "Frontend unit tests (Docker node:20-alpine): 207 passed, 0 failed across 22 test files. Command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$PROJECT_DIR\":/work:rw -w /work node:20-alpine sh -c \"npx vitest run\". Connection-specific test files: connectionApi.test.ts (10 passed), ConnectionForm.test.ts (14 passed), useConnection.test.ts (14 passed).",
+    "Acceptance criteria verified: (1) User enters connection details → application tests via backend POST /api/v1/connections/test → success or failure indicated (ConnectionForm submits, useConnection tracks status, backend returns 200/400/401/502/504/500 with descriptive messages); (2) Credentials held only for current session (useConnection stores credentials in React state only, no localStorage/sessionStorage/IndexedDB writes, cleared on disconnect() and component unmount, password redacted from all error messages).",
+    "No code changes were needed on the ticket branch — all implementation was already committed by child tasks. Git working tree is clean."
+  ]
+}
