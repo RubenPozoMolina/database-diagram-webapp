@@ -9,6 +9,7 @@ import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
 import { CreateRelationshipModal } from './components/CreateRelationshipModal';
 import { readSchema } from './connection/readSchemaApi';
+import { schemaToDiagram } from './connection/schemaToDiagram';
 import type { Column, Diagram, Table, UniqueConstraint } from './types/diagram';
 import type { ConnectionConfig, ConnectionResult } from './types';
 import type { ReadSchemaResponse } from './connection/readSchemaApi';
@@ -182,6 +183,7 @@ export function App() {
       if (result.success) {
         setImportedSchema(result);
         setImportSchemaError(null);
+        setDiagram(schemaToDiagram(result));
       } else {
         setImportSchemaError(result.error);
       }
