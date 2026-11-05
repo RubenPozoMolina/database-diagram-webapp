@@ -195,6 +195,7 @@ describe('serializeDiagram', () => {
         { id: 'col-users-email', name: 'email', dataType: 'varchar', nullable: false, primaryKey: false, comment: 'User email address' },
         { id: 'col-users-name', name: 'name', dataType: 'text', nullable: true, primaryKey: false, comment: null },
       ],
+      indexes: [],
     });
 
     const result = serializeDiagram(diagram);
