@@ -161,4 +161,26 @@ describe('App schema import integration', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(/Unexpected error/);
   });
+
+  it('sends a custom schema name entered via the "Other…" input to the backend', async () => {
+    render(<App />);
+
+    // Choose "Other…" so the custom input appears.
+    const schemaSelect = screen.getByLabelText('Schema to import');
+    fireEvent.change(schemaSelect, { target: { value: '' } });
+
+    const customInput = screen.getByLabelText('Custom schema name');
+    fireEvent.change(customInput, { target: { value: 'my_custom_schema' } });
+
+    const importButton = screen.getByRole('button', { name: /Import PostgreSQL schema/i });
+    fireEvent.click(importButton);
+
+    await waitFor(() => {
+      expect(mockedReadSchema).toHaveBeenCalledTimes(1);
+    });
+
+    // Verify the custom schema name was sent to the backend.
+    const lastCall = mockedReadSchema.mock.calls[mockedReadSchema.mock.calls.length - 1];
+    expect(lastCall[2]).toBe('my_custom_schema');
+  });
 });

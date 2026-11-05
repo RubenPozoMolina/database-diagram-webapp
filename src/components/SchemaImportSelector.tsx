@@ -60,7 +60,7 @@ export function SchemaImportSelector({
 
   const handleCustomSchemaChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setSchema(event.target.value);
+      setCustomSchema(event.target.value);
     },
     [],
   );
@@ -70,10 +70,11 @@ export function SchemaImportSelector({
     setIsImporting(true);
     setImportError(null);
     try {
+      const effectiveSchema = customSchema || schema || 'public';
       const result = await readSchema(
         config,
         '/api/read-schema',
-        schema || 'public',
+        effectiveSchema,
       );
       if (result.success) {
         setImportedSchema(result);
@@ -87,7 +88,7 @@ export function SchemaImportSelector({
     } finally {
       setIsImporting(false);
     }
-  }, [config, schema, onImport]);
+  }, [config, schema, customSchema, onImport]);
 
   const dismissImportError = useCallback((): void => {
     setImportError(null);
