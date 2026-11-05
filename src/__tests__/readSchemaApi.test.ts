@@ -22,6 +22,7 @@ const config: ConnectionConfig = {
   database: 'mydb',
   user: 'app_user',
   password: 's3cret',
+  schema: 'public',
 };
 
 const successResponse: ReadSchemaResponse = {
@@ -156,7 +157,7 @@ describe('readSchema', () => {
         database: config.database,
         user: config.user,
         password: config.password,
-        schema: 'public',
+        schema: config.schema,
       }),
     );
   });

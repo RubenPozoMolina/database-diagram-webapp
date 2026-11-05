@@ -151,6 +151,12 @@ export function DdlPreview({
             dropped.
           </p>
 
+          {connection && (
+            <p className="ddl-schema">
+              Target schema: <strong>{connection.schema}</strong>
+            </p>
+          )}
+
           {state.ddl === null && state.result === null && (
             <p className="ddl-empty">Generating DDL…</p>
           )}

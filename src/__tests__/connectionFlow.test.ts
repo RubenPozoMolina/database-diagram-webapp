@@ -36,6 +36,7 @@ const testConfig: ConnectionConfig = {
   database: 'mydb',
   user: 'app_user',
   password: 's3cret',
+  schema: 'public',
 };
 
 describe('Connection flow: form submission triggers hook state management', () => {

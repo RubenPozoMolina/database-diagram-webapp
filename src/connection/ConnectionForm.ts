@@ -35,6 +35,7 @@ interface FormElements {
   database: HTMLInputElement;
   user: HTMLInputElement;
   password: HTMLInputElement;
+  schema: HTMLInputElement;
   submitButton: HTMLButtonElement;
   status: HTMLElement;
 }
@@ -127,6 +128,19 @@ export class ConnectionForm {
     passwordInput.type = 'password';
     passwordInput.placeholder = '••••••••';
     passwordInput.required = true;
+    // Prevent the browser password manager from storing the credential on disk
+    // (STORY-015: credentials must not persist beyond the current session).
+    passwordInput.autocomplete = 'off';
+
+    const schemaLabel = document.createElement('label');
+    schemaLabel.htmlFor = 'conn-schema';
+    schemaLabel.textContent = 'Schema';
+    const schemaInput = document.createElement('input');
+    schemaInput.id = 'conn-schema';
+    schemaInput.name = 'schema';
+    schemaInput.type = 'text';
+    schemaInput.placeholder = 'public';
+    schemaInput.required = true;
 
     const submitButton = document.createElement('button');
     submitButton.type = 'submit';
@@ -149,6 +163,8 @@ export class ConnectionForm {
     form.appendChild(userInput);
     form.appendChild(passwordLabel);
     form.appendChild(passwordInput);
+    form.appendChild(schemaLabel);
+    form.appendChild(schemaInput);
     form.appendChild(submitButton);
     form.appendChild(status);
 
@@ -161,6 +177,7 @@ export class ConnectionForm {
       database: databaseInput,
       user: userInput,
       password: passwordInput,
+      schema: schemaInput,
       submitButton,
       status,
     };
@@ -212,6 +229,7 @@ export class ConnectionForm {
       database: this.elements.database.value.trim(),
       user: this.elements.user.value.trim(),
       password: this.elements.password.value,
+      schema: this.elements.schema.value.trim() || 'public',
     };
   }
 
