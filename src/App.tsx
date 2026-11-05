@@ -4,15 +4,13 @@ import { useConnection } from './hooks/useConnection';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import { ExportButton } from './components/ExportButton';
 import { ImportButton } from './components/ImportButton';
+import { SchemaImportSelector } from './components/SchemaImportSelector';
 import { DdlPreview } from './components/DdlPreview';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
 import { CreateRelationshipModal } from './components/CreateRelationshipModal';
-import { readSchema } from './connection/readSchemaApi';
-import { schemaToDiagram } from './connection/schemaToDiagram';
 import type { Column, Diagram, Table, UniqueConstraint } from './types/diagram';
 import type { ConnectionConfig, ConnectionResult } from './types';
-import type { ReadSchemaResponse } from './connection/readSchemaApi';
 
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 800;
@@ -64,9 +62,6 @@ export function App() {
   const [isDdlPreviewOpen, setIsDdlPreviewOpen] = useState(false);
   const [ddlApplyMessage, setDdlApplyMessage] = useState<string | null>(null);
   const [ddlApplyError, setDdlApplyError] = useState<string | null>(null);
-  const [isImportingSchema, setIsImportingSchema] = useState(false);
-  const [importSchemaError, setImportSchemaError] = useState<string | null>(null);
-  const [importedSchema, setImportedSchema] = useState<ReadSchemaResponse | null>(null);
 
   const handleConnect = async (
     connectionConfig: ConnectionConfig,
@@ -226,29 +221,6 @@ export function App() {
     [updateUniqueConstraint],
   );
 
-  const handleImportSchema = async () => {
-    if (!config) return;
-    setIsImportingSchema(true);
-    setImportSchemaError(null);
-    try {
-      const result = await readSchema(config);
-      if (result.success) {
-        setImportedSchema(result);
-        setImportSchemaError(null);
-        setDiagram(schemaToDiagram(result));
-      } else {
-        setImportSchemaError(result.error);
-      }
-    } catch {
-      setImportSchemaError('Unexpected error while importing schema');
-    } finally {
-      setIsImportingSchema(false);
-    }
-  };
-
-  const dismissImportError = () => {
-    setImportSchemaError(null);
-  };
 
   const handleDdlExecute = useCallback((_ddl: string): void => {
     setIsDdlPreviewOpen(false);
@@ -309,15 +281,10 @@ export function App() {
           <ImportButton onImport={handleImport} onError={handleImportError} />
           {isConnected && config && (
             <>
-              <button
-                type="button"
-                className="import-schema-button"
-                onClick={handleImportSchema}
-                disabled={isImportingSchema}
-                aria-label="Import PostgreSQL schema as diagram"
-              >
-                {isImportingSchema ? 'Importing…' : 'Import Schema'}
-              </button>
+              <SchemaImportSelector
+                config={config}
+                onImport={handleImport}
+              />
               <button
                 type="button"
                 className="export-button"
@@ -365,19 +332,6 @@ export function App() {
             </button>
           </div>
         )}
-        {importSchemaError && (
-          <div className="connection-status connection-status--error" role="status" aria-live="polite">
-            {importSchemaError}
-            <button
-              type="button"
-              onClick={dismissImportError}
-              className="connection-status-dismiss"
-              aria-label="Dismiss import error"
-            >
-              ×
-            </button>
-          </div>
-        )}
         {ddlApplyError && (
           <div className="connection-status connection-status--error" role="alert" aria-live="polite">
             {ddlApplyError}
@@ -412,11 +366,6 @@ export function App() {
           {config && (
             <div className="connection-info">
               Connected to {config.host}:{config.port}/{config.database} as {config.user}
-            </div>
-          )}
-          {importedSchema && (
-            <div className="schema-import-info" role="status" aria-live="polite">
-              Imported schema '{importedSchema.schema}' with {importedSchema.tables.length} table(s).
             </div>
           )}
         </section>

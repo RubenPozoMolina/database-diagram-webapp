@@ -161,6 +161,20 @@ describe('readSchema', () => {
     );
   });
 
+  it('POSTs the selected schema when a custom schema is provided', async () => {
+    let capturedBody: string | undefined;
+
+    globalThis.fetch = vi.fn(async (_url, init) => {
+      capturedBody = init?.body as string | undefined;
+      return okJson(successResponse) as unknown as Response;
+    });
+    setFetchForTesting(globalThis.fetch as typeof fetch);
+
+    await readSchema(config, '/api/read-schema', 'information_schema');
+
+    expect(capturedBody).toContain('"schema":"information_schema"');
+  });
+
   it('returns success with structured schema data when the backend responds OK', async () => {
     globalThis.fetch = vi.fn(async () => okJson(successResponse));
     setFetchForTesting(globalThis.fetch as typeof fetch);
