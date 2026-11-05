@@ -71,6 +71,7 @@ export function schemaToDiagram(response: ReadSchemaResponse): Diagram {
         table.primaryKeys.some((primaryKey) =>
           primaryKey.columns.includes(column.name),
         ),
+        column.maxLength,
       );
     });
 
