@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { Diagram } from '../types/diagram';
+import type { Column, Diagram } from '../types/diagram';
 import { createEmptyDiagram } from '../types/diagram';
 import {
   CREDENTIAL_FIELDS,
@@ -331,8 +331,8 @@ describe('JSON export — AC3: no credentials', () => {
       width: 100,
       height: 100,
       columns: [
-        { id: 'col-1', name: 'id', dataType: 'serial', nullable: false, primaryKey: true, host: 'injected-host' },
-        { id: 'col-2', name: 'secret', dataType: 'text', nullable: true, primaryKey: false, password: 'leaked-pw' },
+        { id: 'col-1', name: 'id', dataType: 'serial', nullable: false, primaryKey: true, host: 'injected-host' } as unknown as Column,
+        { id: 'col-2', name: 'secret', dataType: 'text', nullable: true, primaryKey: false, password: 'leaked-pw' } as unknown as Column,
       ],
       indexes: [],
     });
