@@ -75,6 +75,15 @@ describe('ConnectionForm', () => {
       expect(password.type).toBe('password');
     });
 
+    it('disables browser autofill on the password field (no credential storage)', () => {
+      new ConnectionForm({ container });
+
+      const password = document.getElementById(
+        'conn-password',
+      ) as HTMLInputElement;
+      expect(password.autocomplete).toBe('off');
+    });
+
     it('uses type number for the port field', () => {
       new ConnectionForm({ container });
 

@@ -128,6 +128,9 @@ export class ConnectionForm {
     passwordInput.type = 'password';
     passwordInput.placeholder = '••••••••';
     passwordInput.required = true;
+    // Prevent the browser password manager from storing the credential on disk
+    // (STORY-015: credentials must not persist beyond the current session).
+    passwordInput.autocomplete = 'off';
 
     const schemaLabel = document.createElement('label');
     schemaLabel.htmlFor = 'conn-schema';
