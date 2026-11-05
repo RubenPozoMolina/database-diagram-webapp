@@ -35,9 +35,6 @@ interface DiagramCanvasProps {
   style?: React.CSSProperties;
 }
 
-const TABLE_DEFAULT_WIDTH = 220;
-const TABLE_DEFAULT_HEIGHT = 120;
-
 export function DiagramCanvas({
   diagram,
   onTablePositionUpdate,
@@ -54,12 +51,12 @@ export function DiagramCanvas({
   columnPositions,
   style,
 }: DiagramCanvasProps) {
-  const lineEndpoints = React.useMemo(() => {
-    const positions = new Map<string, { x: number; y: number }>();
+  const tableById = React.useMemo(() => {
+    const map = new Map<string, { x: number; y: number; width: number; height: number }>();
     diagram.tables.forEach((table) => {
-      positions.set(table.id, { x: table.x, y: table.y });
+      map.set(table.id, { x: table.x, y: table.y, width: table.width, height: table.height });
     });
-    return positions;
+    return map;
   }, [diagram.tables]);
 
   return (
@@ -72,14 +69,16 @@ export function DiagramCanvas({
         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
       >
         {diagram.relationships.map((relationship) => {
-          const source = lineEndpoints.get(relationship.sourceTableId);
-          const target = lineEndpoints.get(relationship.targetTableId);
+          const source = tableById.get(relationship.sourceTableId);
+          const target = tableById.get(relationship.targetTableId);
           if (!source || !target) return null;
 
           // Default endpoints: bottom-center of source table, top-center of target table.
-          let sourceX = source.x + TABLE_DEFAULT_WIDTH / 2;
-          let sourceY = source.y + TABLE_DEFAULT_HEIGHT;
-          let targetX = target.x + TABLE_DEFAULT_WIDTH / 2;
+          // Uses the table's actual dimensions so lines connect to imported tables
+          // whose height varies with column count.
+          let sourceX = source.x + source.width / 2;
+          let sourceY = source.y + source.height;
+          let targetX = target.x + target.width / 2;
           let targetY = target.y;
 
           // When column positions are available and the relationship references

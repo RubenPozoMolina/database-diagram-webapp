@@ -261,6 +261,138 @@ describe('DiagramCanvas', () => {
     expect(d).toContain('450 150');   // target column position
   });
 
+  /* ---- TASK-041: imported schema rendering ---- */
+
+  it('uses actual table dimensions for relationship line endpoints (not hardcoded defaults)', () => {
+    const diagram = createEmptyDiagram();
+    // Imported tables often have heights larger than the default 120px due to many columns.
+    diagram.tables.push(
+      {
+        id: 'table-1',
+        name: 'users',
+        x: 100,
+        y: 100,
+        width: 240,
+        height: 308, // simulates an imported table with ~10 columns
+        columns: [],
+        indexes: [],
+      },
+      {
+        id: 'table-2',
+        name: 'orders',
+        x: 500,
+        y: 100,
+        width: 240,
+        height: 200, // simulates an imported table with ~6 columns
+        columns: [],
+        indexes: [],
+      },
+    );
+    diagram.relationships.push({
+      id: 'rel-1',
+      sourceTableId: 'table-1',
+      targetTableId: 'table-2',
+    });
+    render(
+      <DiagramCanvas
+        diagram={diagram}
+        onTablePositionUpdate={() => {}}
+        onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
+        onAddUniqueConstraint={() => {}}
+        onRemoveUniqueConstraint={() => {}}
+        onUpdateUniqueConstraint={() => {}}
+      />,
+    );
+    const path = document.querySelector('.relationship-line') as SVGPathElement;
+    expect(path).not.toBeNull();
+    const d = path.getAttribute('d');
+    // Source bottom-center: x + width/2 = 100 + 240/2 = 220, y + height = 100 + 308 = 408
+    expect(d).toContain('M 220 408');
+    // Target top-center: x + width/2 = 500 + 240/2 = 620, y = 100
+    expect(d).toContain('620 100');
+  });
+
+  it('renders imported schema with tables, columns, relationships, indexes and unique constraints', () => {
+    const diagram = createEmptyDiagram();
+    diagram.name = 'Imported Schema';
+    diagram.tables.push({
+      id: 'table-1',
+      name: 'customers',
+      x: 100,
+      y: 100,
+      width: 240,
+      height: 148,
+      columns: [
+        { id: 'c1', name: 'customer_id', dataType: 'integer', nullable: false, primaryKey: true },
+        { id: 'c2', name: 'email', dataType: 'text', nullable: false, primaryKey: false },
+      ],
+      indexes: [{ id: 'i1', tableId: 'table-1', name: 'idx_email', columnIds: ['c2'] }],
+    });
+    diagram.tables.push({
+      id: 'table-2',
+      name: 'orders',
+      x: 400,
+      y: 100,
+      width: 240,
+      height: 174,
+      columns: [
+        { id: 'c3', name: 'order_id', dataType: 'integer', nullable: false, primaryKey: true },
+        { id: 'c4', name: 'customer_id', dataType: 'integer', nullable: false, primaryKey: false },
+        { id: 'c5', name: 'total', dataType: 'numeric', nullable: true, primaryKey: false },
+      ],
+      indexes: [],
+    });
+    diagram.relationships.push({
+      id: 'rel-1',
+      sourceTableId: 'table-1',
+      sourceColumnId: 'c1',
+      targetTableId: 'table-2',
+      targetColumnId: 'c4',
+    });
+    diagram.uniqueConstraints.push({
+      id: 'uc1',
+      tableId: 'table-1',
+      columnIds: ['c2'],
+      name: 'customers_email_key',
+    });
+
+    render(
+      <DiagramCanvas
+        diagram={diagram}
+        onTablePositionUpdate={() => {}}
+        onTableUpdate={() => {}}
+        onDeleteTable={() => {}}
+        onDeleteRelationship={() => {}}
+        onAddColumn={() => {}}
+        onRemoveColumn={() => {}}
+        onUpdateColumn={() => {}}
+        onAddUniqueConstraint={() => {}}
+        onRemoveUniqueConstraint={() => {}}
+        onUpdateUniqueConstraint={() => {}}
+      />,
+    );
+    // Tables are rendered.
+    expect(screen.getByText('customers')).toBeInTheDocument();
+    expect(screen.getByText('orders')).toBeInTheDocument();
+    // Columns and data types are displayed.
+    // customer_id: integer appears in both tables (customers PK, orders FK).
+    expect(screen.getAllByText(/customer_id: integer/)).toHaveLength(2);
+    expect(screen.getByText(/email: text/)).toBeInTheDocument();
+    expect(screen.getByText(/order_id: integer/)).toBeInTheDocument();
+    expect(screen.getByText(/total: numeric/)).toBeInTheDocument();
+    // Relationship line is drawn.
+    const path = document.querySelector('.relationship-line');
+    expect(path).not.toBeNull();
+    // Indexes section is present (once per table).
+    expect(screen.getAllByText('Indexes')).toHaveLength(2);
+    expect(screen.getByText('idx_email')).toBeInTheDocument();
+  });
+
   it('falls back to table centres when column position is missing for a column', () => {
     const diagram = createEmptyDiagram();
     diagram.tables.push(
