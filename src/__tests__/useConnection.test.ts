@@ -24,6 +24,7 @@ const config: ConnectionConfig = {
   database: 'mydb',
   user: 'app_user',
   password: 's3cret',
+  schema: 'public',
 };
 
 const mockFetch = vi.fn();
@@ -425,6 +426,7 @@ describe('useConnection', () => {
         database: '',
         user: '',
         password: '',
+        schema: '',
       });
     });
   });

@@ -10,6 +10,7 @@ const TEST_CONFIG = {
   database: 'app_test',
   user: 'postgres',
   password: 'secret',
+  schema: 'public',
 };
 
 function ensureRandomUUID(): void {
@@ -140,8 +141,10 @@ describe('App - apply-schema flow', () => {
     databaseInput.value = TEST_CONFIG.database;
     userInput.value = TEST_CONFIG.user;
     passwordInput.value = TEST_CONFIG.password;
+    const schemaInput = document.getElementById('conn-schema') as HTMLInputElement;
+    schemaInput.value = TEST_CONFIG.schema;
 
-    [hostInput, portInput, databaseInput, userInput, passwordInput].forEach(
+    [hostInput, portInput, databaseInput, userInput, passwordInput, schemaInput].forEach(
       (input) => {
         input.dispatchEvent(new Event('input', { bubbles: true }));
       },

@@ -65,7 +65,7 @@ export async function applyDDL(
         database: config.database,
         user: config.user,
         password: config.password,
-        schema: 'public',
+        schema: config.schema,
         ddl,
         confirm,
       }),

@@ -48,6 +48,7 @@ const EMPTY_CONFIG: ConnectionConfig = {
   database: '',
   user: '',
   password: '',
+  schema: '',
 };
 
 /**

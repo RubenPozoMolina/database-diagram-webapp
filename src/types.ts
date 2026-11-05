@@ -58,6 +58,8 @@ export interface ConnectionConfig {
   database: string;
   user: string;
   password: string;
+  /** Target PostgreSQL schema for DDL export (defaults to 'public'). */
+  schema: string;
 }
 
 /**

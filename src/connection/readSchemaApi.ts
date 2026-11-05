@@ -155,7 +155,7 @@ export async function readSchema(
         database: config.database,
         user: config.user,
         password: config.password,
-        schema: 'public',
+        schema: config.schema,
       }),
     });
 

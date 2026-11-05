@@ -8,6 +8,7 @@ const TEST_CONFIG: ConnectionConfig = {
   database: 'app_test',
   user: 'postgres',
   password: 'secret',
+  schema: 'public',
 };
 
 const TEST_DDL = 'CREATE TABLE "users" ("id" SERIAL NOT NULL PRIMARY KEY);';
@@ -44,6 +45,7 @@ describe('applyDDL', () => {
     expect(body.ddl).toBe(TEST_DDL);
     expect(body.confirm).toBe(true);
     expect(body.host).toBe('localhost');
+    expect(body.schema).toBe('public');
     expect(result.success).toBe(true);
     expect(result.message).toBe('OK');
   });

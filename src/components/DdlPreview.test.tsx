@@ -12,6 +12,7 @@ const TEST_CONFIG: ConnectionConfig = {
   database: 'app_test',
   user: 'postgres',
   password: 'secret',
+  schema: 'public',
 };
 
 const TEST_DDL = 'CREATE TABLE "users" ("id" SERIAL PRIMARY KEY);';
@@ -263,5 +264,22 @@ describe('DdlPreview', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /Execute DDL/i }));
     expect(applyDdlMock).not.toHaveBeenCalled();
+  });
+
+  it('displays the target schema in the modal', () => {
+    const configWithSchema: ConnectionConfig = {
+      ...TEST_CONFIG,
+      schema: 'custom_schema',
+    };
+    render(
+      <DdlPreview
+        diagram={buildDiagram()}
+        connection={configWithSchema}
+        isOpen
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Target schema:')).toBeInTheDocument();
+    expect(screen.getByText('custom_schema')).toBeInTheDocument();
   });
 });

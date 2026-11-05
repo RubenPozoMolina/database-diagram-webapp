@@ -37,7 +37,7 @@ describe('ConnectionForm', () => {
   });
 
   describe('renders all connection fields (criterion 1)', () => {
-    it('displays fields for host, port, database, user and password', () => {
+    it('displays fields for host, port, database, user, password and schema', () => {
       new ConnectionForm({ container });
 
       expect(document.getElementById('conn-host')).not.toBeNull();
@@ -45,12 +45,13 @@ describe('ConnectionForm', () => {
       expect(document.getElementById('conn-database')).not.toBeNull();
       expect(document.getElementById('conn-user')).not.toBeNull();
       expect(document.getElementById('conn-password')).not.toBeNull();
+      expect(document.getElementById('conn-schema')).not.toBeNull();
     });
 
     it('associates each label with its input via for/id', () => {
       new ConnectionForm({ container });
 
-      ['host', 'port', 'database', 'user', 'password'].forEach((name) => {
+      ['host', 'port', 'database', 'user', 'password', 'schema'].forEach((name) => {
         const label = document.querySelector(
           `label[for="conn-${name}"]`,
         ) as HTMLLabelElement | null;
@@ -86,7 +87,7 @@ describe('ConnectionForm', () => {
     it('marks all fields as required', () => {
       new ConnectionForm({ container });
 
-      ['host', 'port', 'database', 'user', 'password'].forEach((name) => {
+      ['host', 'port', 'database', 'user', 'password', 'schema'].forEach((name) => {
         const input = document.getElementById(
           `conn-${name}`,
         ) as HTMLInputElement;
@@ -115,9 +116,10 @@ describe('ConnectionForm', () => {
         database: 'mydb',
         user: 'app_user',
         password: 's3cret',
+        schema: 'public',
       };
 
-      ['host', 'port', 'database', 'user', 'password'].forEach((name) => {
+      ['host', 'port', 'database', 'user', 'password', 'schema'].forEach((name) => {
         const input = document.getElementById(
           `conn-${name}`,
         ) as HTMLInputElement;
@@ -164,6 +166,10 @@ describe('ConnectionForm', () => {
       database.value = 'mydb';
       user.value = 'app_user';
       password.value = 's3cret';
+      const schema = document.getElementById(
+        'conn-schema',
+      ) as HTMLInputElement;
+      schema.value = 'public';
 
       const form = document.querySelector('form') as HTMLFormElement;
       form.dispatchEvent(new Event('submit', { cancelable: true }));
@@ -177,6 +183,7 @@ describe('ConnectionForm', () => {
         database: 'mydb',
         user: 'app_user',
         password: 's3cret',
+        schema: 'public',
       });
     });
 
