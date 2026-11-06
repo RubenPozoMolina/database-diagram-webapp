@@ -1,0 +1,134 @@
+{
+  "id": "TASK-025",
+  "type": "task",
+  "title": "Implement JSON export file download",
+  "description": "Create the functionality to export the diagram as a downloadable JSON file containing the complete diagram model.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-009",
+  "acceptanceCriteria": [
+    "User can export diagram to JSON file",
+    "JSON file is downloaded to user's machine",
+    "JSON contains complete diagram model"
+  ],
+  "dependencies": [
+    "TASK-005",
+    "TASK-011",
+    "TASK-014",
+    "TASK-017",
+    "TASK-020"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-2.1"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T21:07:15.727002+00:00",
+      "reason": "Planned for sprint 46",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-04T21:47:42.623612+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Implementation files verified (no code changes needed - functionality already complete): src/components/ExportButton.tsx (JSON export download via Blob + anchor click), src/serialization/diagramSerializer.ts (serializes complete diagram model: version, id, name, tables, columns, relationships, uniqueConstraints, indexes, timestamps with credential stripping), src/types/diagram.ts (Diagram type), src/App.tsx (ExportButton wired at line 295)",
+        "Unit tests passed: src/components/ExportButton.test.tsx (5 tests), src/serialization/diagramSerializer.test.ts (16 tests) - all 351 unit tests passed across 28 files",
+        "Docker command for unit tests: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "E2E tests passed: e2e/export-json.spec.ts (2 tests - download + no credentials), e2e/visual-qa-export.spec.ts (3 tests - button visible, complete model download, no credentials) - all 5 export-related e2e tests passed",
+        "Docker command for e2e tests: nginxinc/nginx-unprivileged:1.27-alpine serving dist/ on private network qa-TASK-025, then mcr.microsoft.com/playwright:v1.49.1-noble --network qa-TASK-025 -e BASE_URL='http://app-TASK-025:8080/' npx playwright@1.49.1 test",
+        "Acceptance criteria verified: User can export diagram to JSON file, JSON file is downloaded to user's machine, JSON contains complete diagram model"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T22:11:09.828596+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Code review of implementation files (all acceptance criteria met):",
+        "  - src/components/ExportButton.tsx: JSON export download via Blob + anchor click, sanitized .json filename, URL.revokeObjectURL cleanup, aria-label accessibility",
+        "  - src/serialization/diagramSerializer.ts: serializeDiagram() produces { version, diagram } payload with version '1.0.0'; serializes tables, columns, relationships, uniqueConstraints, indexes, timestamps; stripCredentials() defense-in-depth removes host/port/database/user/password",
+        "  - src/types/diagram.ts: Diagram type with tables, columns, relationships, uniqueConstraints, indexes",
+        "  - src/App.tsx: ExportButton wired at line 295 with diagram prop",
+        "Unit tests run in Docker container (node:20-alpine):",
+        "  Command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work node:20-alpine sh -c 'npm test'",
+        "  Result: 351 passed across 28 test files, 0 failures",
+        "  Includes: src/components/ExportButton.test.tsx (5 tests), src/serialization/diagramSerializer.test.ts (16 tests)",
+        "E2E tests (reported as passing in ticket evidence; could not independently re-run due to Docker mount permission restrictions on this host):",
+        "  - e2e/export-json.spec.ts (2 tests: download + no credentials)",
+        "  - e2e/visual-qa-export.spec.ts (3 tests: button visible, complete model download, no credentials)",
+        "Acceptance criteria verified: User can export diagram to JSON file; JSON file is downloaded to user's machine; JSON contains complete diagram model",
+        "Architectural assessment: separation of concerns (serialization isolated from UI), defense-in-depth credential stripping, no database credentials in export payload, complete diagram model coverage"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-04T22:54:59.324676+00:00",
+      "reason": "passed",
+      "evidence": [
+        "Code review of implementation files (all acceptance criteria met):",
+        "  - src/components/ExportButton.tsx: JSON export download via Blob + anchor click, sanitized .json filename, URL.revokeObjectURL cleanup, aria-label accessibility",
+        "  - src/serialization/diagramSerializer.ts: serializeDiagram() produces { version, diagram } payload with version '1.0.0'; serializes tables, columns, relationships, uniqueConstraints, indexes, timestamps; stripCredentials() defense-in-depth removes host/port/database/user/password",
+        "  - src/types/diagram.ts: Diagram type with tables, columns, relationships, uniqueConstraints, indexes",
+        "  - src/App.tsx: ExportButton wired at line 295 with diagram prop",
+        "Unit tests run in Docker container (node:20-alpine):",
+        "  Command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work node:20-alpine sh -c 'npm test'",
+        "  Result: 351 passed across 28 test files, 0 failures",
+        "  Includes: src/components/ExportButton.test.tsx (5 tests), src/serialization/diagramSerializer.test.ts (16 tests)",
+        "E2E tests (reported as passing in ticket evidence; could not independently re-run due to Docker mount permission restrictions on this host):",
+        "  - e2e/export-json.spec.ts (2 tests: download + no credentials)",
+        "  - e2e/visual-qa-export.spec.ts (3 tests: button visible, complete model download, no credentials)",
+        "Acceptance criteria verified: User can export diagram to JSON file; JSON file is downloaded to user's machine; JSON contains complete diagram model",
+        "Architectural assessment: separation of concerns (serialization isolated from UI), defense-in-depth credential stripping, no database credentials in export payload, complete diagram model coverage",
+        "QA Manual & Visual Verification (Docker containers):",
+        "  - Unit tests: docker run node:20-alpine 'npm ci --ignore-scripts && npm test' => 351 passed across 28 test files, 0 failures (ExportButton 5 tests, diagramSerializer 16 tests)",
+        "  - E2E tests: nginxinc/nginx-unprivileged:1.27-alpine serving dist/ on private network qa-TASK-025, then mcr.microsoft.com/playwright:v1.49.1-noble with BASE_URL=http://app-TASK-025:8080/ => all 5 export e2e tests passed",
+        "  - Screenshots captured: qa-artifacts/story-009-ui-full.png, qa-artifacts/story-009-after-export.png",
+        "  - Acceptance criteria verified: User can export diagram to JSON file; JSON file is downloaded to user's machine; JSON contains complete diagram model",
+        "  - No skipped-unsupported-platform criteria: Chromium available on Linux; no platform-specific tools required"
+      ]
+    }
+  ],
+  "sprint": 48,
+  "requiresReview": true,
+  "updatedAt": "2026-11-04T22:54:59.324687+00:00",
+  "resultEvidence": [
+    "Code review of implementation files (all acceptance criteria met):",
+    "  - src/components/ExportButton.tsx: JSON export download via Blob + anchor click, sanitized .json filename, URL.revokeObjectURL cleanup, aria-label accessibility",
+    "  - src/serialization/diagramSerializer.ts: serializeDiagram() produces { version, diagram } payload with version '1.0.0'; serializes tables, columns, relationships, uniqueConstraints, indexes, timestamps; stripCredentials() defense-in-depth removes host/port/database/user/password",
+    "  - src/types/diagram.ts: Diagram type with tables, columns, relationships, uniqueConstraints, indexes",
+    "  - src/App.tsx: ExportButton wired at line 295 with diagram prop",
+    "Unit tests run in Docker container (node:20-alpine):",
+    "  Command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work node:20-alpine sh -c 'npm test'",
+    "  Result: 351 passed across 28 test files, 0 failures",
+    "  Includes: src/components/ExportButton.test.tsx (5 tests), src/serialization/diagramSerializer.test.ts (16 tests)",
+    "E2E tests (reported as passing in ticket evidence; could not independently re-run due to Docker mount permission restrictions on this host):",
+    "  - e2e/export-json.spec.ts (2 tests: download + no credentials)",
+    "  - e2e/visual-qa-export.spec.ts (3 tests: button visible, complete model download, no credentials)",
+    "Acceptance criteria verified: User can export diagram to JSON file; JSON file is downloaded to user's machine; JSON contains complete diagram model",
+    "Architectural assessment: separation of concerns (serialization isolated from UI), defense-in-depth credential stripping, no database credentials in export payload, complete diagram model coverage",
+    "QA Manual & Visual Verification (Docker containers):",
+    "  - Unit tests: docker run node:20-alpine 'npm ci --ignore-scripts && npm test' => 351 passed across 28 test files, 0 failures (ExportButton 5 tests, diagramSerializer 16 tests)",
+    "  - E2E tests: nginxinc/nginx-unprivileged:1.27-alpine serving dist/ on private network qa-TASK-025, then mcr.microsoft.com/playwright:v1.49.1-noble with BASE_URL=http://app-TASK-025:8080/ => all 5 export e2e tests passed",
+    "  - Screenshots captured: qa-artifacts/story-009-ui-full.png, qa-artifacts/story-009-after-export.png",
+    "  - Acceptance criteria verified: User can export diagram to JSON file; JSON file is downloaded to user's machine; JSON contains complete diagram model",
+    "  - No skipped-unsupported-platform criteria: Chromium available on Linux; no platform-specific tools required"
+  ],
+  "implementedBy": "web-developer"
+}

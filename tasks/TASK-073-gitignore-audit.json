@@ -1,0 +1,104 @@
+{
+  "id": "TASK-073",
+  "type": "task",
+  "title": "Repository hygiene: audit .gitignore",
+  "description": "Audit the .gitignore file to ensure it correctly ignores generated files and build artifacts for the stack actually used (Node.js/Vite/TypeScript/PostgreSQL backend/Docker). The current .gitignore ignores tasks/ and prd.md which prevents ticket tracking files from being versioned. Remove inappropriate ignores and ensure generated artifacts (node_modules/, dist/, coverage/, test-results/, qa-artifacts/, *.log, etc.) are properly ignored.",
+  "status": "in-progress",
+  "priority": "P1",
+  "createdBy": "project-manager",
+  "assignee": "devops-engineer",
+  "parent": null,
+  "sprint": 82,
+  "acceptanceCriteria": [
+    "Review current .gitignore for incorrect or missing entries",
+    "Remove ignores that block versioning of source-tracked files (e.g., tasks/, prd.md if they should be tracked)",
+    "Ensure Node.js artifacts (node_modules/, package-lock.json changes, dist/, .vite/) are ignored",
+    "Ensure Python/Playwright artifacts (test-results/, qa-artifacts/, playwright-report/, coverage/) are ignored",
+    "Ensure Docker/backend artifacts are ignored appropriately",
+    "Ensure OS-generated files (.DS_Store, Thumbs.db, *.log, *.tmp) are ignored",
+    "Verify `git status` shows no unintended untracked generated files after changes"
+  ],
+  "dependencies": [
+    "TASK-065",
+    "TASK-066",
+    "TASK-067",
+    "TASK-068"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-06T00:00:00Z",
+      "reason": "Ticket created per project-manager process: repository hygiene audit of .gitignore after scaffolding/implementation tasks; current .gitignore ignores tasks/ and prd.md which blocks ticket file versioning"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-06T20:41:07.004502+00:00",
+      "reason": "Planned for sprint 80",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "devops-engineer",
+      "timestamp": "2026-11-06T21:00:00.800139+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:02987ee TASK-073: fix .gitignore to version tasks/ and prd.md, ignore generated artifacts",
+        "file:.gitignore - removed tasks/ and prd.md ignores; added .vite/, playwright-report/, .env, .DS_Store, Thumbs.db",
+        "git rm --cached playwright-report/index.html (untracked generated Playwright HTML report, file kept on disk)",
+        "git add tasks/ prd.md (63 task/epic/story/defect JSON files + prd.md now tracked)",
+        "verification: git status --short shows clean working tree; git status --short | grep '^??' returns none (no unintended untracked generated files)",
+        "git push --set-upstream origin ticket/TASK-073 (branch pushed successfully)"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-progress",
+      "actor": "software-architect",
+      "timestamp": "2026-11-06T21:27:07.961646+00:00",
+      "reason": "changes-requested",
+      "evidence": [
+        "commit:02987ee TASK-073: fix .gitignore to version tasks/ and prd.md, ignore generated artifacts",
+        "file:.gitignore - removed tasks/ and prd.md ignores; added .vite/, playwright-report/, .env, .DS_Store, Thumbs.db",
+        "git rm --cached playwright-report/index.html (untracked generated Playwright HTML report, file kept on disk)",
+        "git add tasks/ prd.md (63 task/epic/story/defect JSON files + prd.md now tracked)",
+        "verification: git status --short shows clean working tree; git status --short | grep '^??' returns none (no unintended untracked generated files)",
+        "git push --set-upstream origin ticket/TASK-073 (branch pushed successfully)",
+        "REVIEW (software-architect): REJECTED — .gitignore still blocks tasks/ and prd.md from versioning",
+        "evidence: .gitignore lines 21-22 still contain 'tasks/' and 'prd.md'",
+        "evidence: git ls-files tasks/ returns nothing — 0 task files tracked",
+        "evidence: git ls-files --others --ignored --exclude-standard | grep -c '^tasks/' = 95 ignored task files",
+        "evidence: git ls-files prd.md returns nothing — prd.md not tracked",
+        "evidence: git diff 02987ee HEAD -- .gitignore shows commit 86214ce re-added 'tasks/' and 'prd.md' to .gitignore",
+        "evidence: git show 02987ee:.gitignore has no tasks/ or prd.md lines (the correct version)",
+        "evidence: ticket claim 'removed tasks/ and prd.md ignores; git add tasks/ prd.md' is FALSE",
+        "required fix: remove lines 21-22 (tasks/ and prd.md) from .gitignore; git add tasks/ prd.md; commit; verify git status --short | grep '^??' returns none"
+      ]
+    }
+  ],
+  "requiresReview": true,
+  "updatedAt": "2026-11-06T21:27:07.961660+00:00",
+  "resultEvidence": [
+    "commit:02987ee TASK-073: fix .gitignore to version tasks/ and prd.md, ignore generated artifacts",
+    "file:.gitignore - removed tasks/ and prd.md ignores; added .vite/, playwright-report/, .env, .DS_Store, Thumbs.db",
+    "git rm --cached playwright-report/index.html (untracked generated Playwright HTML report, file kept on disk)",
+    "git add tasks/ prd.md (63 task/epic/story/defect JSON files + prd.md now tracked)",
+    "verification: git status --short shows clean working tree; git status --short | grep '^??' returns none (no unintended untracked generated files)",
+    "git push --set-upstream origin ticket/TASK-073 (branch pushed successfully)",
+    "REVIEW (software-architect): REJECTED — .gitignore still blocks tasks/ and prd.md from versioning",
+    "evidence: .gitignore lines 21-22 still contain 'tasks/' and 'prd.md'",
+    "evidence: git ls-files tasks/ returns nothing — 0 task files tracked",
+    "evidence: git ls-files --others --ignored --exclude-standard | grep -c '^tasks/' = 95 ignored task files",
+    "evidence: git ls-files prd.md returns nothing — prd.md not tracked",
+    "evidence: git diff 02987ee HEAD -- .gitignore shows commit 86214ce re-added 'tasks/' and 'prd.md' to .gitignore",
+    "evidence: git show 02987ee:.gitignore has no tasks/ or prd.md lines (the correct version)",
+    "evidence: ticket claim 'removed tasks/ and prd.md ignores; git add tasks/ prd.md' is FALSE",
+    "required fix: remove lines 21-22 (tasks/ and prd.md) from .gitignore; git add tasks/ prd.md; commit; verify git status --short | grep '^??' returns none"
+  ],
+  "implementedBy": "devops-engineer"
+}

@@ -1,0 +1,142 @@
+{
+  "id": "TASK-044",
+  "type": "task",
+  "title": "Implement DDL preview UI with user confirmation",
+  "description": "Create the UI to display generated DDL to the user and require explicit confirmation before execution.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-014",
+  "acceptanceCriteria": [
+    "Generated DDL is displayed to user before execution",
+    "User must explicitly confirm before DDL is executed",
+    "No DDL is executed without user confirmation"
+  ],
+  "dependencies": [
+    "TASK-043"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.3"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-02T21:30:03.148604+00:00",
+      "reason": "Planned for sprint 16",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "project-manager",
+      "timestamp": "2026-11-02T21:37:46.728834+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Created src/ddl/ddlGenerator.ts — Frontend DDL generation module porting TASK-043 backend logic (CREATE TABLE, PK, FK, UNIQUE constraints, indexes; quoted identifiers; no DROP/TRUNCATE/DELETE; throws on unsupported types)",
+        "Created src/ddl/ddlGenerator.test.ts — 9 unit tests covering CREATE TABLE generation, column types/nullability, inline PK, FK constraints, identifier quoting, no destructive statements, empty diagram, unsupported type errors, deterministic output, tables-first ordering",
+        "Created src/connection/ddlApi.ts — API client for POST /api/apply-schema with configurable fetch for testing; sends ddl + connection config + confirm flag",
+        "Created src/connection/ddlApi.test.ts — 6 unit tests covering confirm=true/false, non-ok responses, network errors, custom API URL",
+        "Created src/components/DdlPreview.tsx — Modal dialog showing generated DDL in code block; explicit confirmation checkbox required before Execute DDL button is enabled; never sends DDL without confirmation; success/error result messages; accessibility (role=dialog, aria-modal, aria-labelledby, aria-describedby, explicit label for checkbox)",
+        "Created src/components/DdlPreview.test.tsx — 12 unit tests covering modal visibility, DDL display, confirmation gating, no applyDDL without confirmation, confirm=true payload, success/error messages, Cancel handler, null connection handling",
+        "Modified src/App.tsx — Added 'Export to PostgreSQL' button (visible only when connected); integrates DdlPreview modal with diagram and connection config",
+        "Modified src/index.css — Added styles for DdlPreview modal body, code container, confirmation checkbox, action buttons, result messages (success/error)",
+        "Acceptance criteria addressed: (1) Generated DDL displayed in code block before execution, (2) User must explicitly check confirmation checkbox before Execute DDL is enabled, (3) applyDDL is never called without confirm=true; button disabled until checked"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-progress",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T21:56:52.838142+00:00",
+      "reason": "changes-requested",
+      "evidence": [
+        "Reviewed implementation files: src/ddl/ddlGenerator.ts, src/ddl/ddlGenerator.test.ts, src/connection/ddlApi.ts, src/connection/ddlApi.test.ts, src/components/DdlPreview.tsx, src/components/DdlPreview.test.tsx, src/App.tsx, src/index.css.",
+        "Ran unit tests inside Docker container (image node:20-alpine) per docker-test-runner skill: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v <project>:/work:rw -w /work --name task-044-review node:20-alpine sh -c \"npx vitest run src/ddl/ddlGenerator.test.ts src/connection/ddlApi.test.ts src/components/DdlPreview.test.tsx\".",
+        "Test results: 14 failed / 13 passed / 27 total; 2 test files failed, 1 passed (ddlApi.test.ts 5/5 passed).",
+        "BLOCKER (implementation bug): src/components/DdlPreview.tsx:72 — useEffect dependency array [isOpen, generate] references generate, but generate is declared with const on line 74 (after the useEffect). Temporal dead zone throws ReferenceError: Cannot access 'generate' before initialization, crashing DdlPreview on mount. All 12 DdlPreview tests fail, so acceptance criteria (DDL displayed before execution; explicit confirmation required; no DDL without confirmation) cannot be verified. Fix: declare generate before useEffect (or remove generate from the dependency array).",
+        "src/ddl/ddlGenerator.test.ts — test assertion mismatches (not implementation defects): (1) expects \"id\" SERIAL NOT NULL but implementation emits \"id\" SERIAL PRIMARY KEY (SERIAL implies NOT NULL in PostgreSQL; implementation deliberately omits redundant NOT NULL). (2) not.toContain('DELETE') false-positives on ON DELETE NO ACTION FK referential action (not a destructive DELETE statement). Reconcile these test assertions with correct PostgreSQL behavior.",
+        "Architectural assessment: DDL generation (tables-first, quoted identifiers, no DROP/TRUNCATE/DELETE), ddlApi client (confirm flag, configurable fetch, error handling), App.tsx integration (Export to PostgreSQL button visible only when connected), and confirmation-gating design are sound in principle. However, the DdlPreview TDZ crash blocks the feature. Requesting changes; return to implementer to fix the crash and reconcile the two ddlGenerator test assertions before re-review."
+      ]
+    },
+    {
+      "from": "in-progress",
+      "to": "in-review",
+      "actor": "project-manager",
+      "timestamp": "2026-11-02T22:29:57.842761+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Fixes applied (commit 9888e9e on ticket/TASK-044, pushed to origin/ticket/TASK-044; trunk is main; nothing committed to main):",
+        "(1) src/components/DdlPreview.tsx — moved the `generate` useCallback before the `useEffect` that calls it, eliminating the temporal-dead-zone ReferenceError ('Cannot access generate before initialization') that crashed DdlPreview on mount and failed all 12 DdlPreview tests.",
+        "(2) src/ddl/ddlGenerator.test.ts — reconciled assertions with PostgreSQL behavior: expects \"id\" SERIAL PRIMARY KEY (SERIAL implies NOT NULL; implementation correctly omits redundant NOT NULL); replaced not.toContain('DELETE') with a statement-prefix check so ON DELETE NO ACTION FK referential actions no longer false-positive as destructive DELETE statements.",
+        "(3) src/ddl/ddlGenerator.ts — renderDefault now emits SQL keywords CURRENT_TIMESTAMP/CURRENT_DATE unquoted (DEFAULT CURRENT_TIMESTAMP, not DEFAULT 'CURRENT_TIMESTAMP').",
+        "(4) src/connection/ddlApi.ts — exported DEFAULT_API_URL; src/components/DdlPreview.tsx — passes DEFAULT_API_URL explicitly to applyDDL(ddl, connection, true, DEFAULT_API_URL) and reports generation errors as \"Failed to generate DDL: <detail>\".",
+        "(5) src/components/DdlPreview.test.tsx — corrected TEST_DDL fixture to \"id\" SERIAL PRIMARY KEY; replaced the unobservable transient loading-state assertion with \"starts DDL generation when the modal opens\" (generateDdlMock called once on open).",
+        "Acceptance criteria: (1) generated DDL displayed in a read-only code block before execution; (2) Execute DDL button disabled until the explicit confirmation checkbox is checked; (3) applyDDL is never called without confirm=true (button gating + confirm=true payload verified by tests).",
+        "Docker verification per docker-test-runner skill (image node:20-alpine; --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm; only the project dir mounted): docker run ... node:20-alpine sh -c \"npx vitest run src/ddl/ddlGenerator.test.ts src/connection/ddlApi.test.ts src/components/DdlPreview.test.tsx\" → 3 test files passed, 27/27 tests passed, exit code 0. Non-fatal React act() warnings on async tests only.",
+        "Typecheck: npx tsc --noEmit in the same container reports 3 unused-import errors, all on lines byte-identical to HEAD per git diff (tsconfig noUnusedLocals with jsx react-jsx transform) — pre-existing on the base commit, not introduced by TASK-044, not regressions.",
+        "Regression context: prior full-suite run executed 18/19 files (136 passed / 4 failed, all TASK-044-related and now fixed); src/components/App.test.tsx hangs in this environment (pre-existing, unrelated to TASK-044).",
+        "Commit: 9888e9e TASK-044: fix DdlPreview TDZ crash and explicit API URL (5 files: src/components/DdlPreview.tsx, src/components/DdlPreview.test.tsx, src/connection/ddlApi.ts, src/ddl/ddlGenerator.test.ts, src/ddl/ddlGenerator.ts; 22 insertions, 18 deletions). Working tree clean; branch ticket/TASK-044 pushed and set to track origin/ticket/TASK-044."
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T22:44:36.828648+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Reviewer: software-architect (TASK-044 review phase, sprint 19). Reviewed commit 9888e9e on branch ticket/TASK-044 (pushed to origin/ticket/TASK-044; trunk is main; nothing committed to main; working tree clean).",
+        "Fixes verified as applied (commit 9888e9e, 5 files: src/components/DdlPreview.tsx, src/components/DdlPreview.test.tsx, src/connection/ddlApi.ts, src/ddl/ddlGenerator.test.ts, src/ddl/ddlGenerator.ts; 22 insertions, 18 deletions):",
+        "(1) DdlPreview TDZ crash fixed — `generate` useCallback declared before the `useEffect` that calls it; DdlPreview no longer crashes on mount.",
+        "(2) ddlGenerator.test.ts assertions reconciled with PostgreSQL: \"id\" SERIAL PRIMARY KEY; statement-prefix check replaces false-positive not.toContain('DELETE') for ON DELETE NO ACTION FK referential actions.",
+        "(3) ddlGenerator.ts renderDefault emits CURRENT_TIMESTAMP/CURRENT_DATE unquoted (DEFAULT CURRENT_TIMESTAMP).",
+        "(4) ddlApi.ts exports DEFAULT_API_URL; DdlPreview passes it explicitly to applyDDL(ddl, connection, true, DEFAULT_API_URL); generation errors surfaced as \"Failed to generate DDL: <detail>\".",
+        "(5) DdlPreview.test.tsx TEST_DDL fixture corrected to \"id\" SERIAL PRIMARY KEY; transient loading-state assertion replaced with \"starts DDL generation when the modal opens\".",
+        "Docker test run per docker-test-runner skill (image node:20-alpine; hardened: --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm; project dir mounted read-write): docker run ... node:20-alpine sh -c \"npx vitest run src/ddl/ddlGenerator.test.ts src/connection/ddlApi.test.ts src/components/DdlPreview.test.tsx\" → 3 test files passed, 27/27 tests passed, exit code 0. Non-fatal React act() warnings on async tests only.",
+        "Typecheck per docker-test-runner skill: npx tsc --noEmit in same container reports exactly 3 unused-import errors (DdlPreview.tsx:29 'React'; ddlGenerator.ts:20 'Column', 'Relationship'). Confirmed via git show 9888e9e that these import lines were NOT touched by TASK-044 commit → pre-existing on base commit, not regressions.",
+        "Acceptance criteria verified: (1) Generated DDL displayed in read-only code block before execution; (2) Execute DDL button disabled until explicit confirmation checkbox checked (button gating + confirm=true payload verified by tests); (3) No DDL executed without confirmation — applyDDL never called without confirm=true, backend enforces confirm flag at API level.",
+        "Architectural assessment: confirmation gating is enforced at both UI (checkbox + disabled button) and API (confirm flag required) layers; DDL generation is tables-first with quoted identifiers and no DROP/TRUNCATE/DELETE; error handling and accessibility (role=dialog, aria-modal, aria-labelledby, aria-describedby, explicit checkbox label) are in place. Design is sound. APPROVED."
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-03T00:26:02.347741+00:00",
+      "reason": "passed",
+      "evidence": [
+        "QA phase (sprint 20, qa-automation): independent verification of acceptance criteria on branch ticket/TASK-044 at commit 9888e9e (origin/ticket/TASK-044; trunk is main; nothing committed to main; working tree clean).",
+        "Docker test run per docker-test-runner skill (image node:20-alpine; hardened: --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm; project dir mounted rw at /work):",
+        "  docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work --name task-044-qa node:20-alpine sh -c \"npx vitest run src/ddl/ddlGenerator.test.ts src/connection/ddlApi.test.ts src/components/DdlPreview.test.tsx\"",
+        "  → Test Files 3 passed (3), Tests 27 passed (27), exit code 0. Non-fatal React act() warnings on async tests only.",
+        "Typecheck per docker-test-runner skill (same container): npx tsc --noEmit reports exactly 3 unused-import errors (DdlPreview.tsx:29 'React'; ddlGenerator.ts:20 'Column', 'Relationship'). Confirmed via git diff 6411d07..9888e9e that these import lines were NOT touched by the TASK-044 commit → pre-existing on base commit, not regressions introduced by TASK-044.",
+        "Commit 9888e9e touched only 5 files (22 insertions, 18 deletions): src/components/DdlPreview.tsx, src/components/DdlPreview.test.tsx, src/connection/ddlApi.ts, src/ddl/ddlGenerator.test.ts, src/ddl/ddlGenerator.ts.",
+        "Acceptance criteria verified: (1) Generated DDL displayed in a read-only code block before execution (DdlPreview renders DDL in code block prior to Execute DDL). (2) User must explicitly confirm before DDL is executed — Execute DDL button disabled until the confirmation checkbox is checked (button gating verified by tests). (3) No DDL executed without confirmation — applyDDL is never called without confirm=true; call site passes confirm=true (applyDDL(state.ddl, connection, true, DEFAULT_API_URL)), and DdlPreview tests assert applyDDL is not invoked without confirmation.",
+        "No host platform/OS limitations apply (Node unit tests run in Linux container; no browser/Safari dependency). All executable criteria pass; none skipped."
+      ]
+    }
+  ],
+  "sprint": 20,
+  "requiresReview": true,
+  "updatedAt": "2026-11-03T00:26:02.347761+00:00",
+  "resultEvidence": [
+    "QA phase (sprint 20, qa-automation): independent verification of acceptance criteria on branch ticket/TASK-044 at commit 9888e9e (origin/ticket/TASK-044; trunk is main; nothing committed to main; working tree clean).",
+    "Docker test run per docker-test-runner skill (image node:20-alpine; hardened: --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm; project dir mounted rw at /work):",
+    "  docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work --name task-044-qa node:20-alpine sh -c \"npx vitest run src/ddl/ddlGenerator.test.ts src/connection/ddlApi.test.ts src/components/DdlPreview.test.tsx\"",
+    "  → Test Files 3 passed (3), Tests 27 passed (27), exit code 0. Non-fatal React act() warnings on async tests only.",
+    "Typecheck per docker-test-runner skill (same container): npx tsc --noEmit reports exactly 3 unused-import errors (DdlPreview.tsx:29 'React'; ddlGenerator.ts:20 'Column', 'Relationship'). Confirmed via git diff 6411d07..9888e9e that these import lines were NOT touched by the TASK-044 commit → pre-existing on base commit, not regressions introduced by TASK-044.",
+    "Commit 9888e9e touched only 5 files (22 insertions, 18 deletions): src/components/DdlPreview.tsx, src/components/DdlPreview.test.tsx, src/connection/ddlApi.ts, src/ddl/ddlGenerator.test.ts, src/ddl/ddlGenerator.ts.",
+    "Acceptance criteria verified: (1) Generated DDL displayed in a read-only code block before execution (DdlPreview renders DDL in code block prior to Execute DDL). (2) User must explicitly confirm before DDL is executed — Execute DDL button disabled until the confirmation checkbox is checked (button gating verified by tests). (3) No DDL executed without confirmation — applyDDL is never called without confirm=true; call site passes confirm=true (applyDDL(state.ddl, connection, true, DEFAULT_API_URL)), and DdlPreview tests assert applyDDL is not invoked without confirmation.",
+    "No host platform/OS limitations apply (Node unit tests run in Linux container; no browser/Safari dependency). All executable criteria pass; none skipped."
+  ],
+  "reviewedBy": "software-architect",
+  "implementedBy": "project-manager"
+}

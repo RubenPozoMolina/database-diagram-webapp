@@ -1,0 +1,123 @@
+{
+  "id": "TASK-042",
+  "type": "task",
+  "title": "Unit tests for schema import",
+  "description": "Write automated unit tests to verify PostgreSQL schema import correctly retrieves and renders database schema as a diagram.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-013",
+  "acceptanceCriteria": [
+    "Unit tests verify table import from PostgreSQL",
+    "Unit tests verify column and data type import",
+    "Unit tests verify primary key import",
+    "Unit tests verify foreign key import",
+    "Unit tests verify unique constraint import",
+    "Unit tests verify index import",
+    "All tests pass"
+  ],
+  "dependencies": [
+    "TASK-039",
+    "TASK-040",
+    "TASK-041"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.2"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-05T19:08:53.714054+00:00",
+      "reason": "Planned for sprint 70",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "project-manager",
+      "timestamp": "2026-11-05T19:19:43.205577+00:00",
+      "reason": "completed",
+      "evidence": [
+        "New file: src/__tests__/schema-import.test.ts — 20 unit tests covering all 6 acceptance criteria (table import, column/data type import, primary key import incl. composite, foreign key import incl. self-ref/circular/dangling, unique constraint import incl. composite, index import incl. composite/unique), plus end-to-end full pipeline import test",
+        "Modified: src/connection/schemaToDiagram.ts — passes column.maxLength as length to createColumn so varchar max length is preserved in imported diagram columns",
+        "Commit: 81d5c95 on branch ticket/TASK-042 (TASK-042: add schema import unit tests with maxLength support)",
+        "Test report: docker run node:20-alpine — npx vitest run src/__tests__/schema-import.test.ts — 20/20 passed",
+        "Test report: docker run node:20-alpine — npm test (full suite) — 424/424 passed across 32 test files, no regressions",
+        "Docker command (unit tests): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npx vitest run src/__tests__/schema-import.test.ts'",
+        "Docker command (full suite): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "All 7 acceptance criteria verified: (1) table import ✓, (2) column and data type import ✓, (3) primary key import incl. composite ✓, (4) foreign key import incl. self-ref/circular/dangling ✓, (5) unique constraint import incl. composite ✓, (6) index import incl. composite/unique ✓, (7) all tests pass ✓"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-05T19:23:32.180995+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Reviewer: software-architect — reviewed implementation on branch ticket/TASK-042, commit 81d5c95",
+        "Files reviewed: src/__tests__/schema-import.test.ts (new, 1451 lines, 20 unit tests), src/connection/schemaToDiagram.ts (modified, +1 line: passes column.maxLength as length to createColumn)",
+        "Architectural assessment: tests cover all 7 acceptance criteria including edge cases (composite PKs, self-referencing/circular/dangling FKs, composite unique constraints, composite/unique indexes); schemaToDiagram change is minimal and targeted; missing-table FKs defensively ignored; no regressions introduced",
+        "Test report (schema-import): docker run node:20-alpine — npx vitest run src/__tests__/schema-import.test.ts — 20/20 passed",
+        "Test report (full suite): docker run node:20-alpine — npm test (full suite) — 424/424 passed across 32 test files, no regressions",
+        "Docker command (unit tests): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npx vitest run src/__tests__/schema-import.test.ts'",
+        "Docker command (full suite): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "All 7 acceptance criteria verified: (1) table import ✓, (2) column and data type import ✓, (3) primary key import incl. composite ✓, (4) foreign key import incl. self-ref/circular/dangling ✓, (5) unique constraint import incl. composite ✓, (6) index import incl. composite/unique ✓, (7) all tests pass ✓",
+        "Decision: APPROVED — implementation meets architectural standards, tests are comprehensive, all acceptance criteria satisfied"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-05T19:26:14.097394+00:00",
+      "reason": "passed",
+      "evidence": [
+        "Reviewer: software-architect — reviewed implementation on branch ticket/TASK-042, commit 81d5c95",
+        "Files reviewed: src/__tests__/schema-import.test.ts (new, 1451 lines, 20 unit tests), src/connection/schemaToDiagram.ts (modified, +1 line: passes column.maxLength as length to createColumn)",
+        "Architectural assessment: tests cover all 7 acceptance criteria including edge cases (composite PKs, self-referencing/circular/dangling FKs, composite unique constraints, composite/unique indexes); schemaToDiagram change is minimal and targeted; missing-table FKs defensively ignored; no regressions introduced",
+        "Test report (schema-import): docker run node:20-alpine — npx vitest run src/__tests__/schema-import.test.ts — 20/20 passed",
+        "Test report (full suite): docker run node:20-alpine — npm test (full suite) — 424/424 passed across 32 test files, no regressions",
+        "Docker command (unit tests): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npx vitest run src/__tests__/schema-import.test.ts'",
+        "Docker command (full suite): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "All 7 acceptance criteria verified: (1) table import ✓, (2) column and data type import ✓, (3) primary key import incl. composite ✓, (4) foreign key import incl. self-ref/circular/dangling ✓, (5) unique constraint import incl. composite ✓, (6) index import incl. composite/unique ✓, (7) all tests pass ✓",
+        "Decision: APPROVED — implementation meets architectural standards, tests are comprehensive, all acceptance criteria satisfied",
+        "QA verification (qa-automation, sprint 72): ran schema-import unit tests inside Docker (node:20-alpine) — 20/20 passed",
+        "QA verification (qa-automation, sprint 72): ran full test suite inside Docker (node:20-alpine) — 424/424 passed across 32 test files, no regressions",
+        "QA Docker command (unit tests): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npx vitest run src/__tests__/schema-import.test.ts'",
+        "QA Docker command (full suite): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "QA acceptance criteria verification: (1) table import ✓ (3 tests), (2) column and data type import ✓ (3 tests incl. maxLength preservation), (3) primary key import ✓ (3 tests incl. composite PKs), (4) foreign key import ✓ (4 tests incl. self-ref/circular/dangling), (5) unique constraint import ✓ (3 tests incl. composite), (6) index import ✓ (3 tests incl. composite/unique), (7) all tests pass ✓ (20/20 schema-import, 424/424 full suite)",
+        "Platform/OS limitations: none — all tests are pure unit tests with mocked fetch running in Node.js containers; no unsupported browsers or platform-specific tools involved; no criteria marked skipped-unsupported-platform"
+      ]
+    }
+  ],
+  "sprint": 72,
+  "requiresReview": true,
+  "updatedAt": "2026-11-05T19:26:14.097405+00:00",
+  "resultEvidence": [
+    "Reviewer: software-architect — reviewed implementation on branch ticket/TASK-042, commit 81d5c95",
+    "Files reviewed: src/__tests__/schema-import.test.ts (new, 1451 lines, 20 unit tests), src/connection/schemaToDiagram.ts (modified, +1 line: passes column.maxLength as length to createColumn)",
+    "Architectural assessment: tests cover all 7 acceptance criteria including edge cases (composite PKs, self-referencing/circular/dangling FKs, composite unique constraints, composite/unique indexes); schemaToDiagram change is minimal and targeted; missing-table FKs defensively ignored; no regressions introduced",
+    "Test report (schema-import): docker run node:20-alpine — npx vitest run src/__tests__/schema-import.test.ts — 20/20 passed",
+    "Test report (full suite): docker run node:20-alpine — npm test (full suite) — 424/424 passed across 32 test files, no regressions",
+    "Docker command (unit tests): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npx vitest run src/__tests__/schema-import.test.ts'",
+    "Docker command (full suite): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+    "All 7 acceptance criteria verified: (1) table import ✓, (2) column and data type import ✓, (3) primary key import incl. composite ✓, (4) foreign key import incl. self-ref/circular/dangling ✓, (5) unique constraint import incl. composite ✓, (6) index import incl. composite/unique ✓, (7) all tests pass ✓",
+    "Decision: APPROVED — implementation meets architectural standards, tests are comprehensive, all acceptance criteria satisfied",
+    "QA verification (qa-automation, sprint 72): ran schema-import unit tests inside Docker (node:20-alpine) — 20/20 passed",
+    "QA verification (qa-automation, sprint 72): ran full test suite inside Docker (node:20-alpine) — 424/424 passed across 32 test files, no regressions",
+    "QA Docker command (unit tests): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npx vitest run src/__tests__/schema-import.test.ts'",
+    "QA Docker command (full suite): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+    "QA acceptance criteria verification: (1) table import ✓ (3 tests), (2) column and data type import ✓ (3 tests incl. maxLength preservation), (3) primary key import ✓ (3 tests incl. composite PKs), (4) foreign key import ✓ (4 tests incl. self-ref/circular/dangling), (5) unique constraint import ✓ (3 tests incl. composite), (6) index import ✓ (3 tests incl. composite/unique), (7) all tests pass ✓ (20/20 schema-import, 424/424 full suite)",
+    "Platform/OS limitations: none — all tests are pure unit tests with mocked fetch running in Node.js containers; no unsupported browsers or platform-specific tools involved; no criteria marked skipped-unsupported-platform"
+  ],
+  "implementedBy": "project-manager"
+}

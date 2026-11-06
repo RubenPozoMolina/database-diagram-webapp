@@ -1,0 +1,107 @@
+{
+  "id": "TASK-019",
+  "type": "task",
+  "title": "Implement index UI for columns",
+  "description": "Create the UI for adding indexes to columns on a table, documenting query performance considerations.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-007",
+  "acceptanceCriteria": [
+    "User can add an index to a column",
+    "Index is visually associated with the table",
+    "Index is recorded in the diagram model"
+  ],
+  "dependencies": [
+    "TASK-008"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.7"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T17:16:44.520764+00:00",
+      "reason": "Planned for sprint 37",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-04T17:33:26.328230+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Index UI already fully implemented in codebase (from STORY-007, done): src/types/diagram.ts (Index type, table.indexes array, createIndex helper), src/hooks/useDiagram.ts (addIndex/removeIndex/updateIndex), src/components/TableNode.tsx (IX badge, indexes section, add/edit/remove index UI), src/index.css (index badge, indexes section, index edit row styles), DiagramCanvas.tsx/App.tsx wiring via onTableUpdate→updateTable.",
+        "All 3 acceptance criteria verified: AC1 'User can add an index to a column' — + Add index button opens name input + column select + Save; AC2 'Index is visually associated with the table' — IX badge on indexed columns + dedicated indexes section; AC3 'Index is recorded in the diagram model' — indexes stored in table.indexes[], removeColumn cleans up referencing indexes.",
+        "Containerized test run: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test' — 283/283 tests passed across 26 test files. Index-specific tests: TableNode.test.tsx (IX badge, indexes section rendering, add/remove/edit/cancel index) and useDiagram.test.ts (add/remove/update index).",
+        "TypeScript check: no errors in ticket-related files (TableNode.tsx, TableNode.test.tsx, useDiagram.ts, useDiagram.test.ts, DiagramCanvas.tsx). All tsc errors are pre-existing in unrelated files (diagram-model.test.ts, readSchemaApi.test.ts, CreateRelationshipModal.test.tsx, DdlPreview.tsx, ddlGenerator.ts).",
+        "Branch ticket/TASK-019 is identical to origin/main (git diff empty); no code changes needed — implementation already complete and merged from STORY-007.",
+        "No platform skips required — all tests are Node.js/jsdom unit tests running on Linux in Docker."
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T18:05:55.051784+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Index UI already fully implemented in codebase (from STORY-007, done): src/types/diagram.ts (Index type, table.indexes array, createIndex helper), src/hooks/useDiagram.ts (addIndex/removeIndex/updateIndex), src/components/TableNode.tsx (IX badge, indexes section, add/edit/remove index UI), src/index.css (index badge, indexes section, index edit row styles), DiagramCanvas.tsx/App.tsx wiring via onTableUpdate→updateTable.",
+        "All 3 acceptance criteria verified: AC1 'User can add an index to a column' — + Add index button opens name input + column select + Save; AC2 'Index is visually associated with the table' — IX badge on indexed columns + dedicated indexes section; AC3 'Index is recorded in the diagram model' — indexes stored in table.indexes[], removeColumn cleans up referencing indexes.",
+        "Containerized test run (software-architect independent re-run): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test' — 283/283 tests passed across 26 test files. Index-specific tests: TableNode.test.tsx (IX badge, indexes section rendering, add/remove/edit/cancel index) and useDiagram.test.ts (add/remove/update index; removing column removes associated indexes).",
+        "TypeScript check: npx tsc --noEmit — no errors in ticket-related files (TableNode.tsx, TableNode.test.tsx, useDiagram.ts, useDiagram.test.ts, DiagramCanvas.tsx, App.tsx). All pre-existing tsc errors are in unrelated files.",
+        "Branch ticket/TASK-019 identical to origin/main (git diff empty); no code changes needed — implementation already complete and merged from STORY-007.",
+        "No platform skips required — all tests are Node.js/jsdom unit tests running on Linux in Docker.",
+        "Reviewer decision: APPROVED — implementation complete, all acceptance criteria met, tests green in Docker, no architectural concerns. Moving in-review → in-testing."
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-04T18:19:45.310585+00:00",
+      "reason": "passed",
+      "evidence": [
+        "Index UI already fully implemented in codebase (from STORY-007, done): src/types/diagram.ts (Index type, table.indexes array, createIndex helper), src/hooks/useDiagram.ts (addIndex/removeIndex/updateIndex), src/components/TableNode.tsx (IX badge, indexes section, add/edit/remove index UI), src/index.css (index badge, indexes section, index edit row styles), DiagramCanvas.tsx/App.tsx wiring via onTableUpdate→updateTable.",
+        "All 3 acceptance criteria verified: AC1 'User can add an index to a column' — + Add index button opens name input + column select + Save; AC2 'Index is visually associated with the table' — IX badge on indexed columns + dedicated indexes section; AC3 'Index is recorded in the diagram model' — indexes stored in table.indexes[], removeColumn cleans up referencing indexes.",
+        "Containerized test run (software-architect independent re-run): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test' — 283/283 tests passed across 26 test files. Index-specific tests: TableNode.test.tsx (IX badge, indexes section rendering, add/remove/edit/cancel index) and useDiagram.test.ts (add/remove/update index; removing column removes associated indexes).",
+        "TypeScript check: npx tsc --noEmit — no errors in ticket-related files (TableNode.tsx, TableNode.test.tsx, useDiagram.ts, useDiagram.test.ts, DiagramCanvas.tsx, App.tsx). All pre-existing tsc errors are in unrelated files.",
+        "Branch ticket/TASK-019 identical to origin/main (git diff empty); no code changes needed — implementation already complete and merged from STORY-007.",
+        "No platform skips required — all tests are Node.js/jsdom unit tests running on Linux in Docker.",
+        "Reviewer decision: APPROVED — implementation complete, all acceptance criteria met, tests green in Docker, no architectural concerns. Moving in-review → in-testing.",
+        "--- QA Manual verification (this sprint, TASK-019) ---",
+        "QA containerized unit test run: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test' — 283/283 tests passed across 26 test files (TableNode.test.tsx: 28 tests incl. IX badge, indexes section, add/remove/edit/cancel index; useDiagram.test.ts: 27 tests incl. add/remove/update index, removing column removes associated indexes). Image: node:20-alpine.",
+        "QA end-to-end browser test: Playwright script qa-tools/index_crud_e2e.py run in mcr.microsoft.com/playwright:v1.49.1-noble container against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-TASK-019. Verified AC1 (add index via '+ Add index' button → name input + column select + Save), AC2 (IX badge on indexed column + index listed in indexes section), AC3 (index removal cleans up from model). All 10 flow screenshots saved to qa-artifacts/TASK-019/.",
+        "QA visual layout check: qa-tools/visual_check.py run in asg-visual-qa:1.49.1 container at viewports 1280x720 and 1920x1080 — 0 layout defects, 0 console errors on both viewports. Screenshots saved to qa-artifacts/TASK-019/. Visual report: qa-artifacts/TASK-019/visual-report.json.",
+        "No platform skips required — all tests run on Linux in Docker (Node.js/jsdom unit tests + Chromium browser). No code changes needed; branch ticket/TASK-019 identical to origin/main."
+      ]
+    }
+  ],
+  "sprint": 39,
+  "requiresReview": true,
+  "updatedAt": "2026-11-04T18:19:45.310651+00:00",
+  "resultEvidence": [
+    "Index UI already fully implemented in codebase (from STORY-007, done): src/types/diagram.ts (Index type, table.indexes array, createIndex helper), src/hooks/useDiagram.ts (addIndex/removeIndex/updateIndex), src/components/TableNode.tsx (IX badge, indexes section, add/edit/remove index UI), src/index.css (index badge, indexes section, index edit row styles), DiagramCanvas.tsx/App.tsx wiring via onTableUpdate→updateTable.",
+    "All 3 acceptance criteria verified: AC1 'User can add an index to a column' — + Add index button opens name input + column select + Save; AC2 'Index is visually associated with the table' — IX badge on indexed columns + dedicated indexes section; AC3 'Index is recorded in the diagram model' — indexes stored in table.indexes[], removeColumn cleans up referencing indexes.",
+    "Containerized test run (software-architect independent re-run): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test' — 283/283 tests passed across 26 test files. Index-specific tests: TableNode.test.tsx (IX badge, indexes section rendering, add/remove/edit/cancel index) and useDiagram.test.ts (add/remove/update index; removing column removes associated indexes).",
+    "TypeScript check: npx tsc --noEmit — no errors in ticket-related files (TableNode.tsx, TableNode.test.tsx, useDiagram.ts, useDiagram.test.ts, DiagramCanvas.tsx, App.tsx). All pre-existing tsc errors are in unrelated files.",
+    "Branch ticket/TASK-019 identical to origin/main (git diff empty); no code changes needed — implementation already complete and merged from STORY-007.",
+    "No platform skips required — all tests are Node.js/jsdom unit tests running on Linux in Docker.",
+    "Reviewer decision: APPROVED — implementation complete, all acceptance criteria met, tests green in Docker, no architectural concerns. Moving in-review → in-testing.",
+    "--- QA Manual verification (this sprint, TASK-019) ---",
+    "QA containerized unit test run: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test' — 283/283 tests passed across 26 test files (TableNode.test.tsx: 28 tests incl. IX badge, indexes section, add/remove/edit/cancel index; useDiagram.test.ts: 27 tests incl. add/remove/update index, removing column removes associated indexes). Image: node:20-alpine.",
+    "QA end-to-end browser test: Playwright script qa-tools/index_crud_e2e.py run in mcr.microsoft.com/playwright:v1.49.1-noble container against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-TASK-019. Verified AC1 (add index via '+ Add index' button → name input + column select + Save), AC2 (IX badge on indexed column + index listed in indexes section), AC3 (index removal cleans up from model). All 10 flow screenshots saved to qa-artifacts/TASK-019/.",
+    "QA visual layout check: qa-tools/visual_check.py run in asg-visual-qa:1.49.1 container at viewports 1280x720 and 1920x1080 — 0 layout defects, 0 console errors on both viewports. Screenshots saved to qa-artifacts/TASK-019/. Visual report: qa-artifacts/TASK-019/visual-report.json.",
+    "No platform skips required — all tests run on Linux in Docker (Node.js/jsdom unit tests + Chromium browser). No code changes needed; branch ticket/TASK-019 identical to origin/main."
+  ],
+  "implementedBy": "web-developer"
+}
