@@ -19,8 +19,11 @@ function newColumn(): Column {
     id: crypto.randomUUID(),
     name: '',
     dataType: 'text',
+    length: null,
     nullable: true,
     primaryKey: false,
+    unique: false,
+    comment: null,
   };
 }
 

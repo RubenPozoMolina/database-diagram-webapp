@@ -2,15 +2,19 @@ export type Column = {
   id: string;
   name: string;
   dataType: string;
+  length?: number | null;
   nullable: boolean;
   primaryKey: boolean;
+  unique?: boolean;
   defaultValue?: string;
+  comment?: string | null;
 };
 
 export type Index = {
   id: string;
+  tableId: string;
   name: string;
-  columnId: string;
+  columnIds: string[];
 };
 
 export type Table = {
@@ -31,12 +35,26 @@ export type UniqueConstraint = {
   name?: string;
 };
 
+/**
+ * Referential action applied by the database when the referenced (target)
+ * row is deleted or updated. Matches PostgreSQL's ON DELETE / ON UPDATE
+ * options and the diagram serialization schema.
+ */
+export type ReferentialAction =
+  | 'cascade'
+  | 'set null'
+  | 'set default'
+  | 'restrict'
+  | 'no action';
+
 export type Relationship = {
   id: string;
   sourceTableId: string;
   sourceColumnId?: string;
   targetTableId: string;
   targetColumnId?: string;
+  onDelete?: ReferentialAction;
+  onUpdate?: ReferentialAction;
 };
 
 export type Diagram = {
@@ -80,6 +98,9 @@ export function createColumn(
   nullable: boolean,
   defaultValue?: string,
   primaryKey = false,
+  length?: number | null,
+  unique = false,
+  comment?: string | null,
 ): Column {
   return {
     id,
@@ -88,6 +109,9 @@ export function createColumn(
     nullable,
     defaultValue,
     primaryKey,
+    ...(length !== undefined ? { length } : {}),
+    ...(unique !== undefined ? { unique } : {}),
+    ...(comment !== undefined ? { comment } : {}),
   };
 }
 
@@ -119,20 +143,24 @@ export function createTable(
 }
 
 /**
- * Creates an index associated with a column of a table.
+ * Creates an index associated with a table, tracking which column(s) are
+ * indexed (supports composite indexes via an array of column IDs).
  *
  * Used by STORY-007 define index: indexes track query performance
- * considerations and are stored per table.
+ * considerations and are stored per table. The tableId explicitly
+ * associates the index with its owning table.
  */
 export function createIndex(
   id: string,
+  tableId: string,
   name: string,
-  columnId: string,
+  columnIds: string[],
 ): Index {
   return {
     id,
+    tableId,
     name,
-    columnId,
+    columnIds,
   };
 }
 
@@ -181,7 +209,9 @@ export function createUniqueConstraint(
  *
  * Used by STORY-005 / TASK-014: a relationship records the source table
  * (foreign key side) and target table (referenced side), plus the optional
- * column-to-column mapping that defines which column references which.
+ * column-to-column mapping that defines which column references which, and
+ * the referential integrity actions (onDelete / onUpdate) that the database
+ * should enforce when the referenced row changes.
  */
 export function createRelationship(
   id: string,
@@ -189,6 +219,8 @@ export function createRelationship(
   sourceColumnId: string | undefined,
   targetTableId: string,
   targetColumnId: string | undefined,
+  onDelete: ReferentialAction = 'no action',
+  onUpdate: ReferentialAction = 'no action',
 ): Relationship {
   return {
     id,
@@ -196,6 +228,8 @@ export function createRelationship(
     sourceColumnId,
     targetTableId,
     targetColumnId,
+    onDelete,
+    onUpdate,
   };
 }
 
@@ -212,6 +246,100 @@ export function findRelationshipsByTable(
 }
 
 /**
+ * Referential integrity violation detected on a relationship.
+ */
+export interface ReferentialIntegrityViolation {
+  relationshipId: string;
+  sourceTableId: string;
+  targetTableId: string;
+  message: string;
+}
+
+/**
+ * Validates referential integrity for all relationships in a diagram.
+ *
+ * Checks that every relationship:
+ *   * references an existing source table,
+ *   * references an existing target table,
+ *   * references an existing source column (when sourceColumnId is set),
+ *   * references an existing target column (when targetColumnId is set),
+ *   * references a target column that is part of the target table's primary
+ *     key (referential integrity requires the referenced column(s) to be
+ *     unique).
+ *
+ * Returns the list of violations so callers can report or repair them.
+ *
+ * Used by TASK-014 (AC3): "Referential integrity constraints are tracked".
+ */
+export function validateReferentialIntegrity(
+  diagram: Diagram,
+): ReferentialIntegrityViolation[] {
+  const violations: ReferentialIntegrityViolation[] = [];
+
+  for (const rel of diagram.relationships) {
+    const sourceTable = findTableById(diagram, rel.sourceTableId);
+    const targetTable = findTableById(diagram, rel.targetTableId);
+
+    if (!sourceTable) {
+      violations.push({
+        relationshipId: rel.id,
+        sourceTableId: rel.sourceTableId,
+        targetTableId: rel.targetTableId,
+        message: `Relationship ${rel.id} references an unknown source table ${rel.sourceTableId}.`,
+      });
+      continue;
+    }
+
+    if (!targetTable) {
+      violations.push({
+        relationshipId: rel.id,
+        sourceTableId: rel.sourceTableId,
+        targetTableId: rel.targetTableId,
+        message: `Relationship ${rel.id} references an unknown target table ${rel.targetTableId}.`,
+      });
+      continue;
+    }
+
+    if (rel.sourceColumnId !== undefined) {
+      const sourceColumn = findColumnById(sourceTable, rel.sourceColumnId);
+      if (!sourceColumn) {
+        violations.push({
+          relationshipId: rel.id,
+          sourceTableId: rel.sourceTableId,
+          targetTableId: rel.targetTableId,
+          message: `Relationship ${rel.id} references an unknown source column ${rel.sourceColumnId} on table ${sourceTable.name}.`,
+        });
+      }
+    }
+
+    if (rel.targetColumnId !== undefined) {
+      const targetColumn = findColumnById(targetTable, rel.targetColumnId);
+      if (!targetColumn) {
+        violations.push({
+          relationshipId: rel.id,
+          sourceTableId: rel.sourceTableId,
+          targetTableId: rel.targetTableId,
+          message: `Relationship ${rel.id} references an unknown target column ${rel.targetColumnId} on table ${targetTable.name}.`,
+        });
+        continue;
+      }
+      // Referential integrity: the referenced column must be part of the
+      // target table's primary key (a unique key).
+      if (!targetColumn.primaryKey) {
+        violations.push({
+          relationshipId: rel.id,
+          sourceTableId: rel.sourceTableId,
+          targetTableId: rel.targetTableId,
+          message: `Relationship ${rel.id} targets column ${targetColumn.name} on table ${targetTable.name} which is not part of the primary key.`,
+        });
+      }
+    }
+  }
+
+  return violations;
+}
+
+/**
  * Returns all unique constraints defined on a given table.
  */
 export function findUniqueConstraintsByTable(
@@ -219,4 +347,110 @@ export function findUniqueConstraintsByTable(
   tableId: string,
 ): UniqueConstraint[] {
   return diagram.uniqueConstraints.filter((uc) => uc.tableId === tableId);
+}
+
+/**
+ * Returns all columns of a table that are designated as the primary key.
+ *
+ * Used by TASK-011 (AC1): the table model tracks which column is the primary
+ * key. Under entity integrity there is at most one, but this function returns
+ * all matches so callers can detect and repair violations.
+ */
+export function findPrimaryKeyColumns(table: Table): Column[] {
+  return table.columns.filter((column) => column.primaryKey);
+}
+
+/**
+ * Returns the single primary key column of a table, or undefined when the
+ * table has no primary key or more than one (an entity integrity violation
+ * that callers should handle).
+ *
+ * Used by TASK-011 (AC1): consumers that expect exactly one primary key
+ * column (for example DDL generation and foreign key targeting) use this
+ * helper.
+ */
+export function findPrimaryKeyColumn(table: Table): Column | undefined {
+  const pks = findPrimaryKeyColumns(table);
+  return pks.length === 1 ? pks[0] : undefined;
+}
+
+/**
+ * Returns true when the table has at least one primary key column.
+ *
+ * Used by TASK-011 (AC1).
+ */
+export function hasPrimaryKey(table: Table): boolean {
+  return table.columns.some((column) => column.primaryKey);
+}
+
+/**
+ * Designates a column as the primary key of a table, enforcing entity
+ * integrity: only one column can be the primary key per table, so every
+ * other column has its primaryKey flag cleared.
+ *
+ * Returns a new table object (immutable update). When columnId does not
+ * match any column of the table, all primary key flags are cleared so no
+ * column remains designated.
+ *
+ * Used by TASK-011 (AC2): "Only one column can be designated as primary key
+ * per table".
+ */
+export function setPrimaryKeyColumn(
+  table: Table,
+  columnId: string,
+): Table {
+  return {
+    ...table,
+    columns: table.columns.map((column) =>
+      column.id === columnId
+        ? { ...column, primaryKey: true }
+        : { ...column, primaryKey: false },
+    ),
+  };
+}
+
+/**
+ * Toggles the primary key designation of a column, enforcing entity
+ * integrity: when the column becomes the primary key, every other column of
+ * the table is cleared; when the column is already the primary key, its
+ * designation is removed, leaving the table with no primary key.
+ *
+ * Returns a new table object (immutable update).
+ *
+ * Used by TASK-011 (AC2): the UI checkbox toggle calls this so that checking
+ * a new PK column automatically unsets the previous one.
+ */
+export function togglePrimaryKeyColumn(
+  table: Table,
+  columnId: string,
+): Table {
+  const currentPk = findPrimaryKeyColumn(table);
+  if (currentPk?.id === columnId) {
+    // Already the PK: remove the designation.
+    return {
+      ...table,
+      columns: table.columns.map((column) =>
+        column.id === columnId ? { ...column, primaryKey: false } : column,
+      ),
+    };
+  }
+  return setPrimaryKeyColumn(table, columnId);
+}
+
+/**
+ * Validates entity integrity for primary keys: a table must have at most one
+ * primary key column. Returns the list of primary key columns so callers can
+ * report or repair violations.
+ *
+ * Used by TASK-011: enforces the entity integrity constraint on primary keys.
+ */
+export function validatePrimaryKeyUniqueness(table: Table): {
+  valid: boolean;
+  primaryKeyColumns: Column[];
+} {
+  const primaryKeyColumns = findPrimaryKeyColumns(table);
+  return {
+    valid: primaryKeyColumns.length <= 1,
+    primaryKeyColumns,
+  };
 }

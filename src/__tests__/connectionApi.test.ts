@@ -20,6 +20,7 @@ const config: ConnectionConfig = {
   database: 'mydb',
   user: 'app_user',
   password: 's3cret',
+  schema: 'public',
 };
 
 function appendContainer(): HTMLElement {

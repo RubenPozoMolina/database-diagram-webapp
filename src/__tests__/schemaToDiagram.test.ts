@@ -190,7 +190,8 @@ describe('schemaToDiagram', () => {
 
     expect(orders?.indexes).toHaveLength(1);
     expect(orders?.indexes[0].name).toBe('idx_orders_customer_id');
-    expect(orders?.indexes[0].columnId).toBeDefined();
+    expect(orders?.indexes[0].columnIds).toHaveLength(1);
+    expect(typeof orders?.indexes[0].columnIds[0]).toBe('string');
   });
 
   it('positions tables in a grid', () => {

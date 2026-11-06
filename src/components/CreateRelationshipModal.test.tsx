@@ -11,6 +11,7 @@ const makeTable = (id: string, name: string, columns: Column[] = []): Table => (
   width: 220,
   height: 120,
   columns,
+  indexes: [],
 });
 
 const renderModal = (props = {}) =>

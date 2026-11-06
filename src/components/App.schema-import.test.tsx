@@ -79,7 +79,7 @@ describe('App schema import integration', () => {
     }
   });
 
-  it('calls the read-schema endpoint and renders imported tables on the canvas', async () => {
+  it('calls the read-schema endpoint with the default schema and renders imported tables', async () => {
     render(<App />);
 
     const importButton = screen.getByRole('button', { name: /Import PostgreSQL schema/i });
@@ -91,9 +91,96 @@ describe('App schema import integration', () => {
       expect(mockedReadSchema).toHaveBeenCalledTimes(1);
     });
 
+    // Verify the default schema 'public' was sent to the backend.
+    const lastCall = mockedReadSchema.mock.calls[mockedReadSchema.mock.calls.length - 1];
+    expect(lastCall[2]).toBe('public');
+
     await waitFor(() => {
       expect(screen.getByText('orders')).toBeInTheDocument();
     });
     expect(screen.getByText('customers')).toBeInTheDocument();
+  });
+
+  it('sends the user-selected schema to the backend when importing', async () => {
+    render(<App />);
+
+    // Select a different schema from the dropdown.
+    const schemaSelect = screen.getByLabelText('Schema to import');
+    fireEvent.change(schemaSelect, { target: { value: 'information_schema' } });
+
+    const importButton = screen.getByRole('button', { name: /Import PostgreSQL schema/i });
+    fireEvent.click(importButton);
+
+    await waitFor(() => {
+      expect(mockedReadSchema).toHaveBeenCalledTimes(1);
+    });
+
+    // Verify the selected schema was sent to the backend.
+    const lastCall = mockedReadSchema.mock.calls[mockedReadSchema.mock.calls.length - 1];
+    expect(lastCall[2]).toBe('information_schema');
+  });
+
+  it('displays import progress while the request is in flight', async () => {
+    let resolvePromise: (value: ReadSchemaResponse) => void = () => {};
+    mockedReadSchema.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvePromise = resolve;
+        }) as Promise<ReadSchemaResponse>,
+    );
+
+    render(<App />);
+
+    const importButton = screen.getByRole('button', { name: /Import PostgreSQL schema/i });
+    fireEvent.click(importButton);
+
+    // The import progress indicator should appear while the request is in flight.
+    await waitFor(() => {
+      expect(screen.getByText('Importing schema…')).toBeInTheDocument();
+    });
+
+    // Resolve the request.
+    resolvePromise(schemaResponse);
+
+    await waitFor(() => {
+      expect(screen.getByText('orders')).toBeInTheDocument();
+    });
+  });
+
+  it('displays an error message when the import fails', async () => {
+    mockedReadSchema.mockRejectedValue(new Error('Backend unavailable'));
+
+    render(<App />);
+
+    const importButton = screen.getByRole('button', { name: /Import PostgreSQL schema/i });
+    fireEvent.click(importButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/Unexpected error/);
+  });
+
+  it('sends a custom schema name entered via the "Other…" input to the backend', async () => {
+    render(<App />);
+
+    // Choose "Other…" so the custom input appears.
+    const schemaSelect = screen.getByLabelText('Schema to import');
+    fireEvent.change(schemaSelect, { target: { value: '' } });
+
+    const customInput = screen.getByLabelText('Custom schema name');
+    fireEvent.change(customInput, { target: { value: 'my_custom_schema' } });
+
+    const importButton = screen.getByRole('button', { name: /Import PostgreSQL schema/i });
+    fireEvent.click(importButton);
+
+    await waitFor(() => {
+      expect(mockedReadSchema).toHaveBeenCalledTimes(1);
+    });
+
+    // Verify the custom schema name was sent to the backend.
+    const lastCall = mockedReadSchema.mock.calls[mockedReadSchema.mock.calls.length - 1];
+    expect(lastCall[2]).toBe('my_custom_schema');
   });
 });

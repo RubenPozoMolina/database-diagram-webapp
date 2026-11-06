@@ -28,7 +28,7 @@ interface UseDiagramReturn {
     tableId: string,
     position: { x: number; y: number },
   ) => void;
-  addIndex: (tableId: string, index: Omit<Index, 'id'>) => void;
+  addIndex: (tableId: string, index: Omit<Index, 'id' | 'tableId'>) => void;
   removeIndex: (tableId: string, indexId: string) => void;
   updateIndex: (
     tableId: string,
@@ -41,6 +41,10 @@ interface UseDiagramReturn {
     name?: string,
   ) => void;
   removeUniqueConstraint: (constraintId: string) => void;
+  updateUniqueConstraint: (
+    constraintId: string,
+    updates: Partial<Omit<UniqueConstraint, 'id'>>,
+  ) => void;
   addColumn: (tableId: string, column: Omit<Column, 'id'>) => void;
   removeColumn: (tableId: string, columnId: string) => void;
   updateColumn: (
@@ -133,8 +137,13 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
   );
 
   const addIndex = useCallback(
-    (tableId: string, index: Omit<Index, 'id'>) => {
-      const newIndex: Index = createIndex(crypto.randomUUID(), index.name, index.columnId);
+    (tableId: string, index: Omit<Index, 'id' | 'tableId'>) => {
+      const newIndex: Index = createIndex(
+        crypto.randomUUID(),
+        tableId,
+        index.name,
+        index.columnIds,
+      );
       setDiagram((prev) => ({
         ...prev,
         tables: prev.tables.map((t) =>
@@ -209,6 +218,21 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     }));
   }, []);
 
+  const updateUniqueConstraint = useCallback(
+    (
+      constraintId: string,
+      updates: Partial<Omit<UniqueConstraint, 'id'>>,
+    ) => {
+      setDiagram((prev) => ({
+        ...prev,
+        uniqueConstraints: prev.uniqueConstraints.map((uc) =>
+          uc.id === constraintId ? { ...uc, ...updates } : uc,
+        ),
+      }));
+    },
+    [],
+  );
+
   const addColumn = useCallback(
     (tableId: string, column: Omit<Column, 'id'>) => {
       const newColumn: Column = createColumn(
@@ -240,7 +264,7 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
             ? {
                 ...t,
                 columns: t.columns.filter((c) => c.id !== columnId),
-                indexes: t.indexes.filter((i) => i.columnId !== columnId),
+                indexes: t.indexes.filter((i) => !i.columnIds.includes(columnId)),
               }
             : t,
         ),
@@ -295,6 +319,7 @@ export function useDiagram(initialName?: string): UseDiagramReturn {
     updateIndex,
     addUniqueConstraint,
     removeUniqueConstraint,
+    updateUniqueConstraint,
     addColumn,
     removeColumn,
     updateColumn,

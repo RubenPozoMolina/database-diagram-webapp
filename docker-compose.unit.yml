@@ -1,0 +1,18 @@
+services:
+  tests:
+    image: node:20-alpine
+    user: "1000:1000"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    pids_limit: 512
+    mem_limit: 2g
+    shm_size: 1g
+    environment:
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
+    volumes:
+      - .:/work:rw
+    working_dir: /work
+    command: sh -c "npm test"

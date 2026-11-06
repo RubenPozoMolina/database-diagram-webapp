@@ -26,7 +26,7 @@
  *   generateDDL  - Function to generate DDL from the diagram (default export).
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Diagram } from '../types/diagram';
 import type { ConnectionConfig } from '../types';
 import { generateDDL } from '../ddl/ddlGenerator';
@@ -150,6 +150,12 @@ export function DdlPreview({
             carefully and confirm before proceeding. Existing objects are never
             dropped.
           </p>
+
+          {connection && (
+            <p className="ddl-schema">
+              Target schema: <strong>{connection.schema}</strong>
+            </p>
+          )}
 
           {state.ddl === null && state.result === null && (
             <p className="ddl-empty">Generating DDL…</p>

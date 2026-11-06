@@ -6,7 +6,7 @@
   "description": "Web-based database diagram designer with JSON import/export and PostgreSQL integration",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc -p tsconfig.build.json && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:ui": "vitest",

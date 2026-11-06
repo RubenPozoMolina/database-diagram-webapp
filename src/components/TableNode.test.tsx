@@ -30,8 +30,12 @@ const renderTableNode = (table = makeTable()) =>
       table={table}
       onUpdatePosition={vi.fn()}
       onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
       onAddColumn={vi.fn()}
       onRemoveColumn={vi.fn()}
+    onAddUniqueConstraint={vi.fn()}
+    onRemoveUniqueConstraint={vi.fn()}
+    onUpdateUniqueConstraint={vi.fn()}
       onUpdateColumn={vi.fn()}
     />,
   );
@@ -57,8 +61,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -76,8 +84,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -96,8 +108,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -117,8 +133,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -138,8 +158,12 @@ describe('TableNode', () => {
         table={makeTable({ columns: [makeColumn({ nullable: false })] })}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -161,8 +185,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -184,8 +212,12 @@ describe('TableNode', () => {
         table={makeTable({ columns: [makeColumn({ primaryKey: false })] })}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -200,6 +232,29 @@ describe('TableNode', () => {
     });
   });
 
+  it('renders the PK checkbox checked when the column is a primary key', () => {
+    const onUpdateColumn = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ columns: [makeColumn({ primaryKey: true })] })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={onUpdateColumn}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText(/id: integer/));
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Primary key for id',
+    });
+    expect(checkbox).toBeChecked();
+  });
+
   it('edits column default value via the text input', () => {
     const onUpdateColumn = vi.fn();
     render(
@@ -207,8 +262,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -229,8 +288,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -252,8 +315,12 @@ describe('TableNode', () => {
         table={makeTable({ columns: [makeColumn({ defaultValue: '0' })] })}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -285,8 +352,12 @@ describe('TableNode', () => {
         }
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={onUpdateColumn}
       />,
     );
@@ -312,8 +383,12 @@ describe('TableNode', () => {
         table={makeTable()}
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={onAddColumn}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -325,8 +400,11 @@ describe('TableNode', () => {
     expect(onAddColumn).toHaveBeenCalledWith('t1', {
       name: 'new_column',
       dataType: 'text',
+      length: null,
       nullable: true,
       primaryKey: false,
+      unique: false,
+      comment: null,
     });
   });
 
@@ -344,8 +422,12 @@ describe('TableNode', () => {
         }
         onUpdatePosition={vi.fn()}
         onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={onRemoveColumn}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -354,7 +436,84 @@ describe('TableNode', () => {
     expect(onRemoveColumn).toHaveBeenCalledWith('t1', 'c1');
   });
 
+  it('calls onDeleteTable with the table id when the Delete button is clicked', () => {
+    const onDeleteTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={onDeleteTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /Delete table users/i }),
+    );
+    expect(onDeleteTable).toHaveBeenCalledWith('t1');
+  });
+
   /* ---- STORY-007: index tests ---- */
+
+  /* ---- STORY-004 / TASK-010: primary key badge tests ---- */
+
+  it('shows a PK badge with key icon next to primary key columns', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar', primaryKey: false }),
+            ],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText('Primary key')).toBeInTheDocument();
+    expect(screen.getByText(/🔑 PK/)).toBeInTheDocument();
+  });
+
+  it('does not show a PK badge on non-primary-key columns', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer', primaryKey: false }),
+            ],
+          })
+        }
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    expect(screen.queryByTitle(/Primary key/)).toBeNull();
+    expect(screen.queryByText(/🔑 PK/)).toBeNull();
+  });
 
   it('shows an IX badge on indexed columns', () => {
     const onUpdateTable = vi.fn();
@@ -363,13 +522,17 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -384,13 +547,17 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -410,8 +577,12 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -440,8 +611,12 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -455,8 +630,9 @@ describe('TableNode', () => {
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'test-index-uuid',
+          tableId: 't1',
           name: 'idx_email',
-          columnId: 'c2',
+          columnIds: ['c2'],
         }),
       ]),
     });
@@ -469,14 +645,18 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -496,14 +676,18 @@ describe('TableNode', () => {
               makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
               makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
             ],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -518,8 +702,9 @@ describe('TableNode', () => {
       indexes: expect.arrayContaining([
         expect.objectContaining({
           id: 'i1',
+          tableId: 't1',
           name: 'idx_user_id',
-          columnId: 'c1',
+          columnIds: ['c1'],
         }),
       ]),
     });
@@ -532,14 +717,18 @@ describe('TableNode', () => {
         table={
           makeTable({
             columns: [makeColumn({ id: 'c1', name: 'id', dataType: 'integer' })],
-            indexes: [{ id: 'i1', name: 'idx_id', columnId: 'c1' }],
+            indexes: [{ id: 'i1', tableId: 't1', name: 'idx_id', columnIds: ['c1'] }],
           })
         }
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -558,8 +747,12 @@ describe('TableNode', () => {
         uniqueConstraints={[]}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -584,8 +777,12 @@ describe('TableNode', () => {
         uniqueConstraints={uniqueConstraints}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -618,8 +815,12 @@ describe('TableNode', () => {
         uniqueConstraints={uniqueConstraints}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
+      onAddUniqueConstraint={vi.fn()}
+      onRemoveUniqueConstraint={vi.fn()}
+      onUpdateUniqueConstraint={vi.fn()}
         onUpdateColumn={vi.fn()}
       />,
     );
@@ -649,11 +850,441 @@ describe('TableNode', () => {
         uniqueConstraints={uniqueConstraints}
         onUpdatePosition={vi.fn()}
         onUpdateTable={onUpdateTable}
+        onDeleteTable={vi.fn()}
         onAddColumn={vi.fn()}
         onRemoveColumn={vi.fn()}
         onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
       />,
     );
     expect(screen.getAllByText('UQ')).toHaveLength(2);
+  });
+
+  /* ---- Unique constraint management ---- */
+
+  it('renders the unique constraints section and Add unique constraint button', () => {
+    const onAddUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={onAddUniqueConstraint}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Unique constraints')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  /* ---- TASK-013: column position tracking for relationship lines ---- */
+
+  it('reports column positions via onColumnPositionUpdate', () => {
+    const onColumnPositionUpdate = vi.fn();
+    const table = makeTable({
+      columns: [
+        makeColumn({ id: 'c1', name: 'id' }),
+        makeColumn({ id: 'c2', name: 'email' }),
+      ],
+    });
+    render(
+      <TableNode
+        table={table}
+        onUpdatePosition={vi.fn()}
+        onColumnPositionUpdate={onColumnPositionUpdate}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    expect(onColumnPositionUpdate).toHaveBeenCalledWith('t1', expect.any(Map));
+    const positions = onColumnPositionUpdate.mock.calls[0][1];
+    expect(positions.get('c1')).toBeDefined();
+    expect(positions.get('c2')).toBeDefined();
+  });
+
+  it('does not call onColumnPositionUpdate when not provided', () => {
+    const table = makeTable({
+      columns: [makeColumn({ id: 'c1', name: 'id' })],
+    });
+    const { container } = render(
+      <TableNode
+        table={table}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    expect(container.querySelectorAll('.table-column')).toHaveLength(1);
+  });
+
+  it('adds a unique constraint to a single column', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-uc-uuid' },
+    });
+    const onAddUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={onAddUniqueConstraint}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    );
+    const nameInput = screen.getByPlaceholderText('Constraint name');
+    fireEvent.change(nameInput, { target: { value: 'users_email_key' } });
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Include email in unique constraint',
+    });
+    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onAddUniqueConstraint).toHaveBeenCalledWith('t1', ['c2'], 'users_email_key');
+  });
+
+  it('adds a unique constraint to a group of columns', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-uc-uuid' },
+    });
+    const onAddUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'user_id', dataType: 'integer' }),
+              makeColumn({ id: 'c3', name: 'product_id', dataType: 'integer' }),
+            ],
+          })
+        }
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={onAddUniqueConstraint}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    );
+    const nameInput = screen.getByPlaceholderText('Constraint name');
+    fireEvent.change(nameInput, { target: { value: 'orders_user_product_key' } });
+    const checkbox1 = screen.getByRole('checkbox', {
+      name: 'Include user_id in unique constraint',
+    });
+    const checkbox2 = screen.getByRole('checkbox', {
+      name: 'Include product_id in unique constraint',
+    });
+    fireEvent.click(checkbox1);
+    fireEvent.click(checkbox2);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onAddUniqueConstraint).toHaveBeenCalledWith(
+      't1',
+      ['c2', 'c3'],
+      'orders_user_product_key',
+    );
+  });
+
+  it('disables Save when no name or no columns are selected', () => {
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /add a new unique constraint to this table/i,
+      }),
+    );
+    const saveButton = screen.getByRole('button', { name: /save/i });
+    expect(saveButton).toBeDisabled();
+  });
+
+  it('removes a unique constraint when Remove is clicked', () => {
+    const onRemoveUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[
+          { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+        ]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={onRemoveUniqueConstraint}
+        onUpdateUniqueConstraint={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Remove unique constraint users_email_key/i,
+      }),
+    );
+    expect(onRemoveUniqueConstraint).toHaveBeenCalledWith('uc1');
+  });
+
+  it('edits a unique constraint name and columns when Edit and Save are clicked', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { randomUUID: () => 'test-uc-uuid' },
+    });
+    const onUpdateUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+              makeColumn({ id: 'c3', name: 'name', dataType: 'text' }),
+            ],
+          })
+        }
+        uniqueConstraints={[
+          {
+            id: 'uc1',
+            tableId: 't1',
+            columnIds: ['c2'],
+            name: 'users_email_key',
+          },
+        ]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={onUpdateUniqueConstraint}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Edit unique constraint/i }));
+    const nameInput = screen.getByPlaceholderText('Constraint name');
+    expect(nameInput).toHaveValue('users_email_key');
+    fireEvent.change(nameInput, { target: { value: 'users_email_name_key' } });
+    // Deselect email, select name instead
+    const emailCheckbox = screen.getByRole('checkbox', {
+      name: 'Include email in unique constraint',
+    });
+    fireEvent.click(emailCheckbox);
+    const nameCheckbox = screen.getByRole('checkbox', {
+      name: 'Include name in unique constraint',
+    });
+    fireEvent.click(nameCheckbox);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onUpdateUniqueConstraint).toHaveBeenCalledWith('uc1', {
+      name: 'users_email_name_key',
+      columnIds: ['c3'],
+    });
+  });
+
+  it('cancels unique constraint editing without calling onUpdateUniqueConstraint', () => {
+    const onUpdateUniqueConstraint = vi.fn();
+    render(
+      <TableNode
+        table={
+          makeTable({
+            columns: [
+              makeColumn({ id: 'c1', name: 'id', dataType: 'integer' }),
+              makeColumn({ id: 'c2', name: 'email', dataType: 'varchar' }),
+            ],
+          })
+        }
+        uniqueConstraints={[
+          { id: 'uc1', tableId: 't1', columnIds: ['c2'], name: 'users_email_key' },
+        ]}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={vi.fn()}
+      onDeleteTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onUpdateColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={onUpdateUniqueConstraint}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Edit unique constraint/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onUpdateUniqueConstraint).not.toHaveBeenCalled();
+  });
+
+  /* ---- TASK-022: drag and resize ---- */
+
+  it('drags the table to a new position', () => {
+    const onUpdatePosition = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ x: 100, y: 100 })}
+        onUpdatePosition={onUpdatePosition}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    const tableEl = screen.getByRole('region', { name: 'Table users' });
+    fireEvent.mouseDown(tableEl, { clientX: 100, clientY: 100, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 160, clientY: 210 });
+    fireEvent.mouseUp(window);
+    expect(onUpdatePosition).toHaveBeenCalledWith('t1', 160, 210);
+  });
+
+  it('does not start a drag when clicking on an input', () => {
+    const onUpdatePosition = vi.fn();
+    render(
+      <TableNode
+        table={makeTable()}
+        onUpdatePosition={onUpdatePosition}
+        onUpdateTable={vi.fn()}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    fireEvent.doubleClick(screen.getByText('users'));
+    const input = screen.getByRole('textbox');
+    // Clear the mount-time call (getBoundingClientRect reports (0,0) in jsdom).
+    onUpdatePosition.mockClear();
+    fireEvent.mouseDown(input, { clientX: 50, clientY: 50, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 100, clientY: 100 });
+    fireEvent.mouseUp(window);
+    expect(onUpdatePosition).not.toHaveBeenCalled();
+  });
+
+  it('resizes the table when the resize handle is dragged', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ width: 220, height: 120 })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    const handle = screen.getByTestId('table-resize-handle');
+    fireEvent.mouseDown(handle, { clientX: 320, clientY: 120, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 400, clientY: 220 });
+    fireEvent.mouseUp(window);
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', { width: 300, height: 220 });
+  });
+
+  it('clamps table size to the minimum when resizing smaller', () => {
+    const onUpdateTable = vi.fn();
+    render(
+      <TableNode
+        table={makeTable({ width: 200, height: 100 })}
+        onUpdatePosition={vi.fn()}
+        onUpdateTable={onUpdateTable}
+        onAddColumn={vi.fn()}
+        onRemoveColumn={vi.fn()}
+        onAddUniqueConstraint={vi.fn()}
+        onRemoveUniqueConstraint={vi.fn()}
+        onUpdateUniqueConstraint={vi.fn()}
+        onDeleteTable={vi.fn()}
+        onUpdateColumn={vi.fn()}
+      />,
+    );
+    const handle = screen.getByTestId('table-resize-handle');
+    fireEvent.mouseDown(handle, { clientX: 360, clientY: 180, button: 0 });
+    fireEvent.mouseMove(window, { clientX: 100, clientY: 50 });
+    fireEvent.mouseUp(window);
+    // width = 200 + (100 - 360) = -60 -> clamped to 160
+    // height = 100 + (50 - 180) = -30 -> clamped to 80
+    expect(onUpdateTable).toHaveBeenCalledWith('t1', { width: 160, height: 80 });
   });
 });

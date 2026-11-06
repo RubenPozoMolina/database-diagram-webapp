@@ -15,6 +15,7 @@
 import type {
   Column,
   Diagram,
+  Index,
   Relationship,
   Table,
   UniqueConstraint,
@@ -23,6 +24,7 @@ import {
   DIAGRAM_JSON_VERSION,
   type SerializedColumn,
   type SerializedExport,
+  type SerializedIndex,
   type SerializedRelationship,
   type SerializedTable,
   type SerializedUniqueConstraint,
@@ -56,8 +58,12 @@ function deserializeColumn(column: SerializedColumn): Column {
 
 /**
  * Deserialize a single serialized table into the internal Table model.
+ *
+ * Indexes are not stored on the serialized table; they live at the diagram
+ * level (one SerializedIndex per index with a tableId) and are redistributed
+ * to tables by {@link deserializeDiagram}.
  */
-function deserializeTable(table: SerializedTable): Table {
+function deserializeTable(table: SerializedTable, indexes: Index[] = []): Table {
   return {
     id: table.id,
     name: table.name,
@@ -66,7 +72,7 @@ function deserializeTable(table: SerializedTable): Table {
     width: table.width,
     height: table.height,
     columns: table.columns.map(deserializeColumn),
-    indexes: [],
+    indexes,
   };
 }
 
@@ -91,6 +97,14 @@ function deserializeRelationship(
       relationship.targetColumnId !== undefined
         ? relationship.targetColumnId
         : undefined,
+    onDelete:
+      relationship.onDelete !== null && relationship.onDelete !== undefined
+        ? relationship.onDelete
+        : 'no action',
+    onUpdate:
+      relationship.onUpdate !== null && relationship.onUpdate !== undefined
+        ? relationship.onUpdate
+        : 'no action',
   };
 }
 
@@ -109,6 +123,52 @@ function deserializeUniqueConstraint(
       ? { name: constraint.name }
       : {}),
   };
+}
+
+/**
+ * Deserialize a single serialized index into the internal Index model.
+ *
+ * The serialized form stores column IDs as an array (supporting composite
+ * indexes) plus a table ID; the in-memory model stores the same fields.
+ * A synthetic name is generated when the serialized name is null.
+ */
+function deserializeIndex(index: SerializedIndex): Index {
+  const firstColumn = index.columnIds.length > 0 ? index.columnIds[0] : '';
+  return {
+    id: index.id,
+    tableId: index.tableId,
+    name: index.name !== null && index.name !== undefined ? index.name : `idx_${firstColumn}`,
+    columnIds: index.columnIds,
+  };
+}
+
+/**
+ * Validate that a serialized index has the required structure.
+ */
+function validateIndex(index: unknown): asserts index is SerializedIndex {
+  if (
+    typeof index !== 'object' ||
+    index === null ||
+    !('id' in index) ||
+    !('tableId' in index) ||
+    !('columnIds' in index)
+  ) {
+    throw new DiagramImportError(
+      'Invalid diagram file: index is missing required fields.',
+    );
+  }
+  if (
+    typeof (index as { id: unknown }).id !== 'string' ||
+    typeof (index as { tableId: unknown }).tableId !== 'string' ||
+    !Array.isArray((index as { columnIds: unknown }).columnIds) ||
+    ((index as { columnIds: unknown[] }).columnIds as unknown[]).some(
+      (id: unknown) => typeof id !== 'string',
+    )
+  ) {
+    throw new DiagramImportError(
+      'Invalid diagram file: index has fields with unexpected types.',
+    );
+  }
 }
 
 /**
@@ -178,6 +238,18 @@ export function deserializeDiagram(payload: SerializedExport): Diagram {
   const { diagram: serializedDiagram } = payload;
   validateDiagramRoot(serializedDiagram);
 
+  // Build a map of tableId -> deserialized indexes from the diagram-level
+  // serialized indexes array, so indexes can be redistributed to tables.
+  const indexesByTable = new Map<string, Index[]>();
+  for (const serializedIndex of serializedDiagram.indexes || []) {
+    validateIndex(serializedIndex);
+    const index = deserializeIndex(serializedIndex);
+    const tableId = serializedIndex.tableId;
+    const existing = indexesByTable.get(tableId) ?? [];
+    existing.push(index);
+    indexesByTable.set(tableId, existing);
+  }
+
   const tables = serializedDiagram.tables.map((t): Table => {
     if (
       typeof t !== 'object' ||
@@ -211,7 +283,11 @@ export function deserializeDiagram(payload: SerializedExport): Diagram {
         )} has fields with unexpected types.`,
       );
     }
-    return deserializeTable(t as SerializedTable);
+    const table = deserializeTable(
+      t as SerializedTable,
+      indexesByTable.get(t.id) ?? [],
+    );
+    return table;
   });
 
   const relationships = serializedDiagram.relationships.map(

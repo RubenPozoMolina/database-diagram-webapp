@@ -103,6 +103,52 @@ describe('useDiagram', () => {
     expect(result.current.diagram.relationships).toHaveLength(0);
   });
 
+  /* ---- TASK-023: delete elements ---- */
+
+  it('removes a relationship by id while keeping both tables', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [],
+        indexes: [],
+      });
+      result.current.addTable({
+        name: 'orders',
+        x: 300,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [],
+        indexes: [],
+      });
+    });
+    const userId = result.current.diagram.tables[0].id;
+    const orderId = result.current.diagram.tables[1].id;
+    act(() => {
+      result.current.addRelationship({
+        sourceTableId: userId,
+        targetTableId: orderId,
+      });
+    });
+    expect(result.current.diagram.relationships).toHaveLength(1);
+    const relationshipId = result.current.diagram.relationships[0].id;
+    act(() => {
+      result.current.removeRelationship(relationshipId);
+    });
+    expect(result.current.diagram.relationships).toHaveLength(0);
+    // Both tables remain on the diagram; only the relationship is removed.
+    expect(result.current.diagram.tables).toHaveLength(2);
+    expect(result.current.diagram.tables.map((t) => t.id)).toEqual([
+      userId,
+      orderId,
+    ]);
+  });
+
   it('creates a new empty diagram', () => {
     const { result } = renderHook(() => useDiagram('First'));
     act(() => {
@@ -202,12 +248,12 @@ describe('useDiagram', () => {
     });
     const tableId = result.current.diagram.tables[0].id;
     act(() => {
-      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
     });
     const table = result.current.diagram.tables.find((t) => t.id === tableId);
     expect(table?.indexes).toHaveLength(1);
     expect(table?.indexes[0].name).toBe('idx_email');
-    expect(table?.indexes[0].columnId).toBe('c2');
+    expect(table?.indexes[0].columnIds).toEqual(['c2']);
     expect(table?.indexes[0].id).toBeDefined();
   });
 
@@ -256,7 +302,7 @@ describe('useDiagram', () => {
     });
     const tableId = result.current.diagram.tables[0].id;
     act(() => {
-      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
     });
     const indexId = result.current.diagram.tables[0].indexes[0].id;
     act(() => {
@@ -310,19 +356,19 @@ describe('useDiagram', () => {
     });
     const tableId = result.current.diagram.tables[0].id;
     act(() => {
-      result.current.addIndex(tableId, { name: 'idx_email', columnId: 'c2' });
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
     });
     const indexId = result.current.diagram.tables[0].indexes[0].id;
     act(() => {
       result.current.updateIndex(tableId, indexId, {
         name: 'idx_user_email',
-        columnId: 'c3',
+        columnIds: ['c3'],
       });
     });
     const table = result.current.diagram.tables.find((t) => t.id === tableId);
     expect(table?.indexes).toHaveLength(1);
     expect(table?.indexes[0].name).toBe('idx_user_email');
-    expect(table?.indexes[0].columnId).toBe('c3');
+    expect(table?.indexes[0].columnIds).toEqual(['c3']);
   });
 
   it('removes a unique constraint by id', () => {
@@ -390,5 +436,296 @@ describe('useDiagram', () => {
     };
     expect(findUniqueConstraintsByTable(updated, tableId)).toEqual([constraint]);
     expect(findUniqueConstraintsByTable(updated, 'nonexistent')).toEqual([]);
+  });
+
+  /* ---- TASK-009: column editing tests on the table model ---- */
+
+  it('adds a column to a table', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addColumn(tableId, {
+        name: 'id',
+        dataType: 'integer',
+        nullable: false,
+        primaryKey: true,
+      });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns).toHaveLength(1);
+    expect(table?.columns[0].name).toBe('id');
+    expect(table?.columns[0].dataType).toBe('integer');
+    expect(table?.columns[0].nullable).toBe(false);
+    expect(table?.columns[0].primaryKey).toBe(true);
+    expect(table?.columns[0].id).toBeDefined();
+  });
+
+  it('adds a column with all optional properties', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addColumn(tableId, {
+        name: 'created_at',
+        dataType: 'timestamp',
+        nullable: true,
+        defaultValue: 'CURRENT_TIMESTAMP',
+        primaryKey: false,
+      });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns).toHaveLength(1);
+    expect(table?.columns[0].name).toBe('created_at');
+    expect(table?.columns[0].dataType).toBe('timestamp');
+    expect(table?.columns[0].nullable).toBe(true);
+    expect(table?.columns[0].primaryKey).toBe(false);
+    expect(table?.columns[0].defaultValue).toBe('CURRENT_TIMESTAMP');
+  });
+
+  it('updates a column name', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.updateColumn(tableId, 'c1', { name: 'user_id' });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns).toHaveLength(1);
+    expect(table?.columns[0].name).toBe('user_id');
+    expect(table?.columns[0].dataType).toBe('integer');
+    expect(table?.columns[0].nullable).toBe(false);
+    expect(table?.columns[0].primaryKey).toBe(true);
+  });
+
+  it('updates a column data type', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.updateColumn(tableId, 'c1', { dataType: 'bigint' });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns[0].dataType).toBe('bigint');
+    expect(table?.columns[0].name).toBe('id');
+  });
+
+  it('updates column nullable flag', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.updateColumn(tableId, 'c1', { nullable: true });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns[0].nullable).toBe(true);
+  });
+
+  it('updates column primary key flag', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.updateColumn(tableId, 'c1', { primaryKey: false });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns[0].primaryKey).toBe(false);
+  });
+
+  it('updates column default value', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.updateColumn(tableId, 'c1', { defaultValue: '0' });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns[0].defaultValue).toBe('0');
+  });
+
+  it('clears column default value', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true, defaultValue: '0' },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.updateColumn(tableId, 'c1', { defaultValue: undefined });
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns[0].defaultValue).toBeUndefined();
+  });
+
+  it('removes a column from a table', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.removeColumn(tableId, 'c1');
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns).toHaveLength(1);
+    expect(table?.columns[0].id).toBe('c2');
+    expect(table?.columns[0].name).toBe('email');
+  });
+
+  it('removing a column removes associated indexes', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addIndex(tableId, { name: 'idx_email', columnIds: ['c2'] });
+    });
+    act(() => {
+      result.current.removeColumn(tableId, 'c2');
+    });
+    const table = result.current.diagram.tables.find((t) => t.id === tableId);
+    expect(table?.columns).toHaveLength(1);
+    expect(table?.indexes).toHaveLength(0);
+  });
+
+  it('removing a column removes it from unique constraints', () => {
+    const { result } = renderHook(() => useDiagram());
+    act(() => {
+      result.current.addTable({
+        name: 'users',
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 120,
+        columns: [
+          { id: 'c1', name: 'id', dataType: 'integer', nullable: false, primaryKey: true },
+          { id: 'c2', name: 'email', dataType: 'varchar', nullable: true, primaryKey: false },
+        ],
+        indexes: [],
+      });
+    });
+    const tableId = result.current.diagram.tables[0].id;
+    act(() => {
+      result.current.addUniqueConstraint(tableId, ['c2'], 'users_email_key');
+    });
+    act(() => {
+      result.current.removeColumn(tableId, 'c2');
+    });
+    const constraint = result.current.diagram.uniqueConstraints[0];
+    expect(constraint).toBeDefined();
+    expect(constraint.columnIds).not.toContain('c2');
+    expect(constraint.columnIds).toEqual([]);
   });
 });

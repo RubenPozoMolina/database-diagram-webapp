@@ -3,7 +3,8 @@
  *
  * Holds connection credentials only in memory for the current session.
  * Credentials are never persisted to localStorage, sessionStorage, or any
- * durable storage. When the component unmounts, credentials are cleared.
+ * durable storage. They are cleared when the component unmounts and when
+ * the page session ends (page refresh, close, or navigation away).
  *
  * Connection state tracks connected/disconnected status and exposes
  * success/failure messages for display to the user.
@@ -13,7 +14,7 @@
  *     useConnection();
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConnectionConfig, ConnectionResult } from '../types';
 import { submitConnection } from '../connection/connectionApi';
 
@@ -47,6 +48,7 @@ const EMPTY_CONFIG: ConnectionConfig = {
   database: '',
   user: '',
   password: '',
+  schema: '',
 };
 
 /**
@@ -114,6 +116,26 @@ export function useConnection(): UseConnectionReturn {
     setError(null);
     setMessage(null);
   }, []);
+
+  /**
+   * Clears credentials when the page session ends (page refresh, close, or
+   * navigation away). `beforeunload` fires on refresh/close/navigation and
+   * `pagehide` covers back-forward-cache hide scenarios, so credentials never
+   * survive a session end and a new connection is required afterwards.
+   */
+  useEffect(() => {
+    const handleSessionEnd = (): void => {
+      disconnect();
+    };
+
+    window.addEventListener('beforeunload', handleSessionEnd);
+    window.addEventListener('pagehide', handleSessionEnd);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleSessionEnd);
+      window.removeEventListener('pagehide', handleSessionEnd);
+    };
+  }, [disconnect]);
 
   const clearMessage = useCallback((): void => {
     setError(null);

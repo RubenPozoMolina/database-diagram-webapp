@@ -22,6 +22,7 @@ const config: ConnectionConfig = {
   database: 'mydb',
   user: 'app_user',
   password: 's3cret',
+  schema: 'public',
 };
 
 const successResponse: ReadSchemaResponse = {
@@ -156,9 +157,23 @@ describe('readSchema', () => {
         database: config.database,
         user: config.user,
         password: config.password,
-        schema: 'public',
+        schema: config.schema,
       }),
     );
+  });
+
+  it('POSTs the selected schema when a custom schema is provided', async () => {
+    let capturedBody: string | undefined;
+
+    globalThis.fetch = vi.fn(async (_url, init) => {
+      capturedBody = init?.body as string | undefined;
+      return okJson(successResponse) as unknown as Response;
+    });
+    setFetchForTesting(globalThis.fetch as typeof fetch);
+
+    await readSchema(config, '/api/read-schema', 'information_schema');
+
+    expect(capturedBody).toContain('"schema":"information_schema"');
   });
 
   it('returns success with structured schema data when the backend responds OK', async () => {

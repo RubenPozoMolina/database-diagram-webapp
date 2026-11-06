@@ -140,10 +140,13 @@ export type ReadSchemaResult = ReadSchemaResponse | ReadSchemaError;
  * Network errors and non-ok HTTP responses are surfaced as failure results
  * rather than thrown. The database password is sent in the request body but
  * is never logged or persisted.
+ *
+ * @param schema - Optional schema name to introspect. Defaults to 'public'.
  */
 export async function readSchema(
   config: ConnectionConfig,
   apiUrl: string = DEFAULT_API_URL,
+  schema: string = 'public',
 ): Promise<ReadSchemaResult> {
   try {
     const response = await fetchImpl(apiUrl, {
@@ -155,7 +158,7 @@ export async function readSchema(
         database: config.database,
         user: config.user,
         password: config.password,
-        schema: 'public',
+        schema: schema ?? config.schema,
       }),
     });
 

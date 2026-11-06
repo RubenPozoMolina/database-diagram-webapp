@@ -4,15 +4,13 @@ import { useConnection } from './hooks/useConnection';
 import { DiagramCanvas } from './components/DiagramCanvas';
 import { ExportButton } from './components/ExportButton';
 import { ImportButton } from './components/ImportButton';
+import { SchemaImportSelector } from './components/SchemaImportSelector';
 import { DdlPreview } from './components/DdlPreview';
 import { ConnectionForm } from './connection/ConnectionForm';
 import { CreateTableModal } from './components/CreateTableModal';
 import { CreateRelationshipModal } from './components/CreateRelationshipModal';
-import { readSchema } from './connection/readSchemaApi';
-import { schemaToDiagram } from './connection/schemaToDiagram';
 import type { Column, Diagram, Table, UniqueConstraint } from './types/diagram';
 import type { ConnectionConfig, ConnectionResult } from './types';
-import type { ReadSchemaResponse } from './connection/readSchemaApi';
 
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 800;
@@ -28,9 +26,13 @@ export function App() {
     addUniqueConstraint,
     updateTable,
     updateTablePosition,
+    removeTable,
+    removeRelationship,
     addColumn,
     removeColumn,
     updateColumn,
+    removeUniqueConstraint,
+    updateUniqueConstraint,
   } = useDiagram();
 
   const {
@@ -38,7 +40,6 @@ export function App() {
     isConnected,
     config,
     error,
-    message,
     connect,
     disconnect,
     clearMessage,
@@ -48,6 +49,9 @@ export function App() {
   const connectionFormRefInstance = useRef<ConnectionForm | null>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
   const [isAddRelationshipModalOpen, setIsAddRelationshipModalOpen] = useState(false);
+  const [columnPositions, setColumnPositions] = useState<
+    Map<string, Map<string, { x: number; y: number }>>
+  >(new Map());
   const [importError, setImportErrorState] = useState<string | null>(null);
 
   const handleImportError = useCallback((message: string) => {
@@ -57,15 +61,15 @@ export function App() {
   const [isDdlPreviewOpen, setIsDdlPreviewOpen] = useState(false);
   const [ddlApplyMessage, setDdlApplyMessage] = useState<string | null>(null);
   const [ddlApplyError, setDdlApplyError] = useState<string | null>(null);
-  const [isImportingSchema, setIsImportingSchema] = useState(false);
-  const [importSchemaError, setImportSchemaError] = useState<string | null>(null);
-  const [importedSchema, setImportedSchema] = useState<ReadSchemaResponse | null>(null);
 
-  const handleConnect = async (
-    connectionConfig: ConnectionConfig,
-  ): Promise<ConnectionResult> => {
-    return connect(connectionConfig);
-  };
+  const handleConnect = useCallback(
+    async (
+      connectionConfig: ConnectionConfig,
+    ): Promise<ConnectionResult> => {
+      return connect(connectionConfig);
+    },
+    [connect],
+  );
 
   useEffect(() => {
     const container = connectionFormRef.current;
@@ -95,6 +99,17 @@ export function App() {
       updateTablePosition(id, { x, y });
     },
     [updateTablePosition],
+  );
+
+  const handleColumnPositionUpdate = useCallback(
+    (tableId: string, positions: Map<string, { x: number; y: number }>) => {
+      setColumnPositions((prev) => {
+        const next = new Map(prev);
+        next.set(tableId, positions);
+        return next;
+      });
+    },
+    [],
   );
 
   const handleAddTable = () => {
@@ -151,6 +166,17 @@ export function App() {
     updateTable(id, updates);
   };
 
+  const handleDeleteTable = useCallback((tableId: string) => {
+    removeTable(tableId);
+  }, [removeTable]);
+
+  const handleDeleteRelationship = useCallback(
+    (relationshipId: string) => {
+      removeRelationship(relationshipId);
+    },
+    [removeRelationship],
+  );
+
   const handleAddColumn = useCallback(
     (tableId: string, column: Omit<Column, 'id'>) => {
       addColumn(tableId, column);
@@ -176,29 +202,27 @@ export function App() {
     [updateColumn],
   );
 
-  const handleImportSchema = async () => {
-    if (!config) return;
-    setIsImportingSchema(true);
-    setImportSchemaError(null);
-    try {
-      const result = await readSchema(config);
-      if (result.success) {
-        setImportedSchema(result);
-        setImportSchemaError(null);
-        setDiagram(schemaToDiagram(result));
-      } else {
-        setImportSchemaError(result.error);
-      }
-    } catch {
-      setImportSchemaError('Unexpected error while importing schema');
-    } finally {
-      setIsImportingSchema(false);
-    }
-  };
+  const handleAddUniqueConstraint = useCallback(
+    (tableId: string, columnIds: string[], name?: string) => {
+      addUniqueConstraint(tableId, columnIds, name);
+    },
+    [addUniqueConstraint],
+  );
 
-  const dismissImportError = () => {
-    setImportSchemaError(null);
-  };
+  const handleRemoveUniqueConstraint = useCallback(
+    (constraintId: string) => {
+      removeUniqueConstraint(constraintId);
+    },
+    [removeUniqueConstraint],
+  );
+
+  const handleUpdateUniqueConstraint = useCallback(
+    (constraintId: string, updates: Partial<Omit<UniqueConstraint, 'id'>>) => {
+      updateUniqueConstraint(constraintId, updates);
+    },
+    [updateUniqueConstraint],
+  );
+
 
   const handleDdlExecute = useCallback((_ddl: string): void => {
     setIsDdlPreviewOpen(false);
@@ -259,15 +283,10 @@ export function App() {
           <ImportButton onImport={handleImport} onError={handleImportError} />
           {isConnected && config && (
             <>
-              <button
-                type="button"
-                className="import-schema-button"
-                onClick={handleImportSchema}
-                disabled={isImportingSchema}
-                aria-label="Import PostgreSQL schema as diagram"
-              >
-                {isImportingSchema ? 'Importing…' : 'Import Schema'}
-              </button>
+              <SchemaImportSelector
+                config={config}
+                onImport={handleImport}
+              />
               <button
                 type="button"
                 className="export-button"
@@ -282,11 +301,6 @@ export function App() {
         {status === 'connecting' && (
           <div className="connection-status connection-status--info" role="status" aria-live="polite">
             Connecting…
-          </div>
-        )}
-        {status === 'connected' && message && (
-          <div className="connection-status connection-status--success" role="status" aria-live="polite">
-            {message}
           </div>
         )}
         {status === 'error' && error && (
@@ -308,19 +322,6 @@ export function App() {
             <button
               type="button"
               onClick={() => setImportErrorState(null)}
-              className="connection-status-dismiss"
-              aria-label="Dismiss import error"
-            >
-              ×
-            </button>
-          </div>
-        )}
-        {importSchemaError && (
-          <div className="connection-status connection-status--error" role="status" aria-live="polite">
-            {importSchemaError}
-            <button
-              type="button"
-              onClick={dismissImportError}
               className="connection-status-dismiss"
               aria-label="Dismiss import error"
             >
@@ -364,20 +365,22 @@ export function App() {
               Connected to {config.host}:{config.port}/{config.database} as {config.user}
             </div>
           )}
-          {importedSchema && (
-            <div className="schema-import-info" role="status" aria-live="polite">
-              Imported schema '{importedSchema.schema}' with {importedSchema.tables.length} table(s).
-            </div>
-          )}
         </section>
         <div className="diagram-canvas-container">
           <DiagramCanvas
             diagram={diagram}
             onTablePositionUpdate={handleTablePositionUpdate}
+            onColumnPositionUpdate={handleColumnPositionUpdate}
             onTableUpdate={handleTableUpdate}
+            onDeleteTable={handleDeleteTable}
+            onDeleteRelationship={handleDeleteRelationship}
             onAddColumn={handleAddColumn}
             onRemoveColumn={handleRemoveColumn}
             onUpdateColumn={handleUpdateColumn}
+            onAddUniqueConstraint={handleAddUniqueConstraint}
+            onRemoveUniqueConstraint={handleRemoveUniqueConstraint}
+            onUpdateUniqueConstraint={handleUpdateUniqueConstraint}
+            columnPositions={columnPositions}
             style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           />
           {isAddTableModalOpen && (
