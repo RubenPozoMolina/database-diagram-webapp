@@ -98,7 +98,13 @@
     "evidence: git diff 02987ee HEAD -- .gitignore shows commit 86214ce re-added 'tasks/' and 'prd.md' to .gitignore",
     "evidence: git show 02987ee:.gitignore has no tasks/ or prd.md lines (the correct version)",
     "evidence: ticket claim 'removed tasks/ and prd.md ignores; git add tasks/ prd.md' is FALSE",
-    "required fix: remove lines 21-22 (tasks/ and prd.md) from .gitignore; git add tasks/ prd.md; commit; verify git status --short | grep '^??' returns none"
+    "required fix: remove lines 21-22 (tasks/ and prd.md) from .gitignore; git add tasks/ prd.md; commit; verify git status --short | grep '^??' returns none",
+    "commit:cbc54e0 TASK-073: remove tasks/ and prd.md from .gitignore, version all task files",
+    "file:.gitignore - removed lines 21-22 (tasks/ and prd.md) that blocked versioning of ticket tracking files",
+    "git add tasks/ prd.md (95 task/epic/story/defect JSON files + prd.md now tracked)",
+    "verification: git ls-files tasks/ returns 95 tracked files; git ls-files prd.md returns prd.md; git status --short shows clean working tree; git status --short | grep '^??' returns none (no unintended untracked generated files)",
+    "git push --set-upstream origin ticket/TASK-073 (branch pushed successfully)"
   ],
-  "implementedBy": "devops-engineer"
+  "implementedBy": "devops-engineer",
+  "result": "completed"
 }
