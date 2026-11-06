@@ -18,3 +18,5 @@ coverage/
 .DS_Store
 Thumbs.db
 .prd-interview.sha256
+tasks/
+prd.md
