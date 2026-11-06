@@ -1,0 +1,286 @@
+{
+  "version": "1.0.0",
+  "diagram": {
+    "id": "ccbca743-30d4-4f95-a03d-4ae01ac25728",
+    "name": "Composite Primary Key Schema",
+    "tables": [
+      {
+        "id": "f0d7454c-f605-434e-a1ec-0740948945ba",
+        "name": "customers",
+        "x": 50,
+        "y": 50,
+        "width": 240,
+        "height": 220,
+        "columns": [
+          {
+            "id": "59a72528-1268-47d8-a5fe-e1a65b7c9d9d",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Customer primary key"
+          },
+          {
+            "id": "bd44c806-3b4f-4acb-b115-ef4708fcee3a",
+            "name": "name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Customer full name"
+          },
+          {
+            "id": "29d20c25-150c-46f7-b63c-433a52f6043f",
+            "name": "email",
+            "type": "varchar",
+            "length": 255,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": true,
+            "defaultValue": null,
+            "comment": "Customer email address"
+          },
+          {
+            "id": "2e869190-3d12-4b64-9708-c7f175ffcd30",
+            "name": "created_at",
+            "type": "timestamp",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "CURRENT_TIMESTAMP",
+            "comment": "Record creation timestamp"
+          }
+        ]
+      },
+      {
+        "id": "574f3595-a207-4c0c-99bf-2d28b088fa3a",
+        "name": "orders",
+        "x": 350,
+        "y": 50,
+        "width": 240,
+        "height": 220,
+        "columns": [
+          {
+            "id": "a74cd171-e76e-4cd3-a1a6-6606b7d5c574",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Order primary key"
+          },
+          {
+            "id": "b9ba17f5-47a0-4beb-8db5-ca88aff065cd",
+            "name": "customer_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References customers.id"
+          },
+          {
+            "id": "edbba343-e06c-4275-a79d-a05d6687c42e",
+            "name": "order_date",
+            "type": "date",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Date the order was placed"
+          },
+          {
+            "id": "13e1a035-a107-40a1-b891-e971dffb61af",
+            "name": "total",
+            "type": "numeric",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "0.00",
+            "comment": "Order total amount"
+          }
+        ]
+      },
+      {
+        "id": "ec2fae33-e663-47e6-a77d-cf9f64052734",
+        "name": "order_items",
+        "x": 650,
+        "y": 50,
+        "width": 260,
+        "height": 240,
+        "columns": [
+          {
+            "id": "0661f233-84b6-4590-804f-741f66ed5697",
+            "name": "order_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Part of composite primary key; references orders.id"
+          },
+          {
+            "id": "e83a30d8-054f-45d3-ad13-823bc1bd701d",
+            "name": "product_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Part of composite primary key; references products.id"
+          },
+          {
+            "id": "33300f1d-d820-4bbd-a30b-4844e7b394e7",
+            "name": "quantity",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "1",
+            "comment": "Number of units ordered"
+          },
+          {
+            "id": "8313df7a-5633-4588-b80d-3f21b53d49e6",
+            "name": "unit_price",
+            "type": "numeric",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Price per unit at time of order"
+          }
+        ]
+      },
+      {
+        "id": "89b130a2-e4fc-4bd1-a216-44cafd324731",
+        "name": "products",
+        "x": 50,
+        "y": 350,
+        "width": 240,
+        "height": 200,
+        "columns": [
+          {
+            "id": "465b2379-18a2-4bff-8470-9e1f1b8c3509",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Product primary key"
+          },
+          {
+            "id": "1dfde011-f451-4398-bdca-ab940dab4968",
+            "name": "sku",
+            "type": "varchar",
+            "length": 50,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": true,
+            "defaultValue": null,
+            "comment": "Stock keeping unit (unique)"
+          },
+          {
+            "id": "b9435c9b-6c11-4f08-ac03-28ed19467805",
+            "name": "name",
+            "type": "varchar",
+            "length": 200,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Product display name"
+          },
+          {
+            "id": "ea5071ce-5c48-4067-808f-8298406f1d6a",
+            "name": "price",
+            "type": "numeric",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Product price (nullable)"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "b8ae8d66-4430-4478-bf90-daf550f25eba",
+        "sourceTableId": "ec2fae33-e663-47e6-a77d-cf9f64052734",
+        "sourceColumnId": "0661f233-84b6-4590-804f-741f66ed5697",
+        "targetTableId": "574f3595-a207-4c0c-99bf-2d28b088fa3a",
+        "targetColumnId": "a74cd171-e76e-4cd3-a1a6-6606b7d5c574",
+        "onDelete": "cascade",
+        "onUpdate": "no action"
+      },
+      {
+        "id": "bf0ec7df-a4f0-491d-bec3-d377ce9d9a41",
+        "sourceTableId": "ec2fae33-e663-47e6-a77d-cf9f64052734",
+        "sourceColumnId": "e83a30d8-054f-45d3-ad13-823bc1bd701d",
+        "targetTableId": "89b130a2-e4fc-4bd1-a216-44cafd324731",
+        "targetColumnId": "465b2379-18a2-4bff-8470-9e1f1b8c3509",
+        "onDelete": "restrict",
+        "onUpdate": "cascade"
+      }
+    ],
+    "uniqueConstraints": [
+      {
+        "id": "4ff2b2c1-c41e-4289-a8a8-45b2345e10e8",
+        "tableId": "f0d7454c-f605-434e-a1ec-0740948945ba",
+        "columnIds": [
+          "29d20c25-150c-46f7-b63c-433a52f6043f"
+        ],
+        "name": "customers_email_key"
+      },
+      {
+        "id": "aad87774-9cee-4457-b107-bf995e07631a",
+        "tableId": "89b130a2-e4fc-4bd1-a216-44cafd324731",
+        "columnIds": [
+          "1dfde011-f451-4398-bdca-ab940dab4968"
+        ],
+        "name": "products_sku_key"
+      }
+    ],
+    "indexes": [
+      {
+        "id": "ba35ed66-6d18-4263-9c44-0eb3860ac76f",
+        "tableId": "574f3595-a207-4c0c-99bf-2d28b088fa3a",
+        "columnIds": [
+          "b9ba17f5-47a0-4beb-8db5-ca88aff065cd"
+        ],
+        "unique": false,
+        "name": "orders_customer_id_idx"
+      },
+      {
+        "id": "4f72b273-25e7-4262-9448-e795f3db20cc",
+        "tableId": "ec2fae33-e663-47e6-a77d-cf9f64052734",
+        "columnIds": [
+          "0661f233-84b6-4590-804f-741f66ed5697",
+          "e83a30d8-054f-45d3-ad13-823bc1bd701d"
+        ],
+        "unique": true,
+        "name": "order_items_pkey_idx"
+      }
+    ],
+    "createdAt": "2026-01-15T10:00:00.000Z",
+    "updatedAt": "2026-01-20T10:00:00.000Z"
+  }
+}

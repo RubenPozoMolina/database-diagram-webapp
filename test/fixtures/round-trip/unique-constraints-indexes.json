@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "diagram": {
+    "id": "b5c44773-e6a1-46af-bae3-f4e98302b444",
+    "name": "Unique Constraints and Indexes Schema",
+    "tables": [
+      {
+        "id": "6126fac2-a4e3-4536-9feb-fa759523eb31",
+        "name": "users",
+        "x": 50,
+        "y": 50,
+        "width": 240,
+        "height": 220,
+        "columns": [
+          {
+            "id": "a7c6e862-b878-4d2a-80dc-1a45fc4ada81",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "User primary key"
+          },
+          {
+            "id": "560aba69-4409-4793-a504-3da96c3850cb",
+            "name": "email",
+            "type": "varchar",
+            "length": 255,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "User email address"
+          },
+          {
+            "id": "ed5d954d-314d-4b74-99e5-97adfdd9b2c8",
+            "name": "username",
+            "type": "varchar",
+            "length": 50,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "User login name"
+          },
+          {
+            "id": "2e6aaa24-6e11-4e8f-a8ff-6fd2a8093b8a",
+            "name": "created_at",
+            "type": "timestamp",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "CURRENT_TIMESTAMP",
+            "comment": "Account creation timestamp"
+          },
+          {
+            "id": "b65d49d7-7516-422c-ae89-170447336956",
+            "name": "bio",
+            "type": "text",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "User biography (nullable)"
+          }
+        ]
+      },
+      {
+        "id": "b319239b-e90d-420c-8379-44f0256715ae",
+        "name": "posts",
+        "x": 350,
+        "y": 50,
+        "width": 260,
+        "height": 240,
+        "columns": [
+          {
+            "id": "b6dc6fdc-0219-4cfb-bb24-0cd731d8d290",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Post primary key"
+          },
+          {
+            "id": "2a4d0d23-4372-4dcb-8dc4-3f31658401ef",
+            "name": "author_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References users.id"
+          },
+          {
+            "id": "d1726108-0c33-4ba6-b7a2-7458d4704def",
+            "name": "title",
+            "type": "varchar",
+            "length": 200,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Post title"
+          },
+          {
+            "id": "b7bc50a5-2831-4342-ba9b-b8d8385b8de1",
+            "name": "created_at",
+            "type": "timestamp",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "CURRENT_TIMESTAMP",
+            "comment": "Post creation timestamp"
+          },
+          {
+            "id": "9305a031-34a3-4567-8f4e-e4aa0a299ead",
+            "name": "slug",
+            "type": "varchar",
+            "length": 255,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "URL slug (nullable)"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "b8034185-e196-4e94-9b63-5c8c42b8d06c",
+        "sourceTableId": "b319239b-e90d-420c-8379-44f0256715ae",
+        "sourceColumnId": "2a4d0d23-4372-4dcb-8dc4-3f31658401ef",
+        "targetTableId": "6126fac2-a4e3-4536-9feb-fa759523eb31",
+        "targetColumnId": "a7c6e862-b878-4d2a-80dc-1a45fc4ada81",
+        "onDelete": "cascade",
+        "onUpdate": "cascade"
+      }
+    ],
+    "uniqueConstraints": [
+      {
+        "id": "02639851-8798-42a1-86f2-ee66e368d7d5",
+        "tableId": "6126fac2-a4e3-4536-9feb-fa759523eb31",
+        "columnIds": [
+          "560aba69-4409-4793-a504-3da96c3850cb"
+        ],
+        "name": "users_email_key"
+      },
+      {
+        "id": "fa21c6a9-c550-4ef5-99c5-dc4bfab15e24",
+        "tableId": "6126fac2-a4e3-4536-9feb-fa759523eb31",
+        "columnIds": [
+          "560aba69-4409-4793-a504-3da96c3850cb",
+          "ed5d954d-314d-4b74-99e5-97adfdd9b2c8"
+        ],
+        "name": "users_email_username_key"
+      }
+    ],
+    "indexes": [
+      {
+        "id": "d097928f-f7f8-49a5-9a65-31dd3dad3a28",
+        "tableId": "b319239b-e90d-420c-8379-44f0256715ae",
+        "columnIds": [
+          "2a4d0d23-4372-4dcb-8dc4-3f31658401ef"
+        ],
+        "unique": false,
+        "name": "posts_author_id_idx"
+      },
+      {
+        "id": "7efa2372-f968-4fcb-88bc-5b9b126edc34",
+        "tableId": "b319239b-e90d-420c-8379-44f0256715ae",
+        "columnIds": [
+          "b7bc50a5-2831-4342-ba9b-b8d8385b8de1"
+        ],
+        "unique": false,
+        "name": "posts_created_at_idx"
+      },
+      {
+        "id": "55472dfe-5e19-4568-a020-0f5fa9b959eb",
+        "tableId": "b319239b-e90d-420c-8379-44f0256715ae",
+        "columnIds": [
+          "2a4d0d23-4372-4dcb-8dc4-3f31658401ef",
+          "b7bc50a5-2831-4342-ba9b-b8d8385b8de1"
+        ],
+        "unique": false,
+        "name": "posts_author_created_idx"
+      }
+    ],
+    "createdAt": "2026-02-04T10:00:00.000Z",
+    "updatedAt": "2026-02-09T10:00:00.000Z"
+  }
+}

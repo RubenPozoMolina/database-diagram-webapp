@@ -1,0 +1,209 @@
+{
+  "version": "1.0.0",
+  "diagram": {
+    "id": "4216e330-1d50-480b-9d57-a3ef0245c738",
+    "name": "Self-Referencing Relationships Schema",
+    "tables": [
+      {
+        "id": "64c1862d-3fdc-4c8f-ba95-aeab14bf4cf1",
+        "name": "employees",
+        "x": 100,
+        "y": 100,
+        "width": 260,
+        "height": 260,
+        "columns": [
+          {
+            "id": "33036011-8656-4ef6-9fed-e5b157a3faaa",
+            "name": "employee_id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Employee primary key"
+          },
+          {
+            "id": "9be50f41-f7b9-4f3c-a947-2e6a15c322c8",
+            "name": "name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Employee full name"
+          },
+          {
+            "id": "ac652f26-9fc1-4e46-b48a-598c1892c1a6",
+            "name": "manager_id",
+            "type": "integer",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References employees.employee_id (self-referencing); nullable for top-level managers"
+          },
+          {
+            "id": "c7e80fd7-ab70-4f7d-9be5-36112e93bcbc",
+            "name": "department_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References departments.department_id"
+          },
+          {
+            "id": "bece265b-7147-478e-a467-a21e0c694407",
+            "name": "hire_date",
+            "type": "date",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "CURRENT_DATE",
+            "comment": "Date the employee was hired"
+          },
+          {
+            "id": "97ec17cf-5cb7-47db-b982-30148c5424ab",
+            "name": "salary",
+            "type": "numeric",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Annual salary (nullable for contractors)"
+          }
+        ]
+      },
+      {
+        "id": "37ea2eb0-f6a6-44a1-9e05-a16f2f2497cd",
+        "name": "departments",
+        "x": 450,
+        "y": 100,
+        "width": 240,
+        "height": 200,
+        "columns": [
+          {
+            "id": "731a5fca-797c-4e7c-9702-474823af9a5f",
+            "name": "department_id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Department primary key"
+          },
+          {
+            "id": "59cf792f-4592-4aa5-b824-005f68020caa",
+            "name": "name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": true,
+            "defaultValue": null,
+            "comment": "Department name (unique)"
+          },
+          {
+            "id": "1aabc606-8829-4f47-8383-4210cdcad83e",
+            "name": "head_employee_id",
+            "type": "integer",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References employees.employee_id (nullable circular reference)"
+          },
+          {
+            "id": "2d48bf70-0797-49e4-9f8a-3a7de35459ca",
+            "name": "budget",
+            "type": "numeric",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "0.00",
+            "comment": "Department budget"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "c2dd9b4b-398f-4a75-8d8d-dca0a18f7ae4",
+        "sourceTableId": "64c1862d-3fdc-4c8f-ba95-aeab14bf4cf1",
+        "sourceColumnId": "ac652f26-9fc1-4e46-b48a-598c1892c1a6",
+        "targetTableId": "64c1862d-3fdc-4c8f-ba95-aeab14bf4cf1",
+        "targetColumnId": "33036011-8656-4ef6-9fed-e5b157a3faaa",
+        "onDelete": "set null",
+        "onUpdate": "cascade"
+      },
+      {
+        "id": "35de04a9-f1a2-47fe-bb44-5e6c3450296e",
+        "sourceTableId": "64c1862d-3fdc-4c8f-ba95-aeab14bf4cf1",
+        "sourceColumnId": "c7e80fd7-ab70-4f7d-9be5-36112e93bcbc",
+        "targetTableId": "37ea2eb0-f6a6-44a1-9e05-a16f2f2497cd",
+        "targetColumnId": "731a5fca-797c-4e7c-9702-474823af9a5f",
+        "onDelete": "restrict",
+        "onUpdate": "cascade"
+      },
+      {
+        "id": "2234a162-f593-48c5-94fb-b30fb1a362b0",
+        "sourceTableId": "37ea2eb0-f6a6-44a1-9e05-a16f2f2497cd",
+        "sourceColumnId": "1aabc606-8829-4f47-8383-4210cdcad83e",
+        "targetTableId": "64c1862d-3fdc-4c8f-ba95-aeab14bf4cf1",
+        "targetColumnId": "33036011-8656-4ef6-9fed-e5b157a3faaa",
+        "onDelete": "set null",
+        "onUpdate": "no action"
+      }
+    ],
+    "uniqueConstraints": [
+      {
+        "id": "a689510e-0396-407e-a2c4-7c37dc3e86dd",
+        "tableId": "37ea2eb0-f6a6-44a1-9e05-a16f2f2497cd",
+        "columnIds": [
+          "59cf792f-4592-4aa5-b824-005f68020caa"
+        ],
+        "name": "departments_name_key"
+      }
+    ],
+    "indexes": [
+      {
+        "id": "58c00989-a7bd-4cef-8bc8-15e7faddb03d",
+        "tableId": "64c1862d-3fdc-4c8f-ba95-aeab14bf4cf1",
+        "columnIds": [
+          "ac652f26-9fc1-4e46-b48a-598c1892c1a6"
+        ],
+        "unique": false,
+        "name": "employees_manager_id_idx"
+      },
+      {
+        "id": "ba6655a6-4db9-4043-a46a-6d8ea5ddb917",
+        "tableId": "64c1862d-3fdc-4c8f-ba95-aeab14bf4cf1",
+        "columnIds": [
+          "c7e80fd7-ab70-4f7d-9be5-36112e93bcbc"
+        ],
+        "unique": false,
+        "name": "employees_department_id_idx"
+      },
+      {
+        "id": "43b2ff2a-a161-42f3-aaa5-1dab1366158a",
+        "tableId": "37ea2eb0-f6a6-44a1-9e05-a16f2f2497cd",
+        "columnIds": [
+          "1aabc606-8829-4f47-8383-4210cdcad83e"
+        ],
+        "unique": false,
+        "name": "departments_head_employee_id_idx"
+      }
+    ],
+    "createdAt": "2026-01-25T10:00:00.000Z",
+    "updatedAt": "2026-01-30T10:00:00.000Z"
+  }
+}

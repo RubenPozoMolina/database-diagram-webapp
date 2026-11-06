@@ -15,6 +15,7 @@ export type Index = {
   tableId: string;
   name: string;
   columnIds: string[];
+  unique?: boolean;
 };
 
 export type Table = {

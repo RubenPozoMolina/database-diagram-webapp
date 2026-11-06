@@ -1,0 +1,446 @@
+{
+  "version": "1.0.0",
+  "diagram": {
+    "id": "18fa0b52-b794-40e2-9fdf-7a01026c2cf3",
+    "name": "Complex Enterprise Schema",
+    "tables": [
+      {
+        "id": "a0dee9df-b1be-4123-8f85-ca430fcf31de",
+        "name": "departments",
+        "x": 50,
+        "y": 50,
+        "width": 240,
+        "height": 200,
+        "columns": [
+          {
+            "id": "554be305-a170-4721-8806-cdcd490e7e13",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Department primary key"
+          },
+          {
+            "id": "d9c97934-9368-43fa-9a78-bb1702c5374f",
+            "name": "name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": true,
+            "defaultValue": null,
+            "comment": "Department name"
+          },
+          {
+            "id": "28e9bbe8-3b54-43af-84ed-b31b9ef4e28b",
+            "name": "head_employee_id",
+            "type": "integer",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References employees.id (circular)"
+          },
+          {
+            "id": "a13bcb0e-f256-488d-b289-5156ad39011c",
+            "name": "budget",
+            "type": "numeric",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "0.00",
+            "comment": "Department budget"
+          },
+          {
+            "id": "21bd9aa8-dcd1-49a4-aac6-5e54c9f6900a",
+            "name": "location",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Office location"
+          }
+        ]
+      },
+      {
+        "id": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "name": "employees",
+        "x": 350,
+        "y": 50,
+        "width": 260,
+        "height": 280,
+        "columns": [
+          {
+            "id": "84433e5a-e71a-4458-9ad3-39203ad79b05",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Employee primary key"
+          },
+          {
+            "id": "6de96caa-32ee-42db-b61a-81f4d3d2d50c",
+            "name": "name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Employee full name"
+          },
+          {
+            "id": "528900f7-dcdc-4ca9-a305-3dcb0135a088",
+            "name": "manager_id",
+            "type": "integer",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Self-referencing: references employees.id"
+          },
+          {
+            "id": "c922a479-7957-456a-a69d-233cf2869c09",
+            "name": "department_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References departments.id"
+          },
+          {
+            "id": "650ae72e-3baa-418f-867c-733243918e6b",
+            "name": "email",
+            "type": "varchar",
+            "length": 255,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Work email"
+          },
+          {
+            "id": "5fc7a232-1fd0-40e1-b1c0-e737a427bef1",
+            "name": "hire_date",
+            "type": "date",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "CURRENT_DATE",
+            "comment": "Hire date"
+          },
+          {
+            "id": "e599c646-e9b8-48f8-ab86-39f1439ee8c2",
+            "name": "salary",
+            "type": "numeric",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Base salary"
+          },
+          {
+            "id": "b32e53c8-f5bf-4a22-9b3b-57b640eb0692",
+            "name": "commission_pct",
+            "type": "numeric",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Commission percentage"
+          }
+        ]
+      },
+      {
+        "id": "eb91de42-ac12-4c40-9f31-78f32f8cd86e",
+        "name": "projects",
+        "x": 50,
+        "y": 350,
+        "width": 240,
+        "height": 220,
+        "columns": [
+          {
+            "id": "6a93a292-527a-40ae-8579-024b9e210c62",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Project primary key"
+          },
+          {
+            "id": "e9e74453-f9c8-4b28-a337-d8a81f9e4c65",
+            "name": "code",
+            "type": "varchar",
+            "length": 20,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": true,
+            "defaultValue": null,
+            "comment": "Project code (unique)"
+          },
+          {
+            "id": "73440a52-4314-4711-8ba8-365165e6d435",
+            "name": "name",
+            "type": "varchar",
+            "length": 200,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Project name"
+          },
+          {
+            "id": "9348f698-cf47-4b78-b7aa-091a30e08a27",
+            "name": "owner_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "References employees.id"
+          },
+          {
+            "id": "bf6e68f6-84f4-4ce4-8016-159c57b8369f",
+            "name": "start_date",
+            "type": "date",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Project start date"
+          },
+          {
+            "id": "b1f1c915-5ba5-426e-a7a7-7bcb37435c1c",
+            "name": "end_date",
+            "type": "date",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Project end date (nullable)"
+          },
+          {
+            "id": "2c085d26-adf2-4dce-ba93-ae462d124353",
+            "name": "description",
+            "type": "text",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Project description"
+          }
+        ]
+      },
+      {
+        "id": "245f3199-cec8-4d0c-939f-c0e47fb061da",
+        "name": "employee_projects",
+        "x": 650,
+        "y": 200,
+        "width": 260,
+        "height": 200,
+        "columns": [
+          {
+            "id": "b878520f-4ec8-4fe0-8b39-e1bbb31471cd",
+            "name": "employee_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Part of composite primary key"
+          },
+          {
+            "id": "844b3ea2-45ba-4460-a4ee-8319b4218101",
+            "name": "project_id",
+            "type": "integer",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Part of composite primary key"
+          },
+          {
+            "id": "20d952b5-e26b-49e5-baae-cfce543fe5b0",
+            "name": "role",
+            "type": "varchar",
+            "length": 50,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "member",
+            "comment": "Role on the project"
+          },
+          {
+            "id": "31c8f0ba-1005-4f68-a443-148a7f0f6a56",
+            "name": "assigned_at",
+            "type": "timestamp",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "CURRENT_TIMESTAMP",
+            "comment": "Assignment timestamp"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "38de8561-6563-420d-ad23-80ad3a3fa4c0",
+        "sourceTableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "sourceColumnId": "528900f7-dcdc-4ca9-a305-3dcb0135a088",
+        "targetTableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "targetColumnId": "84433e5a-e71a-4458-9ad3-39203ad79b05",
+        "onDelete": "set null",
+        "onUpdate": "cascade"
+      },
+      {
+        "id": "d2ecf22f-e523-49b7-9399-04cdb84a9135",
+        "sourceTableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "sourceColumnId": "c922a479-7957-456a-a69d-233cf2869c09",
+        "targetTableId": "a0dee9df-b1be-4123-8f85-ca430fcf31de",
+        "targetColumnId": "554be305-a170-4721-8806-cdcd490e7e13",
+        "onDelete": "restrict",
+        "onUpdate": "cascade"
+      },
+      {
+        "id": "14757b37-3d1d-418e-8488-97698491d744",
+        "sourceTableId": "a0dee9df-b1be-4123-8f85-ca430fcf31de",
+        "sourceColumnId": "28e9bbe8-3b54-43af-84ed-b31b9ef4e28b",
+        "targetTableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "targetColumnId": "84433e5a-e71a-4458-9ad3-39203ad79b05",
+        "onDelete": "set null",
+        "onUpdate": "no action"
+      },
+      {
+        "id": "5460e6ac-3044-44fe-be43-5452af2610f8",
+        "sourceTableId": "eb91de42-ac12-4c40-9f31-78f32f8cd86e",
+        "sourceColumnId": "9348f698-cf47-4b78-b7aa-091a30e08a27",
+        "targetTableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "targetColumnId": "84433e5a-e71a-4458-9ad3-39203ad79b05",
+        "onDelete": "restrict",
+        "onUpdate": "cascade"
+      },
+      {
+        "id": "5be54625-ba22-438d-ae46-e00cd9a13d74",
+        "sourceTableId": "245f3199-cec8-4d0c-939f-c0e47fb061da",
+        "sourceColumnId": "b878520f-4ec8-4fe0-8b39-e1bbb31471cd",
+        "targetTableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "targetColumnId": "84433e5a-e71a-4458-9ad3-39203ad79b05",
+        "onDelete": "cascade",
+        "onUpdate": "cascade"
+      },
+      {
+        "id": "93b15e57-aa54-4435-9322-8e2cdd781a7b",
+        "sourceTableId": "245f3199-cec8-4d0c-939f-c0e47fb061da",
+        "sourceColumnId": "844b3ea2-45ba-4460-a4ee-8319b4218101",
+        "targetTableId": "eb91de42-ac12-4c40-9f31-78f32f8cd86e",
+        "targetColumnId": "6a93a292-527a-40ae-8579-024b9e210c62",
+        "onDelete": "cascade",
+        "onUpdate": "cascade"
+      }
+    ],
+    "uniqueConstraints": [
+      {
+        "id": "fc2b1577-3bd4-4ba9-90bc-1c41a0b1af3e",
+        "tableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "columnIds": [
+          "650ae72e-3baa-418f-867c-733243918e6b"
+        ],
+        "name": "employees_email_key"
+      },
+      {
+        "id": "9de4fa9a-4c02-4b76-b63e-5179c1dda3f8",
+        "tableId": "eb91de42-ac12-4c40-9f31-78f32f8cd86e",
+        "columnIds": [
+          "e9e74453-f9c8-4b28-a337-d8a81f9e4c65"
+        ],
+        "name": "projects_code_key"
+      },
+      {
+        "id": "eb0b1a4c-54b7-4b9a-90c3-8668ddaf70b6",
+        "tableId": "245f3199-cec8-4d0c-939f-c0e47fb061da",
+        "columnIds": [
+          "b878520f-4ec8-4fe0-8b39-e1bbb31471cd",
+          "844b3ea2-45ba-4460-a4ee-8319b4218101"
+        ],
+        "name": null
+      }
+    ],
+    "indexes": [
+      {
+        "id": "a46513f3-4743-4e07-b31c-d05305511dc3",
+        "tableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "columnIds": [
+          "528900f7-dcdc-4ca9-a305-3dcb0135a088"
+        ],
+        "unique": false,
+        "name": "employees_manager_id_idx"
+      },
+      {
+        "id": "ecd7f91e-4b64-4fce-a606-71286e523ff5",
+        "tableId": "2ab33900-9c84-4090-89d0-1af381b1e374",
+        "columnIds": [
+          "c922a479-7957-456a-a69d-233cf2869c09"
+        ],
+        "unique": false,
+        "name": "employees_department_id_idx"
+      },
+      {
+        "id": "43c5eedf-0be5-4ec8-9bac-2d5091a90899",
+        "tableId": "eb91de42-ac12-4c40-9f31-78f32f8cd86e",
+        "columnIds": [
+          "9348f698-cf47-4b78-b7aa-091a30e08a27"
+        ],
+        "unique": false,
+        "name": "projects_owner_id_idx"
+      },
+      {
+        "id": "5b9bc335-907d-4c41-92ec-8e74536f9b98",
+        "tableId": "245f3199-cec8-4d0c-939f-c0e47fb061da",
+        "columnIds": [
+          "b878520f-4ec8-4fe0-8b39-e1bbb31471cd",
+          "844b3ea2-45ba-4460-a4ee-8319b4218101"
+        ],
+        "unique": true,
+        "name": "employee_projects_pkey_idx"
+      },
+      {
+        "id": "2e756b65-9bb6-4f90-976e-35ce29898994",
+        "tableId": "eb91de42-ac12-4c40-9f31-78f32f8cd86e",
+        "columnIds": [
+          "bf6e68f6-84f4-4ce4-8016-159c57b8369f"
+        ],
+        "unique": false,
+        "name": "projects_start_date_idx"
+      }
+    ],
+    "createdAt": "2026-02-14T10:00:00.000Z",
+    "updatedAt": "2026-02-24T10:00:00.000Z"
+  }
+}

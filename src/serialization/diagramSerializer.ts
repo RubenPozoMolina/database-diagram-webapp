@@ -180,7 +180,7 @@ function serializeIndex(index: Index): SerializedIndex {
     id: index.id,
     tableId: index.tableId,
     columnIds: index.columnIds,
-    unique: false,
+    unique: index.unique ?? false,
     name: index.name,
   };
 }

@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0",
+  "diagram": {
+    "id": "9eefffa1-7f58-452e-9483-e2150e9ebed6",
+    "name": "Edge Cases Schema",
+    "tables": [
+      {
+        "id": "6f716454-8064-4a54-a853-2892e5241ef9",
+        "name": "audit_log",
+        "x": 50,
+        "y": 50,
+        "width": 260,
+        "height": 220,
+        "columns": [
+          {
+            "id": "c0cfeb68-bab1-4349-9293-b40093002516",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Log entry primary key"
+          },
+          {
+            "id": "b184dc63-2dd4-49d7-8b7a-86f25efa814a",
+            "name": "action",
+            "type": "varchar",
+            "length": 50,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Action performed"
+          },
+          {
+            "id": "66d9cd86-9bee-402d-bc94-f34c81508274",
+            "name": "actor_id",
+            "type": "integer",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "User who performed the action (nullable)"
+          },
+          {
+            "id": "b4a42cf9-a1be-420b-b5a0-62c10a1b7e15",
+            "name": "event_ts",
+            "type": "timestamp",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "CURRENT_TIMESTAMP",
+            "comment": "Event timestamp"
+          },
+          {
+            "id": "34d449a1-595f-4ff4-a6b1-65e902920630",
+            "name": "details",
+            "type": "text",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Additional details (nullable)"
+          },
+          {
+            "id": "0f04eb82-85de-4e1e-a359-c17ba8a6a604",
+            "name": "status",
+            "type": "boolean",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "true",
+            "comment": "Success flag"
+          }
+        ]
+      },
+      {
+        "id": "be905f47-29ea-4ba6-a16d-e0933a437ea1",
+        "name": "app_settings",
+        "x": 350,
+        "y": 50,
+        "width": 240,
+        "height": 200,
+        "columns": [
+          {
+            "id": "9aef3942-56cd-4325-891d-941e0e3f0710",
+            "name": "id",
+            "type": "serial",
+            "length": null,
+            "nullable": false,
+            "primaryKey": true,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Setting primary key"
+          },
+          {
+            "id": "b37ef52b-94f6-4bc7-a462-0803afe32e7b",
+            "name": "setting_key",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": true,
+            "defaultValue": null,
+            "comment": "Setting key (unique)"
+          },
+          {
+            "id": "69473cd9-db18-40cf-9d0f-f2a7246f2554",
+            "name": "setting_value",
+            "type": "text",
+            "length": null,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Setting value"
+          },
+          {
+            "id": "fc91292b-2325-4e4f-89fa-18e5bda47017",
+            "name": "value_type",
+            "type": "varchar",
+            "length": 20,
+            "nullable": false,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": "string",
+            "comment": "Value type hint"
+          },
+          {
+            "id": "cc44484b-521b-4f21-8354-dbb09befd60e",
+            "name": "updated_at",
+            "type": "timestamp",
+            "length": null,
+            "nullable": true,
+            "primaryKey": false,
+            "unique": false,
+            "defaultValue": null,
+            "comment": "Last update timestamp"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "8777e2bf-f183-4485-a44a-3656236abcc3",
+        "sourceTableId": "6f716454-8064-4a54-a853-2892e5241ef9",
+        "sourceColumnId": "66d9cd86-9bee-402d-bc94-f34c81508274",
+        "targetTableId": "6f716454-8064-4a54-a853-2892e5241ef9",
+        "targetColumnId": "c0cfeb68-bab1-4349-9293-b40093002516",
+        "onDelete": "set null",
+        "onUpdate": "no action"
+      }
+    ],
+    "uniqueConstraints": [
+      {
+        "id": "f1681400-53a3-43b7-891f-14e29c808563",
+        "tableId": "be905f47-29ea-4ba6-a16d-e0933a437ea1",
+        "columnIds": [
+          "b37ef52b-94f6-4bc7-a462-0803afe32e7b"
+        ],
+        "name": "app_settings_setting_key_key"
+      }
+    ],
+    "indexes": [
+      {
+        "id": "295e89e3-c7d6-47e8-9ed6-7aabf2715193",
+        "tableId": "6f716454-8064-4a54-a853-2892e5241ef9",
+        "columnIds": [
+          "b4a42cf9-a1be-420b-b5a0-62c10a1b7e15"
+        ],
+        "unique": false,
+        "name": "audit_log_event_ts_idx"
+      }
+    ],
+    "createdAt": "2026-03-01T10:00:00.000Z",
+    "updatedAt": "2026-03-06T10:00:00.000Z"
+  }
+}
