@@ -9,7 +9,7 @@ ENV npm_config_cache=/tmp/.npm
 WORKDIR /work
 
 # Install dependencies first (cached layer)
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
 # Copy project sources

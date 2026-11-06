@@ -48,13 +48,16 @@ function deserializeColumn(column: SerializedColumn): Column {
     id: column.id,
     name: column.name,
     dataType: column.type,
+    // Serialized `null` means "absent" for optional fields, so restore them
+    // only when present. This keeps round-trip fidelity: a column exported
+    // with a length, unique flag or comment comes back unchanged.
     ...(column.length !== null ? { length: column.length } : {}),
     nullable: column.nullable,
     primaryKey: column.primaryKey,
+    ...(column.unique === true ? { unique: true } : {}),
     ...(column.defaultValue !== null && column.defaultValue !== undefined
       ? { defaultValue: column.defaultValue }
       : {}),
-    ...(column.unique === true ? { unique: true } : {}),
     ...(column.comment !== null && column.comment !== undefined
       ? { comment: column.comment }
       : {}),

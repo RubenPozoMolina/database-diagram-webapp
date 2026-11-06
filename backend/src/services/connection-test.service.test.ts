@@ -25,11 +25,18 @@ const params = {
   password: 's3cr3t',
 };
 
-function mockClient(connectImpl: () => Promise<unknown>): void {
+function mockClient(
+  connectImpl: () => Promise<unknown>,
+  queryImpl: () => Promise<unknown> = async () => ({
+    rows: [{ server_version_num: '160000' }],
+  }),
+): void {
   const connect = vi.fn(connectImpl);
+  const query = vi.fn(queryImpl);
   const end = vi.fn().mockResolvedValue(undefined);
   vi.mocked(Client).mockImplementation(() => ({
     connect,
+    query,
     end,
   } as unknown as Client));
 }
@@ -147,5 +154,53 @@ describe('testConnection', () => {
     );
     expect(result.error).not.toContain('stack');
     expect(result.error).not.toContain('Unexpected driver failure');
+  });
+
+  it('returns 401 for insufficient privileges (SQLSTATE 42501) without leaking the password', async () => {
+    const err: Error & { code?: string } = new Error(
+      'permission denied for database "mydb"',
+    );
+    err.code = '42501';
+    mockClient(() => Promise.reject(err));
+
+    const result = await testConnection(params, 10_000);
+
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(401);
+    expect(result.error).toContain('Authentication failed');
+    expect(result.error).not.toContain('s3cr3t');
+  });
+
+  it('returns 400 when the PostgreSQL version is below 14', async () => {
+    mockClient(() => Promise.resolve(undefined), async () => ({
+      rows: [{ server_version_num: '130000' }],
+    }));
+
+    const result = await testConnection(params, 10_000);
+
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(400);
+    expect(result.error).toContain('Unsupported PostgreSQL version');
+    expect(result.error).toContain('14 or later');
+    expect(result.error).not.toContain('s3cr3t');
+  });
+
+  it('returns success when the server version is 14 or newer and queries the version', async () => {
+    const query = vi.fn().mockResolvedValue({
+      rows: [{ server_version_num: '160000' }],
+    });
+    const connect = vi.fn().mockResolvedValue(undefined);
+    const end = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(Client).mockImplementation(() => ({
+      connect,
+      query,
+      end,
+    } as unknown as Client));
+
+    const result = await testConnection(params, 10_000);
+
+    expect(result.success).toBe(true);
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(end).toHaveBeenCalledTimes(1);
   });
 });
