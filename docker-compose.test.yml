@@ -32,6 +32,23 @@ services:
     working_dir: /work
     command: sh -c "npm ci --ignore-scripts && npx playwright test --workers=3"
 
+  perf-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    user: "1000:1000"
+    environment:
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
+    networks:
+      - qa-st001-network
+    volumes:
+      - .:/work:rw
+    tmpfs:
+      - /tmp
+    working_dir: /work
+    command: sh -c "npm ci --ignore-scripts && npx vitest run src/__tests__/performance.test.ts"
+
 networks:
   qa-st001-network:
     driver: bridge
