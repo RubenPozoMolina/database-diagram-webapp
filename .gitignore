@@ -10,3 +10,7 @@ qa-artifacts/
 dist/
 build/
 coverage/
+*-out.txt
+*-err.txt
+*.out
+*.tmp
