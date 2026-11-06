@@ -196,7 +196,7 @@ test.describe('TASK-041: Imported schema as editable diagram (visual QA)', () =>
     await expect(page.getByText('Indexes').first()).toBeVisible(); // indexes section header
     await expect(page.locator('.index-name').first()).toBeVisible(); // at least one index name
     await expect(page.getByText('customers_email_key')).toBeVisible(); // unique constraint name
-    await expect(page.getByText('Unique constraints')).toBeVisible(); // constraints section header
+    await expect(page.getByRole('region', { name: 'Table customers' }).locator('h3.constraints-title')).toBeVisible(); // constraints section header
 
     // AC4: Imported relationships are drawn as lines
     const relationshipLine = page.locator('svg path.relationship-line');

@@ -97,6 +97,8 @@ test.describe('Unique Constraint UI', () => {
   });
 
   test('removes a unique constraint', async ({ page }) => {
+    const table = page.getByRole('region', { name: 'Table users' });
+
     // Add a column and rename it to email, then add a unique constraint
     await page
       .getByRole('button', { name: /add a new column to this table/i })
@@ -104,8 +106,6 @@ test.describe('Unique Constraint UI', () => {
     await table.locator('.column-text', { hasText: /new_column: text/ }).dblclick();
     await page.locator('input.column-name-input').fill('email');
     await page.keyboard.press('Enter');
-
-    const table = page.getByRole('region', { name: 'Table users' });
 
     await table
       .getByRole('button', { name: /add a new unique constraint to this table/i })
