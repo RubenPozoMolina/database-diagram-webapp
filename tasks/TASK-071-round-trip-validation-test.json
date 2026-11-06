@@ -1,0 +1,37 @@
+{
+  "id": "TASK-071",
+  "type": "task",
+  "title": "Implement export→import round-trip validation test",
+  "description": "Implement an automated test that exports each round-trip fixture diagram to JSON, re-imports it, and asserts the resulting diagram is identical in structure (tables, columns, types, keys, constraints, indexes, relationships) and layout (x/y/width/height) to the original.",
+  "status": "backlog",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": "qa-automation",
+  "parent": "STORY-019",
+  "acceptanceCriteria": [
+    "Test iterates over all round-trip fixture diagrams",
+    "For each fixture: serialize → JSON → deserialize → compare structure and layout",
+    "Comparison includes table names, columns, data types, primary keys, foreign keys with referential actions, unique constraints, indexes, and canvas positions",
+    "Test reports per-fixture pass/fail and overall pass rate",
+    "Test runs in Docker (node:20-alpine) via vitest",
+    "100% round-trip fidelity required for all fixtures (per PRD success metric)"
+  ],
+  "dependencies": [
+    "TASK-070",
+    "STORY-009",
+    "STORY-010"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-06T00:00:00Z",
+      "reason": "Ticket created from PRD US-2.3 acceptance criterion (export→import must produce identical diagram)"
+    }
+  ],
+  "sprint": null,
+  "requiresReview": true,
+  "updatedAt": "2026-11-06T00:00:00Z"
+}

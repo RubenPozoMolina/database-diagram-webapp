@@ -1,0 +1,115 @@
+{
+  "id": "TASK-031",
+  "type": "task",
+  "title": "Implement error handling for invalid/unsupported JSON",
+  "description": "Implement error handling to show clear error messages when the imported JSON file is invalid or contains an unsupported diagram model.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-010",
+  "acceptanceCriteria": [
+    "Error message is shown for invalid JSON file",
+    "Error message is shown for unsupported diagram model",
+    "Application does not crash on invalid import"
+  ],
+  "dependencies": [
+    "TASK-030"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-2.2"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T18:46:45.803690+00:00",
+      "reason": "Planned for sprint 40",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-04T19:17:17.983721+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Implementation verified: error handling for invalid/unsupported JSON already implemented as part of TASK-030 (deserializer + ImportButton + App error banner). No new code changes needed; git status clean.",
+        "Key files: src/components/ImportButton.tsx (catches SyntaxError/ DiagramImportError/unexpected errors, calls onError), src/serialization/diagramDeserializer.ts (throws DiagramImportError for unsupported version, missing fields, unexpected types), src/App.tsx (displays importError in alert banner with dismiss button), src/components/ImportButton.test.tsx (tests invalid JSON, unsupported version, missing diagram root), src/serialization/diagramDeserializer.test.ts (tests all DiagramImportError cases), e2e/import-json.spec.ts (e2e tests for invalid JSON and unsupported version error display).",
+        "Unit tests (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx vitest run\" - 305/305 passed across 26 test files (ImportButton: 9, diagramDeserializer: 20, diagramSerializer: 14, App: 12).",
+        "TypeScript typecheck (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:ro -w /work node:20-alpine sh -c \"npx tsc --noEmit\" - only pre-existing errors in unrelated test files/components; no errors in ImportButton.tsx, diagramDeserializer.ts, or their test files.",
+        "E2E tests (Docker, mcr.microsoft.com/playwright:v1.49.1-noble, nginx-served app on private network qa-TASK-031): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e BASE_URL=\"http://app-TASK-031:8080/\" -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"npx playwright@1.49.1 test e2e/import-json.spec.ts\" - 5/5 passed (invalid JSON error, unsupported schema version error, valid import, editable tables, rendered relationships).",
+        "Acceptance criteria verified: (1) Error message shown for invalid JSON file - ImportButton catches SyntaxError -> 'Invalid JSON file: could not parse the file contents.'; (2) Error message shown for unsupported diagram model - deserializeJson/deserializeDiagram throws DiagramImportError -> ImportButton calls onError(err.message); (3) Application does not crash on invalid import - try/catch in ImportButton handles all error paths.",
+        "All tests run inside Docker containers per docker-test-runner skill; no host execution.",
+        "No commits made (implementation already present from TASK-030; git status clean). Remote default branch 'main' matches trunk."
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T19:35:09.639945+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Reviewer: software-architect. Approved - implementation meets all acceptance criteria.",
+        "Code review (architectural): separation of concerns verified - diagramDeserializer.ts validates schema version/fields/types and throws DiagramImportError; ImportButton.tsx catches SyntaxError (invalid JSON), DiagramImportError (unsupported model), and unexpected errors, converting each to a clear user message via onError; App.tsx displays importError in an alert banner with dismiss button. No crash on invalid import.",
+        "Key files reviewed: src/components/ImportButton.tsx, src/serialization/diagramDeserializer.ts, src/App.tsx, src/components/ImportButton.test.tsx, src/serialization/diagramDeserializer.test.tsx.",
+        "Unit tests re-run independently in Docker (node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx vitest run\" - 305/305 passed across 26 test files (ImportButton: 9, diagramDeserializer: 20, App: 12).",
+        "TypeScript typecheck (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:ro -w /work node:20-alpine sh -c \"npx tsc --noEmit\" - only pre-existing errors in unrelated test files/components (diagram-model.test.ts, readSchemaApi.test.ts, CreateRelationshipModal.test.tsx, DdlPreview.tsx); no errors in ImportButton.tsx, diagramDeserializer.ts, or their test files.",
+        "Acceptance criteria verified: (1) Error message shown for invalid JSON file - SyntaxError -> 'Invalid JSON file: could not parse the file contents.'; (2) Error message shown for unsupported diagram model - DiagramImportError -> onError(err.message); (3) Application does not crash on invalid import - try/catch handles all error paths including unexpected errors.",
+        "All tests run inside Docker containers per docker-test-runner skill; no host execution. Git status clean on branch ticket/TASK-031; no new commits needed (implementation present from TASK-030)."
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-04T20:01:40.178196+00:00",
+      "reason": "passed",
+      "evidence": [
+        "Reviewer: software-architect. Approved - implementation meets all acceptance criteria.",
+        "Code review (architectural): separation of concerns verified - diagramDeserializer.ts validates schema version/fields/types and throws DiagramImportError; ImportButton.tsx catches SyntaxError (invalid JSON), DiagramImportError (unsupported model), and unexpected errors, converting each to a clear user message via onError; App.tsx displays importError in an alert banner with dismiss button. No crash on invalid import.",
+        "Key files reviewed: src/components/ImportButton.tsx, src/serialization/diagramDeserializer.ts, src/App.tsx, src/components/ImportButton.test.tsx, src/serialization/diagramDeserializer.test.tsx.",
+        "Unit tests re-run independently in Docker (node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx vitest run\" - 305/305 passed across 26 test files (ImportButton: 9, diagramDeserializer: 20, App: 12).",
+        "TypeScript typecheck (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:ro -w /work node:20-alpine sh -c \"npx tsc --noEmit\" - only pre-existing errors in unrelated test files/components (diagram-model.test.ts, readSchemaApi.test.ts, CreateRelationshipModal.test.tsx, DdlPreview.tsx); no errors in ImportButton.tsx, diagramDeserializer.ts, or their test files.",
+        "Acceptance criteria verified: (1) Error message shown for invalid JSON file - SyntaxError -> 'Invalid JSON file: could not parse the file contents.'; (2) Error message shown for unsupported diagram model - DiagramImportError -> onError(err.message); (3) Application does not crash on invalid import - try/catch handles all error paths including unexpected errors.",
+        "All tests run inside Docker containers per docker-test-runner skill; no host execution. Git status clean on branch ticket/TASK-031; no new commits needed (implementation present from TASK-030).",
+        "QA unit tests re-run (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx vitest run\" - 26/26 test files, 305/305 tests passed (ImportButton: 9, diagramDeserializer: 20, App: 12).",
+        "QA TypeScript typecheck (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:ro -w /work node:20-alpine sh -c \"npx tsc --noEmit\" - only pre-existing errors in unrelated files (diagram-model.test.ts, readSchemaApi.test.ts, CreateRelationshipModal.test.tsx, DdlPreview.tsx); no errors in ImportButton.tsx, diagramDeserializer.ts, or their tests.",
+        "QA production build (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"rm -rf /work/dist && npx vite build\" - built successfully.",
+        "QA E2E tests (Docker, mcr.microsoft.com/playwright:v1.49.1-noble, nginx-inc/nginx-unprivileged:1.27-alpine on private network qa-TASK-031, app not published on host): docker run --rm --network qa-TASK-031 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e BASE_URL=\"http://app-TASK-031:8080/\" -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"npx playwright@1.49.1 test e2e/import-json.spec.ts\" - 5/5 passed (invalid JSON error, unsupported schema version error, valid import, editable tables, rendered relationships).",
+        "QA visual checks (containerized Chromium, full-page screenshots in qa-artifacts/): visual-qa.spec.ts 5/5 passed (controls fully visible via bounding boxes at 1920x1080, 768x1024, 375x667; New Diagram reset; zero console errors); import-visual-qa.spec.ts 4/4 passed (Import button + controls visible on empty canvas, invalid JSON shows dismissible error banner, unsupported version shows error banner, valid import renders tables + relationship SVG end to end). Screenshots: tqa-empty-canvas.png, tqa-invalid-json-error.png, tqa-invalid-json-dismissed.png, tqa-unsupported-version.png, tqa-valid-import-relationship.png.",
+        "Acceptance criteria verified: (1) Error message shown for invalid JSON file - SyntaxError caught -> 'Invalid JSON file: could not parse the file contents.' displayed in alert banner; (2) Error message shown for unsupported diagram model - DiagramImportError -> onError(err.message) displayed in alert banner; (3) Application does not crash on invalid import - try/catch in ImportButton handles SyntaxError, DiagramImportError, and unexpected errors; app remains usable after dismissed errors.",
+        "No unsupported-platform criteria: all checks executed on Chromium (available on Linux); no Safari/browser/platform limitation applies.",
+        "All tests run inside Docker containers per docker-test-runner skill; no host execution. Git status clean on branch ticket/TASK-031; no new commits needed (implementation present from TASK-030). Remote default branch 'main' matches trunk."
+      ]
+    }
+  ],
+  "sprint": 42,
+  "requiresReview": true,
+  "updatedAt": "2026-11-04T20:01:40.178208+00:00",
+  "resultEvidence": [
+    "Reviewer: software-architect. Approved - implementation meets all acceptance criteria.",
+    "Code review (architectural): separation of concerns verified - diagramDeserializer.ts validates schema version/fields/types and throws DiagramImportError; ImportButton.tsx catches SyntaxError (invalid JSON), DiagramImportError (unsupported model), and unexpected errors, converting each to a clear user message via onError; App.tsx displays importError in an alert banner with dismiss button. No crash on invalid import.",
+    "Key files reviewed: src/components/ImportButton.tsx, src/serialization/diagramDeserializer.ts, src/App.tsx, src/components/ImportButton.test.tsx, src/serialization/diagramDeserializer.test.tsx.",
+    "Unit tests re-run independently in Docker (node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx vitest run\" - 305/305 passed across 26 test files (ImportButton: 9, diagramDeserializer: 20, App: 12).",
+    "TypeScript typecheck (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:ro -w /work node:20-alpine sh -c \"npx tsc --noEmit\" - only pre-existing errors in unrelated test files/components (diagram-model.test.ts, readSchemaApi.test.ts, CreateRelationshipModal.test.tsx, DdlPreview.tsx); no errors in ImportButton.tsx, diagramDeserializer.ts, or their test files.",
+    "Acceptance criteria verified: (1) Error message shown for invalid JSON file - SyntaxError -> 'Invalid JSON file: could not parse the file contents.'; (2) Error message shown for unsupported diagram model - DiagramImportError -> onError(err.message); (3) Application does not crash on invalid import - try/catch handles all error paths including unexpected errors.",
+    "All tests run inside Docker containers per docker-test-runner skill; no host execution. Git status clean on branch ticket/TASK-031; no new commits needed (implementation present from TASK-030).",
+    "QA unit tests re-run (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx vitest run\" - 26/26 test files, 305/305 tests passed (ImportButton: 9, diagramDeserializer: 20, App: 12).",
+    "QA TypeScript typecheck (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:ro -w /work node:20-alpine sh -c \"npx tsc --noEmit\" - only pre-existing errors in unrelated files (diagram-model.test.ts, readSchemaApi.test.ts, CreateRelationshipModal.test.tsx, DdlPreview.tsx); no errors in ImportButton.tsx, diagramDeserializer.ts, or their tests.",
+    "QA production build (Docker, node:20-alpine): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"rm -rf /work/dist && npx vite build\" - built successfully.",
+    "QA E2E tests (Docker, mcr.microsoft.com/playwright:v1.49.1-noble, nginx-inc/nginx-unprivileged:1.27-alpine on private network qa-TASK-031, app not published on host): docker run --rm --network qa-TASK-031 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e BASE_URL=\"http://app-TASK-031:8080/\" -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"npx playwright@1.49.1 test e2e/import-json.spec.ts\" - 5/5 passed (invalid JSON error, unsupported schema version error, valid import, editable tables, rendered relationships).",
+    "QA visual checks (containerized Chromium, full-page screenshots in qa-artifacts/): visual-qa.spec.ts 5/5 passed (controls fully visible via bounding boxes at 1920x1080, 768x1024, 375x667; New Diagram reset; zero console errors); import-visual-qa.spec.ts 4/4 passed (Import button + controls visible on empty canvas, invalid JSON shows dismissible error banner, unsupported version shows error banner, valid import renders tables + relationship SVG end to end). Screenshots: tqa-empty-canvas.png, tqa-invalid-json-error.png, tqa-invalid-json-dismissed.png, tqa-unsupported-version.png, tqa-valid-import-relationship.png.",
+    "Acceptance criteria verified: (1) Error message shown for invalid JSON file - SyntaxError caught -> 'Invalid JSON file: could not parse the file contents.' displayed in alert banner; (2) Error message shown for unsupported diagram model - DiagramImportError -> onError(err.message) displayed in alert banner; (3) Application does not crash on invalid import - try/catch in ImportButton handles SyntaxError, DiagramImportError, and unexpected errors; app remains usable after dismissed errors.",
+    "No unsupported-platform criteria: all checks executed on Chromium (available on Linux); no Safari/browser/platform limitation applies.",
+    "All tests run inside Docker containers per docker-test-runner skill; no host execution. Git status clean on branch ticket/TASK-031; no new commits needed (implementation present from TASK-030). Remote default branch 'main' matches trunk."
+  ],
+  "implementedBy": "web-developer"
+}

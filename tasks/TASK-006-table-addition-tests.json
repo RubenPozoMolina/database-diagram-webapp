@@ -1,0 +1,123 @@
+{
+  "id": "TASK-006",
+  "type": "task",
+  "title": "Unit tests for table addition to canvas",
+  "description": "Write automated unit tests to verify tables can be added to the canvas with correct name and column list.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-002",
+  "acceptanceCriteria": [
+    "Unit tests verify table appears on canvas after addition",
+    "Unit tests verify table has correct name and columns",
+    "All tests pass"
+  ],
+  "dependencies": [
+    "TASK-004",
+    "TASK-005"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.2"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T06:16:15.596708+00:00",
+      "reason": "Planned for sprint 35",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-04T06:19:43.150082+00:00",
+      "reason": "passed",
+      "evidence": [
+        "file: src/__tests__/DiagramCanvas.test.ts - added 5 unit tests under 'table addition to canvas (TASK-006)' describe block",
+        "commit: c9c8863 - TASK-006: add unit tests for table addition to canvas",
+        "test-report: 257 tests passed across 26 test files (5 new TASK-006 tests + 252 existing)",
+        "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+        "acceptance-criteria: AC1 verified - table appears on canvas after addition (tableCount, isEmpty, getState, position)",
+        "acceptance-criteria: AC2 verified - table has correct name and columns (name, type, isPrimaryKey, isNullable)",
+        "acceptance-criteria: AC3 verified - all 257 tests pass"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T16:33:13.116029+00:00",
+      "reason": "completed",
+      "evidence": [
+        "file: src/__tests__/DiagramCanvas.test.ts - added 5 unit tests under 'table addition to canvas (TASK-006)' describe block",
+        "commit: c9c8863 - TASK-006: add unit tests for table addition to canvas",
+        "test-report: 257 tests passed across 26 test files (5 new TASK-006 tests + 252 existing)",
+        "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+        "acceptance-criteria: AC1 verified - table appears on canvas after addition (tableCount, isEmpty, getState, position)",
+        "acceptance-criteria: AC2 verified - table has correct name and columns (name, type, isPrimaryKey, isNullable)",
+        "acceptance-criteria: AC3 verified - all 257 tests pass",
+        "reviewer: software-architect (independent re-run in Docker)",
+        "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+        "test-report: 26 test files / 257 tests passed (independently verified; DiagramCanvas.test.ts 16 tests = 11 existing + 5 new TASK-006)",
+        "git: branch ticket/TASK-006, commit c9c8863 pushed to origin/ticket/TASK-006, working tree clean"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-04T17:03:27.715030+00:00",
+      "reason": "passed",
+      "evidence": [
+        "file: src/__tests__/DiagramCanvas.test.ts - added 5 unit tests under 'table addition to canvas (TASK-006)' describe block",
+        "commit: c9c8863 - TASK-006: add unit tests for table addition to canvas",
+        "test-report: 257 tests passed across 26 test files (5 new TASK-006 tests + 252 existing)",
+        "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+        "acceptance-criteria: AC1 verified - table appears on canvas after addition (tableCount, isEmpty, getState, position)",
+        "acceptance-criteria: AC2 verified - table has correct name and columns (name, type, isPrimaryKey, isNullable)",
+        "acceptance-criteria: AC3 verified - all 257 tests pass",
+        "reviewer: software-architect (independent re-run in Docker)",
+        "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+        "test-report: 26 test files / 257 tests passed (independently verified; DiagramCanvas.test.ts 16 tests = 11 existing + 5 new TASK-006)",
+        "git: branch ticket/TASK-006, commit c9c8863 pushed to origin/ticket/TASK-006, working tree clean",
+        "test-report: 257 tests passed across 26 test files (independently re-verified in Docker QA run; DiagramCanvas.test.ts 16 tests = 11 existing + 5 new TASK-006)",
+        "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+        "acceptance-criteria: AC1 verified - table appears on canvas after addition (tableCount, isEmpty, getState, position) — test 'table appears on canvas after addition'",
+        "acceptance-criteria: AC2 verified - table has correct name and columns (name, type, isPrimaryKey, isNullable) — tests 'table has correct name after addition', 'table has correct columns after addition'",
+        "acceptance-criteria: AC3 verified - all 257 tests pass (26 test files)",
+        "platform: no limitations — Node unit tests run in jsdom, no browser required; no criteria skipped-unsupported-platform"
+      ]
+    }
+  ],
+  "sprint": 36,
+  "updatedAt": "2026-11-04T17:03:27.715041+00:00",
+  "requiresReview": true,
+  "resultEvidence": [
+    "file: src/__tests__/DiagramCanvas.test.ts - added 5 unit tests under 'table addition to canvas (TASK-006)' describe block",
+    "commit: c9c8863 - TASK-006: add unit tests for table addition to canvas",
+    "test-report: 257 tests passed across 26 test files (5 new TASK-006 tests + 252 existing)",
+    "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+    "acceptance-criteria: AC1 verified - table appears on canvas after addition (tableCount, isEmpty, getState, position)",
+    "acceptance-criteria: AC2 verified - table has correct name and columns (name, type, isPrimaryKey, isNullable)",
+    "acceptance-criteria: AC3 verified - all 257 tests pass",
+    "reviewer: software-architect (independent re-run in Docker)",
+    "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+    "test-report: 26 test files / 257 tests passed (independently verified; DiagramCanvas.test.ts 16 tests = 11 existing + 5 new TASK-006)",
+    "git: branch ticket/TASK-006, commit c9c8863 pushed to origin/ticket/TASK-006, working tree clean",
+    "test-report: 257 tests passed across 26 test files (independently re-verified in Docker QA run; DiagramCanvas.test.ts 16 tests = 11 existing + 5 new TASK-006)",
+    "docker-command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine npm test",
+    "acceptance-criteria: AC1 verified - table appears on canvas after addition (tableCount, isEmpty, getState, position) — test 'table appears on canvas after addition'",
+    "acceptance-criteria: AC2 verified - table has correct name and columns (name, type, isPrimaryKey, isNullable) — tests 'table has correct name after addition', 'table has correct columns after addition'",
+    "acceptance-criteria: AC3 verified - all 257 tests pass (26 test files)",
+    "platform: no limitations — Node unit tests run in jsdom, no browser required; no criteria skipped-unsupported-platform"
+  ],
+  "implementedBy": "qa-automation"
+}

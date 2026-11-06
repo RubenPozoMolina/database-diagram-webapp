@@ -1,0 +1,110 @@
+{
+  "id": "TASK-023",
+  "type": "task",
+  "title": "Implement delete functionality for tables and relationships",
+  "description": "Implement the ability to delete tables and relationships from the diagram canvas. The model should reflect the deletion.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-008",
+  "acceptanceCriteria": [
+    "User can delete a table from the canvas",
+    "User can delete a relationship from the canvas",
+    "Model reflects the deletion of elements"
+  ],
+  "dependencies": [
+    "TASK-022"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.8"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T23:39:48.195439+00:00",
+      "reason": "Planned for sprint 50",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-04T23:51:01.677700+00:00",
+      "reason": "completed",
+      "evidence": [
+        "files: src/hooks/useDiagram.test.ts (added unit test 'removes a relationship by id while keeping both tables'), src/components/TableNode.test.tsx (added unit test 'calls onDeleteTable with the table id when the Delete button is clicked'; fixed 4 pre-existing TASK-022 drag/resize tests missing required onDeleteTable prop)",
+        "docker: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npm test\"",
+        "test report: vitest run -> Test Files 28 passed (28), Tests 357 passed (357); src/hooks/useDiagram.test.ts 28 tests, src/components/TableNode.test.tsx 43 tests",
+        "docker: docker run --rm ... node:20-alpine sh -c \"./node_modules/.bin/tsc --noEmit\" and npm run lint -> 0 errors in touched files (TableNode.test.tsx, useDiagram.test.ts); 7 remaining errors are pre-existing on main in unrelated files",
+        "docker: npx vite build -> dist/ built successfully",
+        "note: containerized Playwright e2e against nginx (nginxinc/nginx-unprivileged:1.27-alpine) + mcr.microsoft.com/playwright:v1.49.1-noble on private network hit a DNS resolution issue for the app container name; delete e2e tests not fully executed, but unit tests verify the delete model/component behavior",
+        "branches/commits: short-lived branch ticket/TASK-023 (trunk: main); no commits pushed yet — orchestration pushes the branch"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T23:59:28.747523+00:00",
+      "reason": "completed",
+      "evidence": [
+        "review: software-architect independent verification (Docker, node:20-alpine)",
+        "docker: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npm test\"",
+        "test report: vitest run -> Test Files 28 passed (28), Tests 357 passed (357); src/hooks/useDiagram.test.ts 28 tests (incl. TASK-023 'removes a relationship by id while keeping both tables'), src/components/TableNode.test.tsx 43 tests (incl. TASK-023 'calls onDeleteTable with the table id when the Delete button is clicked')",
+        "docker: docker run --rm ... node:20-alpine sh -c \"./node_modules/.bin/tsc --noEmit\" -> 0 errors in touched files (TableNode.test.tsx, useDiagram.test.ts); 7 pre-existing errors in unrelated files on main",
+        "docker: docker run --rm ... node:20-alpine sh -c \"npm run lint\" -> 0 errors in touched files; 11 pre-existing errors in unrelated files on main",
+        "docker: docker run --rm ... node:20-alpine sh -c \"npx vite build\" -> dist/ built successfully (exit 0)",
+        "architectural review: delete source (removeTable/removeRelationship, onDeleteTable Delete button, RelationshipLine onDelete, App.tsx wiring) predates TASK-023 (STORY-008 commit 7264676); ticket branch adds test coverage only; all acceptance criteria met; no changes requested"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-05T00:09:00.340423+00:00",
+      "reason": "passed",
+      "evidence": [
+        "review: software-architect independent verification (Docker, node:20-alpine)",
+        "docker: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npm test\"",
+        "test report: vitest run -> Test Files 28 passed (28), Tests 357 passed (357); src/hooks/useDiagram.test.ts 28 tests (incl. TASK-023 'removes a relationship by id while keeping both tables'), src/components/TableNode.test.tsx 43 tests (incl. TASK-023 'calls onDeleteTable with the table id when the Delete button is clicked')",
+        "docker: docker run --rm ... node:20-alpine sh -c \"./node_modules/.bin/tsc --noEmit\" -> 0 errors in touched files (TableNode.test.tsx, useDiagram.test.ts); pre-existing errors only in unrelated files on main",
+        "docker: docker run --rm ... node:20-alpine sh -c \"npm run lint\" -> 0 errors in touched files; pre-existing errors only in unrelated files on main",
+        "docker: docker run --rm ... node:20-alpine sh -c \"npx vite build\" -> dist/ built successfully (exit 0)",
+        "docker: docker network create qa-TASK-023; docker run -d --rm --name app-TASK-023 --network qa-TASK-023 --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp -v \"$(pwd)/dist\":/usr/share/nginx/html:ro nginxinc/nginx-unprivileged:1.27-alpine -> app ready on private network",
+        "docker: docker run --rm --network qa-TASK-023 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e BASE_URL=\"http://app-TASK-023:8080/\" -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"cd /work && npx --yes playwright@1.49.1 test e2e/edit-diagram-elements.spec.ts --reporter=html,list\"",
+        "test report: Playwright e2e (chromium, containerized browser vs nginx on private network) -> 4 passed / 4 passed, including TASK-023 acceptance criteria: 'deletes a table and cascades removal of its relationships; the model reflects the change' and 'deletes a relationship by clicking its line; the model reflects the removal'",
+        "visual QA: every control fully visible (Delete table button aria-label, relationship line path, table regions); interactions verified end to end in real browser; screenshots captured: qa-artifacts/story-008-delete-table-cascade.png, qa-artifacts/story-008-delete-relationship.png",
+        "report: qa-artifacts/playwright-report/index.html (HTML report)",
+        "cleanup: docker rm -f app-TASK-023; docker network rm qa-TASK-023 (no remaining containers/networks)",
+        "architectural review: delete source (removeTable/removeRelationship, onDeleteTable Delete button, RelationshipLine onDelete, App.tsx wiring) predates TASK-023 (STORY-008 commit 7264676); ticket branch adds test coverage only; all acceptance criteria met; no changes requested"
+      ]
+    }
+  ],
+  "updatedAt": "2026-11-05T00:09:00.340435+00:00",
+  "sprint": 52,
+  "requiresReview": true,
+  "resultEvidence": [
+    "review: software-architect independent verification (Docker, node:20-alpine)",
+    "docker: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npm test\"",
+    "test report: vitest run -> Test Files 28 passed (28), Tests 357 passed (357); src/hooks/useDiagram.test.ts 28 tests (incl. TASK-023 'removes a relationship by id while keeping both tables'), src/components/TableNode.test.tsx 43 tests (incl. TASK-023 'calls onDeleteTable with the table id when the Delete button is clicked')",
+    "docker: docker run --rm ... node:20-alpine sh -c \"./node_modules/.bin/tsc --noEmit\" -> 0 errors in touched files (TableNode.test.tsx, useDiagram.test.ts); pre-existing errors only in unrelated files on main",
+    "docker: docker run --rm ... node:20-alpine sh -c \"npm run lint\" -> 0 errors in touched files; pre-existing errors only in unrelated files on main",
+    "docker: docker run --rm ... node:20-alpine sh -c \"npx vite build\" -> dist/ built successfully (exit 0)",
+    "docker: docker network create qa-TASK-023; docker run -d --rm --name app-TASK-023 --network qa-TASK-023 --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp -v \"$(pwd)/dist\":/usr/share/nginx/html:ro nginxinc/nginx-unprivileged:1.27-alpine -> app ready on private network",
+    "docker: docker run --rm --network qa-TASK-023 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e BASE_URL=\"http://app-TASK-023:8080/\" -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"cd /work && npx --yes playwright@1.49.1 test e2e/edit-diagram-elements.spec.ts --reporter=html,list\"",
+    "test report: Playwright e2e (chromium, containerized browser vs nginx on private network) -> 4 passed / 4 passed, including TASK-023 acceptance criteria: 'deletes a table and cascades removal of its relationships; the model reflects the change' and 'deletes a relationship by clicking its line; the model reflects the removal'",
+    "visual QA: every control fully visible (Delete table button aria-label, relationship line path, table regions); interactions verified end to end in real browser; screenshots captured: qa-artifacts/story-008-delete-table-cascade.png, qa-artifacts/story-008-delete-relationship.png",
+    "report: qa-artifacts/playwright-report/index.html (HTML report)",
+    "cleanup: docker rm -f app-TASK-023; docker network rm qa-TASK-023 (no remaining containers/networks)",
+    "architectural review: delete source (removeTable/removeRelationship, onDeleteTable Delete button, RelationshipLine onDelete, App.tsx wiring) predates TASK-023 (STORY-008 commit 7264676); ticket branch adds test coverage only; all acceptance criteria met; no changes requested"
+  ],
+  "implementedBy": "web-developer"
+}

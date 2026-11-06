@@ -1,0 +1,108 @@
+{
+  "id": "STORY-014",
+  "type": "story",
+  "title": "Export Diagram to PostgreSQL",
+  "description": "As a database designer, I want to export my diagram to a PostgreSQL database so that the designed schema is created in a live database.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "EPIC-003",
+  "acceptanceCriteria": [
+    "Given a diagram and an active PostgreSQL connection, when the user chooses to export to a chosen schema, then the application generates DDL (CREATE TABLE, keys, relationships) for the diagram",
+    "And the generated SQL is displayed to the user",
+    "And the user must explicitly confirm before any DDL is executed",
+    "And existing database objects are never dropped or altered without explicit user action"
+  ],
+  "dependencies": [],
+  "storyPoints": 8,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.3"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-05T16:27:52.092477+00:00",
+      "reason": "Planned for sprint 62",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-05T16:46:35.737549+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:6709f80 STORY-014: add schema selection for PostgreSQL export",
+        "docker command: docker compose -f docker-compose.unit.yml run --rm --user $(id -u):$(id -g) tests sh -c \"npm test\"",
+        "test report: node:20-alpine container, vitest v2.1.9, 31 test files passed, 396 tests passed, 0 failed",
+        "changed files: src/types.ts (added schema field to ConnectionConfig), src/hooks/useConnection.ts (added schema to EMPTY_CONFIG), src/connection/ConnectionForm.ts (added schema input field), src/connection/ddlApi.ts (use config.schema), src/connection/readSchemaApi.ts (use config.schema), src/components/DdlPreview.tsx (display target schema), src/__tests__/ConnectionForm.test.ts, src/__tests__/connectionApi.test.ts, src/__tests__/connectionFlow.test.ts, src/__tests__/readSchemaApi.test.ts, src/__tests__/useConnection.test.ts, src/components/App.test.tsx, src/components/DdlPreview.test.tsx, src/connection/ddlApi.test.ts"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-05T17:19:49.325753+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:6709f80 STORY-014: add schema selection for PostgreSQL export",
+        "docker command: docker compose -f docker-compose.unit.yml run --rm --user $(id -u):$(id -g) tests sh -c \"npm test\"",
+        "test report: node:20-alpine container, vitest v2.1.9, 31 test files passed, 396 tests passed, 0 failed",
+        "changed files: src/types.ts (added schema field to ConnectionConfig), src/hooks/useConnection.ts (added schema to EMPTY_CONFIG), src/connection/ConnectionForm.ts (added schema input field), src/connection/ddlApi.ts (use config.schema), src/connection/readSchemaApi.ts (use config.schema), src/components/DdlPreview.tsx (display target schema), src/__tests__/ConnectionForm.test.ts, src/__tests__/connectionApi.test.ts, src/__tests__/connectionFlow.test.ts, src/__tests__/readSchemaApi.test.ts, src/__tests__/useConnection.test.ts, src/components/App.test.tsx, src/components/DdlPreview.test.tsx, src/connection/ddlApi.test.ts",
+        "reviewer: software-architect",
+        "review decision: APPROVED - all four acceptance criteria met",
+        "AC1 DDL generation: ddlGenerator.ts emits CREATE TABLE, PK, FK, unique constraints, indexes; no DROP/TRUNCATE/DELETE",
+        "AC2 SQL displayed: DdlPreview.tsx renders DDL in read-only code block, shows target schema",
+        "AC3 explicit confirmation: checkbox required, Execute button disabled until confirmed, applyDDL sends confirm=true only after user confirmation",
+        "AC4 no DROP/ALTER without explicit action: generator emits no destructive statements; DDL only sent on explicit user confirmation",
+        "lint: pre-existing errors only in unrelated test files; no new errors in STORY-014 changed files",
+        "build: pre-existing TS errors only in unrelated files; DdlPreview.tsx React import warning is pre-existing pattern"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-05T18:14:27.212802+00:00",
+      "reason": "passed",
+      "evidence": [
+        "unit tests: docker compose -f docker-compose.unit.yml run --rm --user $(id -u):$(id -g) tests sh -c \"npm test\" — node:20-alpine container, vitest v2.1.9, 31 test files passed, 396 tests passed, 0 failed",
+        "unit test files: src/__tests__/ConnectionForm.test.ts (14 tests), src/__tests__/connectionFlow.test.ts (10 tests), src/__tests__/useConnection.test.ts (17 tests), src/components/DdlPreview.test.tsx (13 tests), src/components/App.test.tsx (12 tests), src/connection/ddlApi.test.ts (5 tests), src/ddl/ddlGenerator.test.ts (12 tests)",
+        "visual QA: Playwright v1.49.1 (mcr.microsoft.com/playwright:v1.49.1-noble container) against nginx-served app on private Docker network — 5/5 tests passed",
+        "visual QA test file: e2e/story-014-export-postgresql.spec.ts (new)",
+        "screenshots: qa-artifacts/STORY-014-initial-state.png, STORY-014-connection-form-visible.png, STORY-014-connected-state.png, STORY-014-diagram-with-table.png, STORY-014-ddl-preview.png, STORY-014-ddl-with-tables.png, STORY-014-execution-success.png",
+        "build: vite build succeeded in container; pre-existing TypeScript errors only in unrelated test files (tsc errors in test files do not affect vitest or vite build)",
+        "AC1 DDL generation: VERIFIED — ddlGenerator.ts emits CREATE TABLE, PK, FK, unique constraints, indexes; no DROP/TRUNCATE/DELETE statements; Playwright test verified DDL contains CREATE TABLE and no DROP/TRUNCATE/DELETE in request body",
+        "AC2 SQL displayed: VERIFIED — DdlPreview.tsx renders DDL in read-only code block, shows target schema; Playwright test verified \"Target schema: public\" and CREATE TABLE visible in modal",
+        "AC3 explicit confirmation: VERIFIED — checkbox required, Execute button disabled until confirmed, applyDDL sends confirm=true only after user confirmation; Playwright test verified Execute DDL disabled until checkbox checked, applyDDL NOT called without confirmation",
+        "AC4 no DROP/ALTER without explicit action: VERIFIED — generator emits no destructive statements; DDL only sent on explicit user confirmation with confirm=true",
+        "frontend rebuild: dist/ rebuilt with vite build including schema field in ConnectionForm"
+      ]
+    }
+  ],
+  "sprint": 64,
+  "requiresReview": true,
+  "updatedAt": "2026-11-05T18:14:27.212816+00:00",
+  "resultEvidence": [
+    "unit tests: docker compose -f docker-compose.unit.yml run --rm --user $(id -u):$(id -g) tests sh -c \"npm test\" — node:20-alpine container, vitest v2.1.9, 31 test files passed, 396 tests passed, 0 failed",
+    "unit test files: src/__tests__/ConnectionForm.test.ts (14 tests), src/__tests__/connectionFlow.test.ts (10 tests), src/__tests__/useConnection.test.ts (17 tests), src/components/DdlPreview.test.tsx (13 tests), src/components/App.test.tsx (12 tests), src/connection/ddlApi.test.ts (5 tests), src/ddl/ddlGenerator.test.ts (12 tests)",
+    "visual QA: Playwright v1.49.1 (mcr.microsoft.com/playwright:v1.49.1-noble container) against nginx-served app on private Docker network — 5/5 tests passed",
+    "visual QA test file: e2e/story-014-export-postgresql.spec.ts (new)",
+    "screenshots: qa-artifacts/STORY-014-initial-state.png, STORY-014-connection-form-visible.png, STORY-014-connected-state.png, STORY-014-diagram-with-table.png, STORY-014-ddl-preview.png, STORY-014-ddl-with-tables.png, STORY-014-execution-success.png",
+    "build: vite build succeeded in container; pre-existing TypeScript errors only in unrelated test files (tsc errors in test files do not affect vitest or vite build)",
+    "AC1 DDL generation: VERIFIED — ddlGenerator.ts emits CREATE TABLE, PK, FK, unique constraints, indexes; no DROP/TRUNCATE/DELETE statements; Playwright test verified DDL contains CREATE TABLE and no DROP/TRUNCATE/DELETE in request body",
+    "AC2 SQL displayed: VERIFIED — DdlPreview.tsx renders DDL in read-only code block, shows target schema; Playwright test verified \"Target schema: public\" and CREATE TABLE visible in modal",
+    "AC3 explicit confirmation: VERIFIED — checkbox required, Execute button disabled until confirmed, applyDDL sends confirm=true only after user confirmation; Playwright test verified Execute DDL disabled until checkbox checked, applyDDL NOT called without confirmation",
+    "AC4 no DROP/ALTER without explicit action: VERIFIED — generator emits no destructive statements; DDL only sent on explicit user confirmation with confirm=true",
+    "frontend rebuild: dist/ rebuilt with vite build including schema field in ConnectionForm"
+  ],
+  "implementedBy": "web-developer",
+  "reviewedBy": "software-architect"
+}
