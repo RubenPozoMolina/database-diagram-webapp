@@ -10,7 +10,7 @@ services:
     image: mcr.microsoft.com/playwright:v1.49.1-noble
     depends_on:
       app:
-        condition: service_started
+        condition: service_healthy
     environment:
       - BASE_URL=http://app:8080
     networks:
