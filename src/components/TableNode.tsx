@@ -337,11 +337,8 @@ export function TableNode({
   const removeColumn = useCallback(
     (columnId: string) => {
       onRemoveColumn(table.id, columnId);
-      if (editingColumn === columnId) {
-        setEditingColumn(null);
-      }
     },
-    [table.id, onRemoveColumn, editingColumn],
+    [table.id, onRemoveColumn],
   );
 
   const exitColumnEdit = () => {

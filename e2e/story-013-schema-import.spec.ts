@@ -136,7 +136,7 @@ test.describe('STORY-013: Import PostgreSQL Schema', () => {
     await expect(page.getByText(/order_date/)).toBeVisible();
     await expect(page.getByText(/total_amount/)).toBeVisible();
     await expect(page.getByText(/product_id/)).toBeVisible();
-    await expect(page.getByText('name: text')).toBeVisible();
+    await expect(page.getByText('name: text', { exact: true })).toBeVisible();
     await expect(page.getByText(/price/)).toBeVisible();
     await expect(page.getByText(/sku/)).toBeVisible();
 

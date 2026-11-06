@@ -63,11 +63,14 @@ export function App() {
   const [ddlApplyMessage, setDdlApplyMessage] = useState<string | null>(null);
   const [ddlApplyError, setDdlApplyError] = useState<string | null>(null);
 
-  const handleConnect = async (
-    connectionConfig: ConnectionConfig,
-  ): Promise<ConnectionResult> => {
-    return connect(connectionConfig);
-  };
+  const handleConnect = useCallback(
+    async (
+      connectionConfig: ConnectionConfig,
+    ): Promise<ConnectionResult> => {
+      return connect(connectionConfig);
+    },
+    [connect],
+  );
 
   useEffect(() => {
     const container = connectionFormRef.current;
