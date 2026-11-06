@@ -40,7 +40,6 @@ export function App() {
     isConnected,
     config,
     error,
-    message,
     connect,
     disconnect,
     clearMessage,
