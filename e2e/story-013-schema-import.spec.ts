@@ -17,6 +17,67 @@ test.describe('STORY-013: Import PostgreSQL Schema', () => {
   test('connects, imports schema, renders editable diagram with tables/columns/PK/FK/unique/indexes', async ({
     page,
   }) => {
+    // Mock the connection test endpoint so Connect succeeds without a real backend.
+    await page.route('**/api/v1/connections/test', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Connection established' }),
+      });
+    });
+
+    // Mock the read-schema endpoint so Import Schema succeeds without a real backend.
+    await page.route('**/api/read-schema', async (route) => {
+      const schemaBody = {
+        success: true,
+        schema: 'public',
+        tables: [
+          {
+            name: 'customers',
+            columns: [
+              { name: 'customer_id', dataType: 'integer', isNullable: false, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+              { name: 'first_name', dataType: 'text', isNullable: true, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+            ],
+            primaryKeys: [{ constraintName: 'customers_pkey', columns: ['customer_id'] }],
+            foreignKeys: [],
+            uniqueConstraints: [],
+            indexes: [],
+          },
+          {
+            name: 'orders',
+            columns: [
+              { name: 'order_id', dataType: 'integer', isNullable: false, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+              { name: 'order_date', dataType: 'date', isNullable: true, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+              { name: 'total_amount', dataType: 'numeric', isNullable: true, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+              { name: 'customer_id', dataType: 'integer', isNullable: false, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+            ],
+            primaryKeys: [{ constraintName: 'orders_pkey', columns: ['order_id'] }],
+            foreignKeys: [{ constraintName: 'orders_customer_id_fkey', column: 'customer_id', foreignTable: 'customers', foreignColumn: 'customer_id', updateRule: 'no action', deleteRule: 'no action' }],
+            uniqueConstraints: [],
+            indexes: [],
+          },
+          {
+            name: 'products',
+            columns: [
+              { name: 'product_id', dataType: 'integer', isNullable: false, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+              { name: 'name', dataType: 'text', isNullable: true, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+              { name: 'price', dataType: 'numeric', isNullable: true, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+              { name: 'sku', dataType: 'text', isNullable: true, columnDefault: null, maxLength: null, numericPrecision: null, numericScale: null, datetimePrecision: null, intervalType: null },
+            ],
+            primaryKeys: [{ constraintName: 'products_pkey', columns: ['product_id'] }],
+            foreignKeys: [],
+            uniqueConstraints: [],
+            indexes: [],
+          },
+        ],
+      };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(schemaBody),
+      });
+    });
+
     // --- Page loads, connection form visible ---
     await page.goto('/', { waitUntil: 'networkidle' });
 

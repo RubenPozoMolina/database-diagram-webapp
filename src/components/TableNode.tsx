@@ -97,7 +97,9 @@ export function TableNode({
   const handleDragStart = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       // Only left-click initiates a drag; ignore double-clicks (name editing).
-      if (event.button !== 0 || event.detail !== 1) return;
+      // detail is 0 for programmatic/synthetic events, 1 for real single clicks,
+      // 2+ for double/triple clicks which should open the name editor instead.
+      if (event.button !== 0 || event.detail > 1) return;
       event.preventDefault();
       setIsDragging(true);
       dragStartRef.current = {

@@ -81,7 +81,7 @@ test.describe('Unique Constraint UI', () => {
       .getByRole('button', { name: /add a new unique constraint to this table/i })
       .click();
 
-    await page.getByPlaceholderText('Constraint name').fill('orders_user_product_key');
+    await page.getByPlaceholder('Constraint name').fill('orders_user_product_key');
 
     // Select multiple columns (email and name)
     const checkbox1 = page.getByRole('checkbox', {

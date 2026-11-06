@@ -8,11 +8,11 @@ test.describe('Connection form - test-connection endpoint integration', () => {
   });
 
   test('displays the connection form with all fields and controls visible', async ({ page }) => {
-    await expect(page.getByLabel('Host')).toBeVisible();
-    await expect(page.getByLabel('Port')).toBeVisible();
-    await expect(page.getByLabel('Database')).toBeVisible();
-    await expect(page.getByLabel('User')).toBeVisible();
-    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.locator('#conn-host')).toBeVisible();
+    await expect(page.locator('#conn-port')).toBeVisible();
+    await expect(page.locator('#conn-database')).toBeVisible();
+    await expect(page.locator('#conn-user')).toBeVisible();
+    await expect(page.locator('#conn-password')).toBeVisible();
     await expect(
       page.getByRole('button', { name: /Connect/ }),
     ).toBeVisible();
@@ -35,9 +35,9 @@ test.describe('Connection form - test-connection endpoint integration', () => {
       });
     });
 
-    await page.getByLabel('Database').fill('mydb');
-    await page.getByLabel('User').fill('app_user');
-    await page.getByLabel('Password').fill('s3cret');
+    await page.locator('#conn-database').fill('mydb');
+    await page.locator('#conn-user').fill('app_user');
+    await page.locator('#conn-password').fill('s3cret');
 
     await page.getByRole('button', { name: /Connect/ }).click();
 
@@ -60,9 +60,9 @@ test.describe('Connection form - test-connection endpoint integration', () => {
       });
     });
 
-    await page.getByLabel('Database').fill('mydb');
-    await page.getByLabel('User').fill('app_user');
-    await page.getByLabel('Password').fill('wrong-password');
+    await page.locator('#conn-database').fill('mydb');
+    await page.locator('#conn-user').fill('app_user');
+    await page.locator('#conn-password').fill('wrong-password');
 
     await page.getByRole('button', { name: /Connect/ }).click();
 
@@ -81,9 +81,9 @@ test.describe('Connection form - test-connection endpoint integration', () => {
       await route.abort();
     });
 
-    await page.getByLabel('Database').fill('mydb');
-    await page.getByLabel('User').fill('app_user');
-    await page.getByLabel('Password').fill('s3cret');
+    await page.locator('#conn-database').fill('mydb');
+    await page.locator('#conn-user').fill('app_user');
+    await page.locator('#conn-password').fill('s3cret');
 
     await page.getByRole('button', { name: /Connect/ }).click();
 

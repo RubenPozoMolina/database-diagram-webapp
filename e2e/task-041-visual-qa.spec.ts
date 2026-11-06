@@ -196,7 +196,7 @@ test.describe('TASK-041: Imported schema as editable diagram (visual QA)', () =>
 
     // AC3: Imported keys, constraints, indexes are recorded
     await expect(page.getByText('PK')).toHaveCount(2); // primary key badge on both tables
-    await expect(page.getByText('Indexes')).toBeVisible(); // indexes section header
+    await expect(page.getByText('Indexes').first()).toBeVisible(); // indexes section header
     await expect(page.locator('.index-name').first()).toBeVisible(); // at least one index name
     await expect(page.getByText('customers_email_key')).toBeVisible(); // unique constraint name
     await expect(page.getByText('Unique constraints')).toBeVisible(); // constraints section header

@@ -98,7 +98,7 @@ test.describe('Visual QA - Export Diagram to PostgreSQL (STORY-014)', () => {
 
     // Verify target schema is displayed (AC2)
     await expect(page.getByText('Target schema:')).toBeVisible();
-    await expect(page.getByText('public')).toBeVisible();
+    await expect(page.locator('.ddl-schema strong')).toHaveText('public');
 
     // Verify DDL is displayed in code block (AC2)
     await expect(page.getByText(/CREATE TABLE/i)).toBeVisible();
