@@ -47,7 +47,7 @@ services:
     tmpfs:
       - /tmp
     working_dir: /work
-    command: sh -c "npm ci --ignore-scripts && npx vitest run src/__tests__/performance.test.ts"
+    command: sh -c "npm ci --ignore-scripts && npx vitest run src/__tests__/performance.test.tsx"
 
 networks:
   qa-st001-network:
