@@ -179,8 +179,23 @@
     "verification: git status --short shows clean working tree; git status --short | grep '^??' returns none (no unintended untracked generated files)",
     "verification: git ls-files tasks/ returns 95 tracked files; git ls-files prd.md returns prd.md",
     "verification: git ls-files --others --ignored --exclude-standard | grep -c '^tasks/' returns 0",
-    "git push origin ticket/TASK-073 (branch pushed successfully)"
+    "git push origin ticket/TASK-073 (branch pushed successfully)",
+    "QA (qa-automation): acceptance criteria verified — all executable criteria pass",
+    "commit:9a0111d TASK-073: remove tasks/ and prd.md from .gitignore, version all task files",
+    "commit:106e93d TASK-073: remove tasks/ and prd.md from .gitignore",
+    "file:.gitignore - removed lines 21-22 (tasks/ and prd.md); file now ends at .prd-interview.sha256",
+    "verification: git status --short shows clean working tree; git status --short | grep '^??' returns none (no unintended untracked generated files)",
+    "verification: git ls-files tasks/ returns 95 tracked files; git ls-files prd.md returns prd.md",
+    "verification: git ls-files --others --ignored --exclude-standard | grep -c '^tasks/' returns 0",
+    "docker: node:20-alpine container ran 'npm ci --ignore-scripts && npm run build' - tsc type-check passed, vite build produced dist/ (51 modules)",
+    "docker build -t database-diagram-webapp:TASK-073 . - succeeded (image sha256:92e9fd141a0df37f8be6ab3a1992b1ae7fec91f1239c7b21e83e5d6b130b4e64)",
+    "delivery contract: git clone . /tmp/opencode/t73-clone; docker build -t database-diagram-webapp:t73-clone . succeeded; docker compose -f docker-compose.test.yml run --rm tests - 57 passed (17.8s)",
+    "README.md mentions docker-compose.test.yml (line 56), docker run (lines 84-224), docker build (line 164)",
+    "All 7 acceptance criteria verified: .gitignore no longer blocks tasks/ and prd.md; node_modules/, dist/, .vite/, test-results/, qa-artifacts/, playwright-report/, coverage/, *.log, *.tmp, .DS_Store, Thumbs.db all ignored",
+    "result: passed"
   ],
   "implementedBy": "devops-engineer",
-  "reviewedBy": "software-architect"
+  "reviewedBy": "software-architect",
+  "testedBy": "qa-automation",
+  "updatedAt": "2026-11-06T23:20:00Z"
 }
