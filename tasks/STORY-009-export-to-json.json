@@ -1,0 +1,105 @@
+{
+  "id": "STORY-009",
+  "type": "story",
+  "title": "Export to JSON",
+  "description": "As a database designer, I want to save my diagram as a JSON file so that I can share or back up the database model.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "EPIC-002",
+  "acceptanceCriteria": [
+    "Given a diagram exists, when the user chooses to export to JSON, then a JSON file is downloaded containing the complete diagram model (tables, columns, types, keys, constraints, indexes, relationships)",
+    "And the JSON file contains no database credentials"
+  ],
+  "dependencies": [
+    "STORY-001"
+  ],
+  "storyPoints": 3,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-2.1"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-02T03:06:14.896698+00:00",
+      "reason": "Planned for sprint 12",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-02T03:37:09.821649+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Branch: ticket/STORY-009; commits 977a177 (STORY-009: add JSON diagram serializer and export download component) and 074659b (STORY-009: wire Export to JSON button into App header); working tree clean",
+        "Unit tests: 67/67 passed in Docker (node:20-alpine, `npm test`) — src/serialization/diagramSerializer.test.ts 10, src/components/ExportButton.test.tsx 5, plus existing tests; no unhandled errors",
+        "Lint: passed in Docker (node:20-alpine, `npm run lint` exit 0, --max-warnings 0)",
+        "Build: passed in Docker (node:20-alpine, `tsc && vite build`, no TypeScript errors, dist/ generated)",
+        "E2E: 4/4 passed in Docker (mcr.microsoft.com/playwright:v1.49.1-noble) against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-STORY-009; Base URL http://app-STORY-009:8080/ — e2e/export-json.spec.ts (downloads JSON file, no credentials) and e2e/empty-canvas.spec.ts",
+        "Files created: src/serialization/diagramSerializer.ts, src/serialization/diagramSerializer.test.ts, src/components/ExportButton.tsx, src/components/ExportButton.test.tsx, e2e/export-json.spec.ts",
+        "Files modified: src/App.tsx (added ExportButton), src/index.css (export-button styling)"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T05:09:53.733628+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Branch: ticket/STORY-009; commits 977a177 (STORY-009: add JSON diagram serializer and export download component) and 074659b (STORY-009: wire Export to JSON button into App header); working tree clean",
+        "Unit tests: 67/67 passed in Docker (node:20-alpine, `npm test`) — src/serialization/diagramSerializer.test.ts 10, src/components/ExportButton.test.tsx 5, plus existing tests; no unhandled errors",
+        "Lint: passed in Docker (node:20-alpine, `npm run lint` exit 0, --max-warnings 0)",
+        "Build: passed in Docker (node:20-alpine, `tsc && vite build`, no TypeScript errors, dist/ generated)",
+        "E2E: 4/4 passed in Docker (mcr.microsoft.com/playwright:v1.49.1-noble) against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-STORY-009; Base URL http://app-STORY-009:8080/ — e2e/export-json.spec.ts (downloads JSON file, no credentials) and e2e/empty-canvas.spec.ts",
+        "Files created: src/serialization/diagramSerializer.ts, src/serialization/diagramSerializer.test.ts, src/components/ExportButton.tsx, src/components/ExportButton.test.tsx, e2e/export-json.spec.ts",
+        "Files modified: src/App.tsx (added ExportButton), src/index.css (export-button styling)",
+        "Reviewer (software-architect) verification — unit tests: 67/67 passed in Docker (node:20-alpine, `npm test`) — src/serialization/diagramSerializer.test.ts 10, src/components/ExportButton.test.tsx 5, plus existing tests; no unhandled errors",
+        "Reviewer (software-architect) verification — lint: passed in Docker (node:20-alpine, `npm run lint` exit 0, --max-warnings 0)",
+        "Reviewer (software-architect) verification — build: passed in Docker (node:20-alpine, `npm run build` / `tsc && vite build`, no TypeScript errors, dist/ generated)",
+        "Reviewer (software-architect) architectural decision: APPROVED — serializer maps all fields present in the Diagram type (tables, columns, types, keys); uniqueConstraints/indexes emitted as empty arrays for forward compatibility; no database credentials by construction (Diagram type carries no connection info); blob URL properly revoked; ARIA-labeled Export to JSON button wired into App header"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-02T16:36:48.286087+00:00",
+      "reason": "passed",
+      "evidence": [
+        "QA manual verification — unit tests: 67/67 passed in Docker (node:20-alpine, `npm test`) — src/serialization/diagramSerializer.test.ts 10, src/components/ExportButton.test.tsx 5, plus existing tests; no unhandled errors",
+        "QA manual verification — lint: passed in Docker (node:20-alpine, `npm run lint` exit 0, --max-warnings 0)",
+        "QA manual verification — build: passed in Docker (node:20-alpine, `tsc && vite build`, no TypeScript errors, dist/ generated)",
+        "QA manual verification — E2E: 7/7 passed in Docker (mcr.microsoft.com/playwright:v1.49.1-noble) against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-STORY-009; Base URL http://app-story-009:8080/ — e2e/export-json.spec.ts (2 tests: downloads JSON file, no credentials), e2e/empty-canvas.spec.ts (2 tests), e2e/visual-qa-export.spec.ts (3 tests: button visible with aria-label, full-page screenshot, download + complete diagram model, no credentials)",
+        "QA manual verification — visual UI: containerized Chromium browser exercised real UI; full-page screenshot captured (qa-artifacts/story-009-ui-full.png, 1280x720 PNG); post-export screenshot captured (qa-artifacts/story-009-after-export.png); Export to JSON button verified visible, fully rendered, aria-label='Export diagram to JSON', no console errors",
+        "Acceptance Criteria AC1 verified: Given a diagram exists, when the user chooses Export to JSON, a JSON file is downloaded containing the complete diagram model (version 1.0.0, diagram id/name, tables array, relationships array, uniqueConstraints array, indexes array, ISO 8601 timestamps)",
+        "Acceptance Criteria AC2 verified: Exported JSON contains no database credentials (checked for host, port, database, user, password — none present by construction, Diagram type carries no connection info)",
+        "docker run command: mcr.microsoft.com/playwright:v1.49.1-noble --network qa-STORY-009 -e BASE_URL=http://app-story-009:8080/ npx playwright@1.49.1 test; app served by nginxinc/nginx-unprivileged:1.27-alpine on private Docker network",
+        "Branch: ticket/STORY-009; commits 977a177, 074659b, 9950e0b (WIP: adds e2e/visual-qa-export.spec.ts visual QA test); working tree clean"
+      ]
+    }
+  ],
+  "sprint": 14,
+  "updatedAt": "2026-11-02T16:36:48.286101+00:00",
+  "requiresReview": true,
+  "resultEvidence": [
+    "QA manual verification — unit tests: 67/67 passed in Docker (node:20-alpine, `npm test`) — src/serialization/diagramSerializer.test.ts 10, src/components/ExportButton.test.tsx 5, plus existing tests; no unhandled errors",
+    "QA manual verification — lint: passed in Docker (node:20-alpine, `npm run lint` exit 0, --max-warnings 0)",
+    "QA manual verification — build: passed in Docker (node:20-alpine, `tsc && vite build`, no TypeScript errors, dist/ generated)",
+    "QA manual verification — E2E: 7/7 passed in Docker (mcr.microsoft.com/playwright:v1.49.1-noble) against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-STORY-009; Base URL http://app-story-009:8080/ — e2e/export-json.spec.ts (2 tests: downloads JSON file, no credentials), e2e/empty-canvas.spec.ts (2 tests), e2e/visual-qa-export.spec.ts (3 tests: button visible with aria-label, full-page screenshot, download + complete diagram model, no credentials)",
+    "QA manual verification — visual UI: containerized Chromium browser exercised real UI; full-page screenshot captured (qa-artifacts/story-009-ui-full.png, 1280x720 PNG); post-export screenshot captured (qa-artifacts/story-009-after-export.png); Export to JSON button verified visible, fully rendered, aria-label='Export diagram to JSON', no console errors",
+    "Acceptance Criteria AC1 verified: Given a diagram exists, when the user chooses Export to JSON, a JSON file is downloaded containing the complete diagram model (version 1.0.0, diagram id/name, tables array, relationships array, uniqueConstraints array, indexes array, ISO 8601 timestamps)",
+    "Acceptance Criteria AC2 verified: Exported JSON contains no database credentials (checked for host, port, database, user, password — none present by construction, Diagram type carries no connection info)",
+    "docker run command: mcr.microsoft.com/playwright:v1.49.1-noble --network qa-STORY-009 -e BASE_URL=http://app-story-009:8080/ npx playwright@1.49.1 test; app served by nginxinc/nginx-unprivileged:1.27-alpine on private Docker network",
+    "Branch: ticket/STORY-009; commits 977a177, 074659b, 9950e0b (WIP: adds e2e/visual-qa-export.spec.ts visual QA test); working tree clean"
+  ],
+  "implementedBy": "web-developer"
+}

@@ -1,0 +1,113 @@
+{
+  "id": "TASK-017",
+  "type": "task",
+  "title": "Implement unique constraint data model",
+  "description": "Implement the data model for unique constraints, tracking which columns or column groups have unique constraints applied.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-006",
+  "acceptanceCriteria": [
+    "Unique constraint model tracks column(s) involved",
+    "Unique constraints are stored per table",
+    "Constraint is associated with the correct table in the model"
+  ],
+  "dependencies": [
+    "TASK-016"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.6"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T19:19:53.232048+00:00",
+      "reason": "Planned for sprint 41",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-04T19:31:48.691016+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:938f2ae on branch ticket/TASK-017 (pushed to origin)",
+        "Changed files: src/serialization/diagramSerializer.ts, src/__tests__/diagram-model.test.ts, src/serialization/diagramSerializer.test.ts, src/serialization/diagramDeserializer.test.ts",
+        "Test results: 315 tests passed across 26 test files (run in Docker container node:20-alpine via 'npx vitest run')",
+        "TypeScript: no new errors introduced (pre-existing errors only)",
+        "ESLint: no new errors introduced (pre-existing warning only)"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T19:42:05.576104+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Review decision: completed (approved) — software-architect review of TASK-017",
+        "Implementation commit: 938f2ae on branch ticket/TASK-017 (pushed to origin)",
+        "Changed files: src/serialization/diagramSerializer.ts, src/__tests__/diagram-model.test.ts, src/serialization/diagramSerializer.test.ts, src/serialization/diagramDeserializer.test.ts",
+        "Core fix: serializeDiagram now emits diagram.uniqueConstraints.map(serializeUniqueConstraint) instead of a hardcoded empty array, so single-column and composite unique constraints survive JSON export/import with correct tableId association",
+        "Acceptance criteria verified: (1) tracks column(s) via columnIds string[] supporting composite constraints; (2) stored per table via tableId + findUniqueConstraintsByTable; (3) correct table association via exact tableId match (t1 vs t10 edge case tested)",
+        "Test results: 315 tests passed across 26 test files — re-verified by reviewer in Docker container node:20-alpine via 'docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$PROJECT_DIR\":/work -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && npx vitest run\"'",
+        "TypeScript: npx tsc --noEmit — no new errors introduced; all errors pre-existing in code untouched by this commit (findRelationshipsByTable test tables at lines 221-223, CreateRelationshipModal.test.tsx, readSchemaApi.test.ts, DdlPreview.tsx)",
+        "ESLint: npx eslint on the 4 changed files — 0 errors, 1 pre-existing warning (unused 'version' variable at diagramDeserializer.test.ts:508, present in parent commit HEAD~1)"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-04T20:17:13.419465+00:00",
+      "reason": "passed",
+      "evidence": [
+        "Review decision: completed (approved) — software-architect review of TASK-017",
+        "Implementation commit: 938f2ae on branch ticket/TASK-017 (pushed to origin)",
+        "Changed files: src/serialization/diagramSerializer.ts, src/__tests__/diagram-model.test.ts, src/serialization/diagramSerializer.test.ts, src/serialization/diagramDeserializer.test.ts",
+        "Core fix: serializeDiagram now emits diagram.uniqueConstraints.map(serializeUniqueConstraint) instead of a hardcoded empty array, so single-column and composite unique constraints survive JSON export/import with correct tableId association",
+        "Acceptance criteria verified: (1) tracks column(s) via columnIds string[] supporting composite constraints; (2) stored per table via tableId + findUniqueConstraintsByTable; (3) correct table association via exact tableId match (t1 vs t10 edge case tested)",
+        "Test results: 315 tests passed across 26 test files — re-verified by reviewer in Docker container node:20-alpine via 'docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$PROJECT_DIR\":/work -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && npx vitest run\"'",
+        "TypeScript: npx tsc --noEmit — no new errors introduced; all errors pre-existing in code untouched by this commit (findRelationshipsByTable test tables at lines 221-223, CreateRelationshipModal.test.tsx, readSchemaApi.test.ts, DdlPreview.tsx)",
+        "ESLint: npx eslint on the 4 changed files — 0 errors, 1 pre-existing warning (unused 'version' variable at diagramDeserializer.test.ts:508, present in parent commit HEAD~1)",
+        "QA unit tests (node:20-alpine Docker container): npm ci --ignore-scripts && npx vitest run — 315 tests passed across 26 test files",
+        "QA acceptance criteria verification: AC1 columnIds string[] tracks single & composite columns (diagram-model.test.ts); AC2 findUniqueConstraintsByTable + tableId stores per table; AC3 exact tableId match incl. t1 vs t10 edge case",
+        "QA TypeScript: npx tsc --noEmit — no new errors (pre-existing only)",
+        "QA ESLint: npx eslint on 4 changed files — 0 errors, 1 pre-existing warning",
+        "QA visual layout check (Playwright Python, asg-visual-qa:1.49.1, Docker): 0 layout defects, 0 console errors at 1280x720 and 1920x1080; 1 pre-existing canvas scroll at 768x1024 (unrelated to TASK-017)",
+        "QA note: e2e/unique-constraint.spec.ts uses non-existent getByPlaceholderText (Playwright API is getByPlaceholder) — pre-existing test script bug, not an app defect; unit tests cover all acceptance criteria",
+        "No platform-unsupported criteria — all testing executed in Linux Docker containers"
+      ]
+    }
+  ],
+  "sprint": 43,
+  "requiresReview": true,
+  "updatedAt": "2026-11-04T20:17:13.419478+00:00",
+  "resultEvidence": [
+    "Review decision: completed (approved) — software-architect review of TASK-017",
+    "Implementation commit: 938f2ae on branch ticket/TASK-017 (pushed to origin)",
+    "Changed files: src/serialization/diagramSerializer.ts, src/__tests__/diagram-model.test.ts, src/serialization/diagramSerializer.test.ts, src/serialization/diagramDeserializer.test.ts",
+    "Core fix: serializeDiagram now emits diagram.uniqueConstraints.map(serializeUniqueConstraint) instead of a hardcoded empty array, so single-column and composite unique constraints survive JSON export/import with correct tableId association",
+    "Acceptance criteria verified: (1) tracks column(s) via columnIds string[] supporting composite constraints; (2) stored per table via tableId + findUniqueConstraintsByTable; (3) correct table association via exact tableId match (t1 vs t10 edge case tested)",
+    "Test results: 315 tests passed across 26 test files — re-verified by reviewer in Docker container node:20-alpine via 'docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$PROJECT_DIR\":/work -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && npx vitest run\"'",
+    "TypeScript: npx tsc --noEmit — no new errors introduced; all errors pre-existing in code untouched by this commit (findRelationshipsByTable test tables at lines 221-223, CreateRelationshipModal.test.tsx, readSchemaApi.test.ts, DdlPreview.tsx)",
+    "ESLint: npx eslint on the 4 changed files — 0 errors, 1 pre-existing warning (unused 'version' variable at diagramDeserializer.test.ts:508, present in parent commit HEAD~1)",
+    "QA unit tests (node:20-alpine Docker container): npm ci --ignore-scripts && npx vitest run — 315 tests passed across 26 test files",
+    "QA acceptance criteria verification: AC1 columnIds string[] tracks single & composite columns (diagram-model.test.ts); AC2 findUniqueConstraintsByTable + tableId stores per table; AC3 exact tableId match incl. t1 vs t10 edge case",
+    "QA TypeScript: npx tsc --noEmit — no new errors (pre-existing only)",
+    "QA ESLint: npx eslint on 4 changed files — 0 errors, 1 pre-existing warning",
+    "QA visual layout check (Playwright Python, asg-visual-qa:1.49.1, Docker): 0 layout defects, 0 console errors at 1280x720 and 1920x1080; 1 pre-existing canvas scroll at 768x1024 (unrelated to TASK-017)",
+    "QA note: e2e/unique-constraint.spec.ts uses non-existent getByPlaceholderText (Playwright API is getByPlaceholder) — pre-existing test script bug, not an app defect; unit tests cover all acceptance criteria",
+    "No platform-unsupported criteria — all testing executed in Linux Docker containers"
+  ],
+  "implementedBy": "web-developer"
+}

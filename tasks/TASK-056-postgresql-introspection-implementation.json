@@ -1,0 +1,122 @@
+{
+  "id": "TASK-056",
+  "type": "task",
+  "title": "Implement PostgreSQL schema introspection queries",
+  "description": "Implement the SQL queries and backend logic to introspect PostgreSQL schema: tables, columns, data types, primary keys, foreign keys, unique constraints, and indexes.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-017",
+  "acceptanceCriteria": [
+    "SQL queries retrieve tables and columns from PostgreSQL",
+    "SQL queries retrieve data types",
+    "SQL queries retrieve primary keys",
+    "SQL queries retrieve foreign keys",
+    "SQL queries retrieve unique constraints",
+    "SQL queries retrieve indexes",
+    "Queries work with PostgreSQL 14+"
+  ],
+  "dependencies": [
+    "TASK-039"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-4.2"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-02T06:13:39.578215+00:00",
+      "reason": "Planned for sprint 14",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "database-expert",
+      "timestamp": "2026-11-02T20:53:59.868372+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:7149982 - TASK-056: fix introspection test expectations and pg.Client mock",
+        "file: backend/src/services/introspection.service.ts - IntrospectionService with 5 parameterized SQL queries (tables/columns, PK, FK, unique constraints, indexes), BEGIN READ ONLY transaction, statement timeout, error mapping 401/502/504/500, password sanitization",
+        "file: backend/src/routes/read-schema.ts - POST /api/read-schema route with Zod validation, response mapping, constraint/index grouping helpers",
+        "file: backend/src/types/read-schema.ts - TypeScript types and Zod schema for read-schema API contract",
+        "file: database/introspection.sql - 5 read-only introspection queries compatible with PostgreSQL 14+",
+        "file: backend/src/__tests__/read-schema.integration.test.ts - Fixed timestamptz data_type expectation and composite PK constraint name dedup",
+        "file: backend/src/routes/read-schema.test.ts - Fixed pg.Client mock implementation after clearAllMocks to prevent client.end TypeError",
+        "test-report: 93 backend unit tests passed (0 failed) in Docker container node:20-alpine",
+        "test-report: 12/12 POST /api/read-schema route tests passed in Docker container",
+        "test-report: 6/6 introspection service integration tests passed against real PostgreSQL 16 container",
+        "test-report: database/run-verification.sh verified all 5 query types against seeded PostgreSQL 16 schema (tables/columns, data types, PK single+composite, FK single/self-referencing/circular, unique constraints, indexes plain+unique+composite)",
+        "docker: node:20-alpine container for unit/route tests, postgres:16-alpine container for integration tests on private Docker network",
+        "all 7 acceptance criteria satisfied"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T21:25:58.320913+00:00",
+      "reason": "completed",
+      "evidence": [
+        "review: software-architect review of TASK-056 implementation (sprint 15, in-review phase) - APPROVED",
+        "file: backend/src/services/introspection.service.ts - IntrospectionService with 5 parameterized SQL queries, BEGIN READ ONLY transaction, statement timeout, error mapping 401/502/504/500, password sanitization",
+        "file: backend/src/routes/read-schema.ts - POST /api/read-schema route with Zod validation, response mapping, constraint/index grouping helpers",
+        "file: backend/src/types/read-schema.ts - TypeScript types and Zod schema for read-schema API contract",
+        "file: database/introspection.sql - 5 read-only introspection queries compatible with PostgreSQL 14+",
+        "test-report: backend unit/route tests via docker node:20-alpine - introspection.service.test.ts 12/12 passed, read-schema.test.ts 12/12 passed",
+        "test-report: read-schema.integration.test.ts 6/6 passed against real postgres:16 container on private Docker network",
+        "test-report: database/run-verification.sh exit code 0 - all 5 query types verified against seeded PostgreSQL 16 schema (tables/columns, data types, PK single+composite, FK single/self-referencing/circular, unique constraints, indexes plain+unique+composite)",
+        "docker: node:20-alpine and postgres:16-alpine containers on private network; no tests/build/servers run on host (docker-test-runner skill)",
+        "architecture: clean SQL/service/route/type layering, read-only transaction, parameterized schema (no SQL injection), password redaction, statement timeout, composite keys + self/circular FKs supported",
+        "git: branch ticket/TASK-056 at commit 7149982; working tree clean, no tracked file modifications, nothing committed/pushed to main"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-02T21:40:21.398391+00:00",
+      "reason": "passed",
+      "evidence": [
+        "QA verification performed by qa-automation (sprint 16, in-testing phase) - all TASK-056 acceptance criteria verified",
+        "docker: node:20-alpine container for backend unit/route tests, postgres:16-alpine container for integration tests on private Docker network; no tests/build/servers run on host (docker-test-runner skill)",
+        "test-report: backend unit tests via docker node:20-alpine - introspection.service.test.ts 12/12 passed (five parameterized SQL queries, BEGIN READ ONLY transaction, statement timeout, composite PKs, self/circular FKs, unique constraints, indexes, error mapping 401/502/504/500, password redaction), read-schema.test.ts 12/12 passed (POST /api/read-schema route Zod validation, response mapping, constraint/index grouping helpers)",
+        "test-report: read-schema.integration.test.ts 6/6 passed against real postgres:16 container on private Docker network (retrieves tables/columns with data types, primary keys single+composite, foreign keys single/self-referencing/circular, unique constraints, indexes plain+unique+composite, excludes system schemas)",
+        "test-report: database/run-verification.sh exit code 0 - all 5 query types verified against seeded PostgreSQL 16 schema (tables/columns 21 rows, data types incl. timestamptz/uuid/numeric, PK single+composite, FK single/self-referencing/circular, unique constraints, indexes plain+unique+composite)",
+        "file: database/introspection.sql - 5 read-only introspection queries compatible with PostgreSQL 14+ (information_schema/pg_catalog only, parameterized via $1, no SQL text parsing)",
+        "file: backend/src/services/introspection.service.ts - IntrospectionService with 5 parameterized SQL queries, BEGIN READ ONLY transaction, statement timeout, error mapping 401/502/504/500, password sanitization",
+        "file: backend/src/routes/read-schema.ts - POST /api/read-schema route with Zod validation, response mapping, constraint/index grouping helpers",
+        "file: backend/src/types/read-schema.ts - TypeScript types and Zod schema for read-schema API contract",
+        "note: 2 unrelated test-connection integration tests (__tests__/integration.test.ts) failed in the unit-test container because no live PostgreSQL server was running; environmental, not TASK-056 related, not part of acceptance criteria",
+        "git: branch ticket/TASK-056 at commit 7149982; working tree clean, no tracked file modifications, nothing committed/pushed to main (no code changes in QA phase)",
+        "all 7 acceptance criteria satisfied"
+      ]
+    }
+  ],
+  "sprint": 16,
+  "requiresReview": true,
+  "updatedAt": "2026-11-02T21:40:21.398407+00:00",
+  "resultEvidence": [
+    "QA verification performed by qa-automation (sprint 16, in-testing phase) - all TASK-056 acceptance criteria verified",
+    "docker: node:20-alpine container for backend unit/route tests, postgres:16-alpine container for integration tests on private Docker network; no tests/build/servers run on host (docker-test-runner skill)",
+    "test-report: backend unit tests via docker node:20-alpine - introspection.service.test.ts 12/12 passed (five parameterized SQL queries, BEGIN READ ONLY transaction, statement timeout, composite PKs, self/circular FKs, unique constraints, indexes, error mapping 401/502/504/500, password redaction), read-schema.test.ts 12/12 passed (POST /api/read-schema route Zod validation, response mapping, constraint/index grouping helpers)",
+    "test-report: read-schema.integration.test.ts 6/6 passed against real postgres:16 container on private Docker network (retrieves tables/columns with data types, primary keys single+composite, foreign keys single/self-referencing/circular, unique constraints, indexes plain+unique+composite, excludes system schemas)",
+    "test-report: database/run-verification.sh exit code 0 - all 5 query types verified against seeded PostgreSQL 16 schema (tables/columns 21 rows, data types incl. timestamptz/uuid/numeric, PK single+composite, FK single/self-referencing/circular, unique constraints, indexes plain+unique+composite)",
+    "file: database/introspection.sql - 5 read-only introspection queries compatible with PostgreSQL 14+ (information_schema/pg_catalog only, parameterized via $1, no SQL text parsing)",
+    "file: backend/src/services/introspection.service.ts - IntrospectionService with 5 parameterized SQL queries, BEGIN READ ONLY transaction, statement timeout, error mapping 401/502/504/500, password sanitization",
+    "file: backend/src/routes/read-schema.ts - POST /api/read-schema route with Zod validation, response mapping, constraint/index grouping helpers",
+    "file: backend/src/types/read-schema.ts - TypeScript types and Zod schema for read-schema API contract",
+    "note: 2 unrelated test-connection integration tests (__tests__/integration.test.ts) failed in the unit-test container because no live PostgreSQL server was running; environmental, not TASK-056 related, not part of acceptance criteria",
+    "git: branch ticket/TASK-056 at commit 7149982; working tree clean, no tracked file modifications, nothing committed/pushed to main (no code changes in QA phase)",
+    "all 7 acceptance criteria satisfied"
+  ],
+  "implementedBy": "database-expert"
+}

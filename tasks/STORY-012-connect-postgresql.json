@@ -1,0 +1,560 @@
+{
+  "id": "STORY-012",
+  "type": "story",
+  "title": "Connect to PostgreSQL",
+  "description": "As a database designer, I want to connect with host, port, database, user, password, and schema so that I can work with a live database.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "EPIC-003",
+  "acceptanceCriteria": [
+    "Given valid connection parameters, when I test the connection, then success is reported",
+    "Given invalid parameters, when I test, then a specific, actionable error is shown (auth, DNS, timeout, permissions, version)",
+    "Given a session, then credentials exist only in memory"
+  ],
+  "dependencies": [],
+  "storyPoints": 5,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-06T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.1 (fills STORY-012 numbering gap; TASK-036, TASK-037, TASK-038 already reference this parent)"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-06T20:16:58.573841+00:00",
+      "reason": "Planned for sprint 79",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "database-expert",
+      "timestamp": "2026-11-06T20:24:32.088938+00:00",
+      "reason": "completed",
+      "evidence": [
+        {
+          "kind": "filesChanged",
+          "files": [
+            "backend/src/services/connection-test.service.ts",
+            "backend/src/services/connection-test.service.test.ts",
+            "backend/src/__tests__/test-connection.unit.test.ts",
+            "src/connection/connectionApi.ts",
+            "src/__tests__/connectionApi.test.ts"
+          ],
+          "description": "Added permissions (SQLSTATE 42501) -> HTTP 401 handling; added PostgreSQL 14+ version check via current_setting('server_version_num') -> HTTP 400 with actionable message; fixed frontend connectionApi to surface backend 'error' field so descriptive errors reach the user; added unit tests for permissions/version/error surfacing."
+        },
+        {
+          "kind": "dockerTestCommands",
+          "commands": [
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx tsc --noEmit'",
+            "docker run -d --rm --name story012-postgres --network story012-net --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges --pids-limit 256 --memory 1g --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=<generated> -e POSTGRES_DB=app_test postgres:16-alpine (then pg_isready wait loop)",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --network story012-net --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -e PG_HOST=story012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/integration.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $PROJECT_DIR:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/connectionApi.test.ts src/__tests__/connectionFlow.test.ts src/__tests__/ConnectionForm.test.ts'"
+          ],
+          "description": "All tests run inside Docker containers per docker-test-runner skill; nothing run on the host. Throwaway postgres:16 container on private network with generated password; container and network removed after integration run."
+        },
+        {
+          "kind": "testResults",
+          "results": [
+            {
+              "scope": "backend unit suite",
+              "image": "node:20-alpine",
+              "outcome": "180 passed, 0 failed"
+            },
+            {
+              "scope": "backend typecheck (tsc --noEmit)",
+              "image": "node:20-alpine",
+              "outcome": "clean"
+            },
+            {
+              "scope": "backend integration vs live postgres:16",
+              "image": "node:20-alpine + postgres:16-alpine",
+              "outcome": "4 passed (valid->200, invalid password->401, unreachable host->5xx, missing field->400)"
+            },
+            {
+              "scope": "frontend connection tests",
+              "image": "node:20-alpine",
+              "outcome": "36 passed (connectionApi, connectionFlow, ConnectionForm)"
+            },
+            {
+              "scope": "frontend full suite",
+              "image": "node:20-alpine",
+              "outcome": "425 passed across 32 files"
+            }
+          ]
+        },
+        {
+          "kind": "acceptanceCriteria",
+          "coverage": [
+            "AC1 valid -> success: verified (unit + live integration returned 200)",
+            "AC2 invalid -> actionable error: auth (401), DNS/network (502), timeout (504), permissions 42501 (401), version <14 (400) all handled and tested; password redacted in errors",
+            "AC3 credentials only in memory: verified (password never logged/persisted/echoed; tests assert non-leakage)"
+          ]
+        }
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-06T20:45:56.787512+00:00",
+      "reason": "completed",
+      "evidence": [
+        {
+          "kind": "filesChanged",
+          "files": [
+            "backend/src/services/connection-test.service.ts",
+            "backend/src/services/connection-test.service.test.ts",
+            "backend/src/__tests__/test-connection.unit.test.ts",
+            "src/connection/connectionApi.ts",
+            "src/__tests__/connectionApi.test.ts"
+          ],
+          "description": "Added permissions (SQLSTATE 42501) -> HTTP 401 handling; added PostgreSQL 14+ version check via current_setting('server_version_num') -> HTTP 400 with actionable message; fixed frontend connectionApi to surface backend 'error' field so descriptive errors reach the user; added unit tests for permissions/version/error surfacing."
+        },
+        {
+          "kind": "dockerTestCommands",
+          "commands": [
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx tsc --noEmit'",
+            "docker run -d --rm --name story012-postgres --network story012-net --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges --pids-limit 256 --memory 1g --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=<generated> -e POSTGRES_DB=app_test postgres:16-alpine (then pg_isready wait loop)",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --network story012-net --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -e PG_HOST=story012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/integration.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $PROJECT_DIR:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/connectionApi.test.ts src/__tests__/connectionFlow.test.ts src/__tests__/ConnectionForm.test.ts'"
+          ],
+          "description": "All tests run inside Docker containers per docker-test-runner skill; nothing run on the host. Throwaway postgres:16 container on private network with generated password; container and network removed after integration run."
+        },
+        {
+          "kind": "testResults",
+          "results": [
+            {
+              "scope": "backend unit suite",
+              "image": "node:20-alpine",
+              "outcome": "180 passed, 0 failed"
+            },
+            {
+              "scope": "backend typecheck (tsc --noEmit)",
+              "image": "node:20-alpine",
+              "outcome": "clean"
+            },
+            {
+              "scope": "backend integration vs live postgres:16",
+              "image": "node:20-alpine + postgres:16-alpine",
+              "outcome": "4 passed (valid->200, invalid password->401, unreachable host->5xx, missing field->400)"
+            },
+            {
+              "scope": "frontend connection tests",
+              "image": "node:20-alpine",
+              "outcome": "36 passed (connectionApi, connectionFlow, ConnectionForm)"
+            },
+            {
+              "scope": "frontend full suite",
+              "image": "node:20-alpine",
+              "outcome": "425 passed across 32 files"
+            }
+          ]
+        },
+        {
+          "kind": "acceptanceCriteria",
+          "coverage": [
+            "AC1 valid -> success: verified (unit + live integration returned 200)",
+            "AC2 invalid -> actionable error: auth (401), DNS/network (502), timeout (504), permissions 42501 (401), version <14 (400) all handled and tested; password redacted in errors",
+            "AC3 credentials only in memory: verified (password never logged/persisted/echoed; tests assert non-leakage)"
+          ]
+        },
+        {
+          "kind": "reviewerVerification",
+          "reviewer": "software-architect",
+          "reviewType": "in-review approval",
+          "dockerTestCommands": [
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx tsc --noEmit'",
+            "docker run -d --rm --name story012-postgres --network story012-net --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges --pids-limit 256 --memory 1g --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=<generated> -e POSTGRES_DB=app_test postgres:16-alpine (then pg_isready wait loop)",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --network story012-net --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -e PG_HOST=story012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/integration.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $PROJECT_DIR:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/connectionApi.test.ts src/__tests__/connectionFlow.test.ts src/__tests__/ConnectionForm.test.ts'"
+          ],
+          "testResults": [
+            {
+              "scope": "backend full suite (independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "180 passed, 17 skipped (integration tests skipped without PG env)"
+            },
+            {
+              "scope": "backend typecheck (tsc --noEmit, independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "clean"
+            },
+            {
+              "scope": "backend integration vs live postgres:16 (independent re-run)",
+              "image": "node:20-alpine + postgres:16-alpine",
+              "outcome": "4 passed (valid->200, invalid password->401, unreachable host->5xx, missing field->400)"
+            },
+            {
+              "scope": "frontend connection tests (independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "36 passed (connectionApi, connectionFlow, ConnectionForm)"
+            },
+            {
+              "scope": "frontend full suite (independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "425 passed across 32 files"
+            }
+          ],
+          "architectureReview": {
+            "findings": [
+              "Production route POST /api/v1/connections/test uses testConnectionHandler -> testConnection from connection-test.service.ts (new service with all STORY-012 features)",
+              "Error categorization correct: network (ECONNREFUSED/ENOTFOUND/etc.) -> 502, auth (28P01/28000/42501/3D000/53300) -> 401, timeout (ETIMEDOUT/timeout) -> 504, version <14 -> 400, unexpected -> 500",
+              "Password sanitized via sanitizeErrorMessage (split/join with ***), never in error responses or logs",
+              "Bounded connection timeout via Promise.race with connectionTimeoutMillis fallback",
+              "Connection always closed in catch/finally blocks",
+              "Frontend connectionApi.ts surfaces backend 'error' field; password never echoed to client",
+              "ConnectionForm password field has type=password and autocomplete=off",
+              "useConnection.disconnect() clears credentials (config set to null)",
+              "Minor observation: duplicate postgres-connection.service.ts lacks version check (pre-existing tech debt, out of scope for this ticket)"
+            ],
+            "conclusion": "Implementation meets all acceptance criteria. Architecture is sound. Approved."
+          },
+          "decision": "approved"
+        }
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-06T21:05:43.607981+00:00",
+      "reason": "passed-with-skips",
+      "evidence": [
+        {
+          "kind": "filesChanged",
+          "files": [
+            "backend/src/services/connection-test.service.ts",
+            "backend/src/services/connection-test.service.test.ts",
+            "backend/src/__tests__/test-connection.unit.test.ts",
+            "src/connection/connectionApi.ts",
+            "src/__tests__/connectionApi.test.ts"
+          ],
+          "description": "Added permissions (SQLSTATE 42501) -> HTTP 401 handling; added PostgreSQL 14+ version check via current_setting('server_version_num') -> HTTP 400 with actionable message; fixed frontend connectionApi to surface backend 'error' field so descriptive errors reach the user; added unit tests for permissions/version/error surfacing."
+        },
+        {
+          "kind": "dockerTestCommands",
+          "commands": [
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx tsc --noEmit'",
+            "docker run -d --rm --name story012-postgres --network story012-net --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges --pids-limit 256 --memory 1g --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=<generated> -e POSTGRES_DB=app_test postgres:16-alpine (then pg_isready wait loop)",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --network story012-net --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -e PG_HOST=story012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/integration.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $PROJECT_DIR:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/connectionApi.test.ts src/__tests__/connectionFlow.test.ts src/__tests__/ConnectionForm.test.ts'"
+          ],
+          "description": "All tests run inside Docker containers per docker-test-runner skill; nothing run on the host. Throwaway postgres:16 container on private network with generated password; container and network removed after integration run."
+        },
+        {
+          "kind": "testResults",
+          "results": [
+            {
+              "scope": "backend unit suite",
+              "image": "node:20-alpine",
+              "outcome": "180 passed, 0 failed"
+            },
+            {
+              "scope": "backend typecheck (tsc --noEmit)",
+              "image": "node:20-alpine",
+              "outcome": "clean"
+            },
+            {
+              "scope": "backend integration vs live postgres:16",
+              "image": "node:20-alpine + postgres:16-alpine",
+              "outcome": "4 passed (valid->200, invalid password->401, unreachable host->5xx, missing field->400)"
+            },
+            {
+              "scope": "frontend connection tests",
+              "image": "node:20-alpine",
+              "outcome": "36 passed (connectionApi, connectionFlow, ConnectionForm)"
+            },
+            {
+              "scope": "frontend full suite",
+              "image": "node:20-alpine",
+              "outcome": "425 passed across 32 files"
+            }
+          ]
+        },
+        {
+          "kind": "acceptanceCriteria",
+          "coverage": [
+            "AC1 valid -> success: verified (unit + live integration returned 200)",
+            "AC2 invalid -> actionable error: auth (401), DNS/network (502), timeout (504), permissions 42501 (401), version <14 (400) all handled and tested; password redacted in errors",
+            "AC3 credentials only in memory: verified (password never logged/persisted/echoed; tests assert non-leakage)"
+          ]
+        },
+        {
+          "kind": "dockerTestCommands",
+          "commands": [
+            "docker build --no-cache -t st012-backend-test -f /tmp/docker-test/Dockerfile.backend /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp/backend/",
+            "docker run --rm st012-backend-test npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts",
+            "docker run --rm st012-backend-test npx tsc --noEmit",
+            "docker run --rm st012-backend-test npx vitest run"
+          ],
+          "description": "QA verification: fixed backend/Dockerfile.test COPY package-lock.json (delivery contract requirement for docker build from clean clone), built backend test image, ran backend unit tests, typecheck, and full suite inside Docker containers."
+        },
+        {
+          "kind": "testResults",
+          "results": [
+            {
+              "scope": "backend unit tests (connection-test.service, test-connection route, test-connection.unit)",
+              "image": "node:20-alpine (st012-backend-test)",
+              "outcome": "48 passed, 0 failed"
+            },
+            {
+              "scope": "backend typecheck (tsc --noEmit)",
+              "image": "node:20-alpine (st012-backend-test)",
+              "outcome": "clean"
+            },
+            {
+              "scope": "backend full suite",
+              "image": "node:20-alpine (st012-backend-test)",
+              "outcome": "180 passed, 17 skipped (integration tests skipped without PG env)"
+            }
+          ]
+        },
+        {
+          "kind": "acceptanceCriteria",
+          "coverage": [
+            "AC1 valid -> success: verified via unit tests (connection-test.service.test.ts valid connection returns 200 with success message)",
+            "AC2 invalid -> actionable error: auth 401 (invalid password), network 502 (unreachable host), timeout 504, permissions 42501 (401), version <14 (400) all handled and tested; password redacted via sanitizeErrorMessage",
+            "AC3 credentials only in memory: verified (password never logged/persisted/echoed; tests assert non-leakage via JSON.stringify not containing password)"
+          ]
+        },
+        {
+          "kind": "filesChanged",
+          "files": [
+            "backend/Dockerfile.test"
+          ],
+          "description": "Fixed Dockerfile.test to copy package-lock.json alongside package.json so npm ci succeeds during docker build from a clean clone (delivery contract requirement)."
+        },
+        {
+          "kind": "reviewerVerification",
+          "reviewer": "software-architect",
+          "reviewType": "in-review approval",
+          "dockerTestCommands": [
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx tsc --noEmit'",
+            "docker run -d --rm --name story012-postgres --network story012-net --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges --pids-limit 256 --memory 1g --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=<generated> -e POSTGRES_DB=app_test postgres:16-alpine (then pg_isready wait loop)",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --network story012-net --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -e PG_HOST=story012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/integration.test.ts'",
+            "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $PROJECT_DIR:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/connectionApi.test.ts src/__tests__/connectionFlow.test.ts src/__tests__/ConnectionForm.test.ts'"
+          ],
+          "testResults": [
+            {
+              "scope": "backend full suite (independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "180 passed, 17 skipped (integration tests skipped without PG env)"
+            },
+            {
+              "scope": "backend typecheck (tsc --noEmit, independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "clean"
+            },
+            {
+              "scope": "backend integration vs live postgres:16 (independent re-run)",
+              "image": "node:20-alpine + postgres:16-alpine",
+              "outcome": "4 passed (valid->200, invalid password->401, unreachable host->5xx, missing field->400)"
+            },
+            {
+              "scope": "frontend connection tests (independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "36 passed (connectionApi, connectionFlow, ConnectionForm)"
+            },
+            {
+              "scope": "frontend full suite (independent re-run)",
+              "image": "node:20-alpine",
+              "outcome": "425 passed across 32 files"
+            }
+          ],
+          "architectureReview": {
+            "findings": [
+              "Production route POST /api/v1/connections/test uses testConnectionHandler -> testConnection from connection-test.service.ts (new service with all STORY-012 features)",
+              "Error categorization correct: network (ECONNREFUSED/ENOTFOUND/etc.) -> 502, auth (28P01/28000/42501/3D000/53300) -> 401, timeout (ETIMEDOUT/timeout) -> 504, version <14 -> 400, unexpected -> 500",
+              "Password sanitized via sanitizeErrorMessage (split/join with ***), never in error responses or logs",
+              "Bounded connection timeout via Promise.race with connectionTimeoutMillis fallback",
+              "Connection always closed in catch/finally blocks",
+              "Frontend connectionApi.ts surfaces backend 'error' field; password never echoed to client",
+              "ConnectionForm password field has type=password and autocomplete=off",
+              "useConnection.disconnect() clears credentials (config set to null)",
+              "Minor observation: duplicate postgres-connection.service.ts lacks version check (pre-existing tech debt, out of scope for this ticket)"
+            ],
+            "conclusion": "Implementation meets all acceptance criteria. Architecture is sound. Approved."
+          },
+          "decision": "approved"
+        }
+      ]
+    }
+  ],
+  "sprint": 81,
+  "requiresReview": true,
+  "updatedAt": "2026-11-06T21:05:43.607993+00:00",
+  "resultEvidence": [
+    {
+      "kind": "filesChanged",
+      "files": [
+        "backend/src/services/connection-test.service.ts",
+        "backend/src/services/connection-test.service.test.ts",
+        "backend/src/__tests__/test-connection.unit.test.ts",
+        "src/connection/connectionApi.ts",
+        "src/__tests__/connectionApi.test.ts"
+      ],
+      "description": "Added permissions (SQLSTATE 42501) -> HTTP 401 handling; added PostgreSQL 14+ version check via current_setting('server_version_num') -> HTTP 400 with actionable message; fixed frontend connectionApi to surface backend 'error' field so descriptive errors reach the user; added unit tests for permissions/version/error surfacing."
+    },
+    {
+      "kind": "dockerTestCommands",
+      "commands": [
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts'",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx tsc --noEmit'",
+        "docker run -d --rm --name story012-postgres --network story012-net --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges --pids-limit 256 --memory 1g --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=<generated> -e POSTGRES_DB=app_test postgres:16-alpine (then pg_isready wait loop)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --network story012-net --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -e PG_HOST=story012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/integration.test.ts'",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $PROJECT_DIR:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/connectionApi.test.ts src/__tests__/connectionFlow.test.ts src/__tests__/ConnectionForm.test.ts'"
+      ],
+      "description": "All tests run inside Docker containers per docker-test-runner skill; nothing run on the host. Throwaway postgres:16 container on private network with generated password; container and network removed after integration run."
+    },
+    {
+      "kind": "testResults",
+      "results": [
+        {
+          "scope": "backend unit suite",
+          "image": "node:20-alpine",
+          "outcome": "180 passed, 0 failed"
+        },
+        {
+          "scope": "backend typecheck (tsc --noEmit)",
+          "image": "node:20-alpine",
+          "outcome": "clean"
+        },
+        {
+          "scope": "backend integration vs live postgres:16",
+          "image": "node:20-alpine + postgres:16-alpine",
+          "outcome": "4 passed (valid->200, invalid password->401, unreachable host->5xx, missing field->400)"
+        },
+        {
+          "scope": "frontend connection tests",
+          "image": "node:20-alpine",
+          "outcome": "36 passed (connectionApi, connectionFlow, ConnectionForm)"
+        },
+        {
+          "scope": "frontend full suite",
+          "image": "node:20-alpine",
+          "outcome": "425 passed across 32 files"
+        }
+      ]
+    },
+    {
+      "kind": "acceptanceCriteria",
+      "coverage": [
+        "AC1 valid -> success: verified (unit + live integration returned 200)",
+        "AC2 invalid -> actionable error: auth (401), DNS/network (502), timeout (504), permissions 42501 (401), version <14 (400) all handled and tested; password redacted in errors",
+        "AC3 credentials only in memory: verified (password never logged/persisted/echoed; tests assert non-leakage)"
+      ]
+    },
+    {
+      "kind": "dockerTestCommands",
+      "commands": [
+        "docker build --no-cache -t st012-backend-test -f /tmp/docker-test/Dockerfile.backend /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp/backend/",
+        "docker run --rm st012-backend-test npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts",
+        "docker run --rm st012-backend-test npx tsc --noEmit",
+        "docker run --rm st012-backend-test npx vitest run"
+      ],
+      "description": "QA verification: fixed backend/Dockerfile.test COPY package-lock.json (delivery contract requirement for docker build from clean clone), built backend test image, ran backend unit tests, typecheck, and full suite inside Docker containers."
+    },
+    {
+      "kind": "testResults",
+      "results": [
+        {
+          "scope": "backend unit tests (connection-test.service, test-connection route, test-connection.unit)",
+          "image": "node:20-alpine (st012-backend-test)",
+          "outcome": "48 passed, 0 failed"
+        },
+        {
+          "scope": "backend typecheck (tsc --noEmit)",
+          "image": "node:20-alpine (st012-backend-test)",
+          "outcome": "clean"
+        },
+        {
+          "scope": "backend full suite",
+          "image": "node:20-alpine (st012-backend-test)",
+          "outcome": "180 passed, 17 skipped (integration tests skipped without PG env)"
+        }
+      ]
+    },
+    {
+      "kind": "acceptanceCriteria",
+      "coverage": [
+        "AC1 valid -> success: verified via unit tests (connection-test.service.test.ts valid connection returns 200 with success message)",
+        "AC2 invalid -> actionable error: auth 401 (invalid password), network 502 (unreachable host), timeout 504, permissions 42501 (401), version <14 (400) all handled and tested; password redacted via sanitizeErrorMessage",
+        "AC3 credentials only in memory: verified (password never logged/persisted/echoed; tests assert non-leakage via JSON.stringify not containing password)"
+      ]
+    },
+    {
+      "kind": "filesChanged",
+      "files": [
+        "backend/Dockerfile.test"
+      ],
+      "description": "Fixed Dockerfile.test to copy package-lock.json alongside package.json so npm ci succeeds during docker build from a clean clone (delivery contract requirement)."
+    },
+    {
+      "kind": "reviewerVerification",
+      "reviewer": "software-architect",
+      "reviewType": "in-review approval",
+      "dockerTestCommands": [
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/services/connection-test.service.test.ts src/routes/test-connection.test.ts src/__tests__/test-connection.unit.test.ts'",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx tsc --noEmit'",
+        "docker run -d --rm --name story012-postgres --network story012-net --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add DAC_OVERRIDE --cap-add FOWNER --security-opt no-new-privileges --pids-limit 256 --memory 1g --tmpfs /var/lib/postgresql/data -e POSTGRES_PASSWORD=<generated> -e POSTGRES_DB=app_test postgres:16-alpine (then pg_isready wait loop)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --network story012-net --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -e NODE_ENV=test -e PG_HOST=story012-postgres -e PG_PORT=5432 -e PG_DATABASE=app_test -e PG_USER=postgres -e PG_PASSWORD=<generated> -e PG_BAD_PASSWORD=wrong-password -e PG_BAD_HOST=10.255.255.1 -v $PROJECT_DIR/backend:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/integration.test.ts'",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $PROJECT_DIR:/work:rw -w /work node:20-alpine sh -c 'npx vitest run src/__tests__/connectionApi.test.ts src/__tests__/connectionFlow.test.ts src/__tests__/ConnectionForm.test.ts'"
+      ],
+      "testResults": [
+        {
+          "scope": "backend full suite (independent re-run)",
+          "image": "node:20-alpine",
+          "outcome": "180 passed, 17 skipped (integration tests skipped without PG env)"
+        },
+        {
+          "scope": "backend typecheck (tsc --noEmit, independent re-run)",
+          "image": "node:20-alpine",
+          "outcome": "clean"
+        },
+        {
+          "scope": "backend integration vs live postgres:16 (independent re-run)",
+          "image": "node:20-alpine + postgres:16-alpine",
+          "outcome": "4 passed (valid->200, invalid password->401, unreachable host->5xx, missing field->400)"
+        },
+        {
+          "scope": "frontend connection tests (independent re-run)",
+          "image": "node:20-alpine",
+          "outcome": "36 passed (connectionApi, connectionFlow, ConnectionForm)"
+        },
+        {
+          "scope": "frontend full suite (independent re-run)",
+          "image": "node:20-alpine",
+          "outcome": "425 passed across 32 files"
+        }
+      ],
+      "architectureReview": {
+        "findings": [
+          "Production route POST /api/v1/connections/test uses testConnectionHandler -> testConnection from connection-test.service.ts (new service with all STORY-012 features)",
+          "Error categorization correct: network (ECONNREFUSED/ENOTFOUND/etc.) -> 502, auth (28P01/28000/42501/3D000/53300) -> 401, timeout (ETIMEDOUT/timeout) -> 504, version <14 -> 400, unexpected -> 500",
+          "Password sanitized via sanitizeErrorMessage (split/join with ***), never in error responses or logs",
+          "Bounded connection timeout via Promise.race with connectionTimeoutMillis fallback",
+          "Connection always closed in catch/finally blocks",
+          "Frontend connectionApi.ts surfaces backend 'error' field; password never echoed to client",
+          "ConnectionForm password field has type=password and autocomplete=off",
+          "useConnection.disconnect() clears credentials (config set to null)",
+          "Minor observation: duplicate postgres-connection.service.ts lacks version check (pre-existing tech debt, out of scope for this ticket)"
+        ],
+        "conclusion": "Implementation meets all acceptance criteria. Architecture is sound. Approved."
+      },
+      "decision": "approved"
+    }
+  ],
+  "implementedBy": "database-expert"
+}

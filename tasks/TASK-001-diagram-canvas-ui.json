@@ -1,0 +1,133 @@
+{
+  "id": "TASK-001",
+  "type": "task",
+  "title": "Implement empty diagram canvas UI component",
+  "description": "Create the main diagram canvas UI component that displays an empty workspace where tables and relationships can be added. The canvas should support rendering table nodes and relationship lines.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-001",
+  "acceptanceCriteria": [
+    "Empty canvas is displayed when application loads",
+    "Canvas supports rendering table nodes",
+    "Canvas supports rendering relationship lines between tables"
+  ],
+  "dependencies": [],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.1"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T18:12:49.335834+00:00",
+      "reason": "Planned for sprint 0",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-01T18:29:31.660433+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:afcbac5 - project scaffold and containerized test setup (package.json, tsconfig.json, vite.config.ts, vitest.config.ts, vitest.setup.ts, index.html, Dockerfile, docker-compose.test.yml, README.md, package-lock.json)",
+        "commit:2cbeeaa - implement diagram canvas component (src/types.ts, src/canvas/TableNode.ts, src/canvas/RelationshipLine.ts, src/canvas/DiagramCanvas.ts, src/main.ts, src/styles.css)",
+        "commit:19e79e5 - add unit tests for diagram canvas (src/__tests__/DiagramCanvas.test.ts, src/__tests__/TableNode.test.ts, src/__tests__/RelationshipLine.test.ts)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+        "Test results: 18 passed (3 test files), 0 failed - TableNode.test.ts (4), RelationshipLine.test.ts (3), DiagramCanvas.test.ts (11)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/tsc --noEmit\"",
+        "TypeScript typecheck: clean, exit code 0",
+        "Branch: ticket/TASK-001 pushed to origin (git@github.com:RubenPozoMolina/database-diagram-webapp.git)",
+        "Acceptance criteria: all 3 met - empty canvas on load, table node rendering, relationship line rendering between tables"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-01T18:57:13.906598+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:afcbac5 - project scaffold and containerized test setup (package.json, tsconfig.json, vite.config.ts, vitest.config.ts, vitest.setup.ts, index.html, Dockerfile, docker-compose.test.yml, README.md, package-lock.json)",
+        "commit:2cbeeaa - implement diagram canvas component (src/types.ts, src/canvas/TableNode.ts, src/canvas/RelationshipLine.ts, src/canvas/DiagramCanvas.ts, src/main.ts, src/styles.css)",
+        "commit:19e79e5 - add unit tests for diagram canvas (src/__tests__/DiagramCanvas.test.ts, src/__tests__/TableNode.test.ts, src/__tests__/RelationshipLine.test.ts)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+        "Test results: 18 passed (3 test files), 0 failed - TableNode.test.ts (4), RelationshipLine.test.ts (3), DiagramCanvas.test.ts (11)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/tsc --noEmit\"",
+        "TypeScript typecheck: clean, exit code 0",
+        "Branch: ticket/TASK-001 pushed to origin (git@github.com:RubenPozoMolina/database-diagram-webapp.git)",
+        "Acceptance criteria: all 3 met - empty canvas on load, table node rendering, relationship line rendering between tables",
+        "Review by software-architect: reviewed src/types.ts, src/main.ts, src/styles.css, src/canvas/TableNode.ts, src/canvas/RelationshipLine.ts, src/canvas/DiagramCanvas.ts, src/__tests__/*.test.ts",
+        "Architectural review: clean separation of concerns (types, canvas component, table node renderer, relationship line renderer, entry point); Map-based encapsulated state with read-only getState snapshot; proper error handling (throws on missing canvas/context, returns false for orphaned relationships); WCAG AA compliant color contrasts; no architectural risks identified",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+        "Reviewer re-run: Test results: 18 passed (3 test files), 0 failed",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/tsc --noEmit\"",
+        "Reviewer re-run: TypeScript typecheck: clean, exit code 0",
+        "Review decision: APPROVED - all acceptance criteria met, code quality and architecture sound, ready to proceed to in-testing"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-01T19:32:58.033386+00:00",
+      "reason": "passed",
+      "evidence": [
+        "commit:afcbac5 - project scaffold and containerized test setup (package.json, tsconfig.json, vite.config.ts, vitest.config.ts, vitest.setup.ts, index.html, Dockerfile, docker-compose.test.yml, README.md, package-lock.json)",
+        "commit:2cbeeaa - implement diagram canvas component (src/types.ts, src/canvas/TableNode.ts, src/canvas/RelationshipLine.ts, src/canvas/DiagramCanvas.ts, src/main.ts, src/styles.css)",
+        "commit:19e79e5 - add unit tests for diagram canvas (src/__tests__/DiagramCanvas.test.ts, src/__tests__/TableNode.test.ts, src/__tests__/RelationshipLine.test.ts)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && ./node_modules/.bin/vitest run\"",
+        "QA re-run unit tests: Test results: 18 passed (3 test files), 0 failed - TableNode.test.ts (4), RelationshipLine.test.ts (3), DiagramCanvas.test.ts (11)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && ./node_modules/.bin/tsc --noEmit\"",
+        "QA re-run typecheck: TypeScript typecheck: clean, exit code 0",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && ./node_modules/.bin/vite build\"",
+        "Vite production build: success (dist/index.html, dist/assets/index-*.js)",
+        "docker network create qa-TASK-001; docker run -d --rm --name app-TASK-001 --network qa-TASK-001 --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp -v $(pwd)/dist:/usr/share/nginx/html:ro nginxinc/nginx-unprivileged:1.27-alpine",
+        "Served app in container; verified http://app-TASK-001:8080/ responds via curlimages/curl:8.10.1",
+        "docker run --rm --network qa-TASK-001 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e BASE_URL=http://app-TASK-001:8080/ -v $(pwd):/work:ro -v $(pwd)/qa-artifacts:/artifacts:rw -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"npm install playwright@1.49.1 --prefix /tmp/pw --no-save && NODE_PATH=/tmp/pw/node_modules node qa-artifacts/visual-qa.test.cjs\"",
+        "Visual QA results (qa-artifacts/visual-qa-results.json): allPassed=true; 4 passed, 0 failed, 0 skipped, 0 console errors",
+        "Screenshots captured in qa-artifacts/: 01-empty-canvas.png, 02-table-nodes.png, 03-relationship-line.png, 04-after-removal.png",
+        "Acceptance criterion 1 (empty canvas on load): PASSED - canvas #diagram-canvas visible (1200x800), blank white workspace rendered on load",
+        "Acceptance criterion 2 (render table nodes): PASSED - 2 table nodes (users, orders) with headers, columns, PK badges rendered; screenshot 02-table-nodes.png",
+        "Acceptance criterion 3 (render relationship lines): PASSED - relationship line drawn between tables users→orders with arrowhead; 585 line-color pixels detected; screenshot 03-relationship-line.png",
+        "End-to-end interaction verified: add table/relationship, render, remove table/relationship, re-render (tableCount:1, relationshipCount:0 after removal)",
+        "No acceptance criteria skipped - no platform/OS limitations encountered (no Safari or platform-specific tools required)",
+        "Branch: ticket/TASK-001 (git@github.com:RubenPozoMolina/database-diagram-webapp.git), working tree clean"
+      ]
+    }
+  ],
+  "sprint": 2,
+  "requiresReview": true,
+  "updatedAt": "2026-11-01T19:32:58.033397+00:00",
+  "resultEvidence": [
+    "commit:afcbac5 - project scaffold and containerized test setup (package.json, tsconfig.json, vite.config.ts, vitest.config.ts, vitest.setup.ts, index.html, Dockerfile, docker-compose.test.yml, README.md, package-lock.json)",
+    "commit:2cbeeaa - implement diagram canvas component (src/types.ts, src/canvas/TableNode.ts, src/canvas/RelationshipLine.ts, src/canvas/DiagramCanvas.ts, src/main.ts, src/styles.css)",
+    "commit:19e79e5 - add unit tests for diagram canvas (src/__tests__/DiagramCanvas.test.ts, src/__tests__/TableNode.test.ts, src/__tests__/RelationshipLine.test.ts)",
+    "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && ./node_modules/.bin/vitest run\"",
+    "QA re-run unit tests: Test results: 18 passed (3 test files), 0 failed - TableNode.test.ts (4), RelationshipLine.test.ts (3), DiagramCanvas.test.ts (11)",
+    "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && ./node_modules/.bin/tsc --noEmit\"",
+    "QA re-run typecheck: TypeScript typecheck: clean, exit code 0",
+    "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work:rw -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && ./node_modules/.bin/vite build\"",
+    "Vite production build: success (dist/index.html, dist/assets/index-*.js)",
+    "docker network create qa-TASK-001; docker run -d --rm --name app-TASK-001 --network qa-TASK-001 --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp -v $(pwd)/dist:/usr/share/nginx/html:ro nginxinc/nginx-unprivileged:1.27-alpine",
+    "Served app in container; verified http://app-TASK-001:8080/ responds via curlimages/curl:8.10.1",
+    "docker run --rm --network qa-TASK-001 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e BASE_URL=http://app-TASK-001:8080/ -v $(pwd):/work:ro -v $(pwd)/qa-artifacts:/artifacts:rw -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"npm install playwright@1.49.1 --prefix /tmp/pw --no-save && NODE_PATH=/tmp/pw/node_modules node qa-artifacts/visual-qa.test.cjs\"",
+    "Visual QA results (qa-artifacts/visual-qa-results.json): allPassed=true; 4 passed, 0 failed, 0 skipped, 0 console errors",
+    "Screenshots captured in qa-artifacts/: 01-empty-canvas.png, 02-table-nodes.png, 03-relationship-line.png, 04-after-removal.png",
+    "Acceptance criterion 1 (empty canvas on load): PASSED - canvas #diagram-canvas visible (1200x800), blank white workspace rendered on load",
+    "Acceptance criterion 2 (render table nodes): PASSED - 2 table nodes (users, orders) with headers, columns, PK badges rendered; screenshot 02-table-nodes.png",
+    "Acceptance criterion 3 (render relationship lines): PASSED - relationship line drawn between tables users→orders with arrowhead; 585 line-color pixels detected; screenshot 03-relationship-line.png",
+    "End-to-end interaction verified: add table/relationship, render, remove table/relationship, re-render (tableCount:1, relationshipCount:0 after removal)",
+    "No acceptance criteria skipped - no platform/OS limitations encountered (no Safari or platform-specific tools required)",
+    "Branch: ticket/TASK-001 (git@github.com:RubenPozoMolina/database-diagram-webapp.git), working tree clean"
+  ],
+  "implementedBy": "web-developer"
+}

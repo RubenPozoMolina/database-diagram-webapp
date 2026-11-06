@@ -1,0 +1,152 @@
+{
+  "id": "STORY-007",
+  "type": "story",
+  "title": "Define Index",
+  "description": "As a database designer, I want to add indexes to columns so that query performance considerations are documented.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "EPIC-001",
+  "acceptanceCriteria": [
+    "Given a table with columns exists, when the user adds an index, then the index is recorded and associated with the table"
+  ],
+  "dependencies": [
+    "STORY-003"
+  ],
+  "storyPoints": 3,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.7"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-03T20:42:20.613148+00:00",
+      "reason": "Planned for sprint 24",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "project-manager",
+      "timestamp": "2026-11-03T21:41:24.739070+00:00",
+      "reason": "completed",
+      "evidence": [
+        "files: src/types/diagram.ts - added Index type, indexes array on Table, createIndex/findIndexById/findColumnById helpers, createTable initializes indexes: []",
+        "files: src/hooks/useDiagram.ts - added addIndex, removeIndex, updateIndex to hook interface and implementation",
+        "files: src/components/TableNode.tsx - added index management UI: IX badge on indexed columns, indexes section with add/edit/remove, column select for index target",
+        "files: src/index.css - added styles for index badge, indexes section, index edit row, index list, add/edit/remove buttons",
+        "files: src/hooks/useDiagram.test.ts - added 3 tests: add index to table column, remove index, update index name and column",
+        "files: src/components/TableNode.test.tsx - added 6 tests: IX badge on indexed columns, indexes section rendering, no indexes section when empty, add new index, remove index, edit index, cancel index edit",
+        "implementation: Index model stores id, name, columnId per table; indexes are recorded and associated with tables via the diagram model",
+        "acceptance criteria: Given a table with columns exists, when the user adds an index through the TableNode UI, then the index is recorded in table.indexes and associated with the table and column",
+        "note: Docker test execution and git commit could not be performed in this environment; orchestrator to run tests in container and commit/push ticket/STORY-007 branch"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-progress",
+      "actor": "software-architect",
+      "timestamp": "2026-11-03T22:41:04.827415+00:00",
+      "reason": "changes-requested",
+      "evidence": [
+        "reviewer: software-architect",
+        "docker: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c \"npx vitest run 2>&1\"",
+        "test results: 15 suites passed, 1 suite failed; TableNode.test.tsx: 17 passed, 4 failed",
+        "failure 1: 'shows an IX badge on indexed columns' — getByTitle('IX') does not match title='PK IX' when column is also a primary key; test selector too strict",
+        "failure 2: 'adds a new index when Add index is clicked and form is submitted' — 'Add index' button is not rendered because the indexes section is conditionally hidden when table.indexes.length === 0 && editingIndex === null; FUNCTIONAL BUG: users cannot add their first index, violating the acceptance criteria",
+        "failure 3: 'removes an index when Remove is clicked' — removeIndex only passes { indexes: [] } to onUpdateTable, test expects { columns: [...], indexes: [] }; inconsistent with how column operations only pass the changed field",
+        "failure 4: 'edits an index when Edit is clicked and Save is submitted' — saveIndexEdit only passes { indexes: [...] } to onUpdateTable, test expects { columns: [...], indexes: [...] }; same inconsistency",
+        "typescript errors in new code: src/hooks/useDiagram.test.ts lines 195, 222, 250, 251 — Column object literals missing required 'primaryKey' property; src/ddl/ddlGenerator.test.ts line 139 — pre-existing test creates Table without now-required 'indexes' property",
+        "recommendation: (1) always render the indexes section / add-index button so the first index can be added; (2) fix test selectors/assertions to match implementation (getByTitle(/IX/), expect only indexes in update calls); (3) add primaryKey to Column literals in useDiagram.test.ts; (4) add indexes: [] to Table literal in ddlGenerator.test.ts",
+        "result: changes-requested — implementation does not meet acceptance criteria; 4 of 6 new index tests fail; functional bug prevents adding first index"
+      ]
+    },
+    {
+      "from": "in-progress",
+      "to": "in-review",
+      "actor": "project-manager",
+      "timestamp": "2026-11-03T23:30:05.765796+00:00",
+      "reason": "completed",
+      "evidence": [
+        "docker: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c \"npx vitest run 2>&1\"",
+        "test results: all 19 suites passed, 168 tests passed, 0 failed",
+        "suite: src/components/TableNode.test.tsx — 21 passed (incl. IX badge /IX/ regex, indexes section always renders, add/remove/edit index with indexes-only update payload)",
+        "suite: src/hooks/useDiagram.test.ts — 11 passed (incl. add/remove/update index with primaryKey column literals)",
+        "suite: src/ddl/ddlGenerator.test.ts — 10 passed (incl. unsupported-type table with indexes: [])",
+        "implementation fixes: src/components/TableNode.tsx — indexes section now always rendered so Add index button is available for first index; saveIndexEdit/removeIndex/addIndex pass only { indexes } to onUpdateTable (consistent with column ops passing only changed field)",
+        "test fixes: src/components/TableNode.test.tsx — getByTitle(/IX/) for PK IX columns; replaced 'no indexes section when empty' with 'renders indexes section and Add index button even when there are no indexes'; add/remove/edit index assertions now expect only { indexes } in update calls",
+        "TypeScript fixes: src/hooks/useDiagram.test.ts — added primaryKey: false to Column literals (lines 195, 222, 250, 251); src/ddl/ddlGenerator.test.ts — added indexes: [] to table-bad literal (line 139)",
+        "git: commit 9473773 on ticket/STORY-007 (4 files, +14/-22), pushed to origin/ticket/STORY-007",
+        "acceptance criteria: Given a table with columns exists, when the user adds an index through the TableNode UI, then the index is recorded in table.indexes and associated with the table and column — verified by add index test",
+        "result: completed — all changes-requested items resolved; all tests pass; committed and pushed on ticket/STORY-007; ready for re-review"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T00:24:13.658158+00:00",
+      "reason": "completed",
+      "evidence": [
+        "docker: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c \"npx vitest run 2>&1\"",
+        "test results: all 19 suites passed, 168 tests passed, 0 failed",
+        "suite: src/components/TableNode.test.tsx — 21 passed (incl. IX badge /IX/ regex, indexes section always renders, add/remove/edit index with indexes-only update payload)",
+        "suite: src/hooks/useDiagram.test.ts — 11 passed (incl. add/remove/update index with primaryKey column literals)",
+        "suite: src/ddl/ddlGenerator.test.ts — 10 passed (incl. unsupported-type table with indexes: [])",
+        "implementation fixes: src/components/TableNode.tsx — indexes section now always rendered so Add index button is available for first index; saveIndexEdit/removeIndex/addIndex pass only { indexes } to onUpdateTable (consistent with column ops passing only changed field)",
+        "test fixes: src/components/TableNode.test.tsx — getByTitle(/IX/) for PK IX columns; replaced 'no indexes section when empty' with 'renders indexes section and Add index button even when there are no indexes'; add/remove/edit index assertions now expect only { indexes } in update calls",
+        "TypeScript fixes: src/hooks/useDiagram.test.ts — added primaryKey: false to Column literals (lines 195, 222, 250, 251); src/ddl/ddlGenerator.test.ts — added indexes: [] to table-bad literal (line 139)",
+        "git: commit 9473773 on ticket/STORY-007 (4 files, +14/-22), pushed to origin/ticket/STORY-007",
+        "acceptance criteria: Given a table with columns exists, when the user adds an index through the TableNode UI, then the index is recorded in table.indexes and associated with the table and column — verified by add index test",
+        "result: completed — all changes-requested items resolved; all tests pass; committed and pushed on ticket/STORY-007; ready for re-review",
+        "review: software-architect re-reviewed the implementation on ticket/STORY-007",
+        "review: docker test run — node:20-alpine, npx vitest run — all 19 suites passed, 168 tests, 0 failed",
+        "review: suites verified — TableNode.test.tsx 21 passed (IX badge /IX/, indexes section always renders, add/remove/edit with indexes-only payload), useDiagram.test.ts 11 passed (add/remove/update index with primaryKey literals), ddlGenerator.test.ts 10 passed (table-bad with indexes: [])",
+        "review: tsc --noEmit — errors only in pre-existing unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts); none in STORY-007 changed files",
+        "review: git — remote default branch is main (matches trunk), origin/ticket/STORY-007 at commit 9473773 matches local HEAD, no divergence",
+        "review decision: completed — all changes-requested items resolved, acceptance criteria verified, tests pass, implementation approved"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-04T02:17:44.166152+00:00",
+      "reason": "passed",
+      "evidence": [
+        "QA: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && npx vitest run --config vitest.forceexit.config.ts 2>&1\"",
+        "QA test results: all 19 suites passed, 168 tests passed, 0 failed",
+        "QA suite: src/components/TableNode.test.tsx — 21 passed (IX badge /IX/ regex, indexes section always renders, add/remove/edit index with indexes-only update payload)",
+        "QA suite: src/hooks/useDiagram.test.ts — 11 passed (add/remove/update index with primaryKey column literals)",
+        "QA suite: src/ddl/ddlGenerator.test.ts — 10 passed (unsupported-type table with indexes: [])",
+        "QA tsc --noEmit: errors only in pre-existing unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts); none in STORY-007 changed files",
+        "QA git: commit 9473773 on ticket/STORY-007 branch, matches local HEAD, remote default branch is main (matches trunk)",
+        "QA acceptance criteria: Given a table with columns exists, when the user adds an index through the TableNode UI, then the index is recorded in table.indexes and associated with the table and column — verified by add index test (TableNode.test.tsx) and add/remove/update index tests (useDiagram.test.ts)",
+        "QA result: passed — all executable acceptance criteria verified; no platform limitations; no skipped criteria"
+      ]
+    }
+  ],
+  "sprint": 28,
+  "updatedAt": "2026-11-04T02:17:44.166163+00:00",
+  "requiresReview": true,
+  "resultEvidence": [
+    "QA: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c \"npm ci --ignore-scripts && npx vitest run --config vitest.forceexit.config.ts 2>&1\"",
+    "QA test results: all 19 suites passed, 168 tests passed, 0 failed",
+    "QA suite: src/components/TableNode.test.tsx — 21 passed (IX badge /IX/ regex, indexes section always renders, add/remove/edit index with indexes-only update payload)",
+    "QA suite: src/hooks/useDiagram.test.ts — 11 passed (add/remove/update index with primaryKey column literals)",
+    "QA suite: src/ddl/ddlGenerator.test.ts — 10 passed (unsupported-type table with indexes: [])",
+    "QA tsc --noEmit: errors only in pre-existing unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts); none in STORY-007 changed files",
+    "QA git: commit 9473773 on ticket/STORY-007 branch, matches local HEAD, remote default branch is main (matches trunk)",
+    "QA acceptance criteria: Given a table with columns exists, when the user adds an index through the TableNode UI, then the index is recorded in table.indexes and associated with the table and column — verified by add index test (TableNode.test.tsx) and add/remove/update index tests (useDiagram.test.ts)",
+    "QA result: passed — all executable acceptance criteria verified; no platform limitations; no skipped criteria"
+  ],
+  "implementedBy": "project-manager",
+  "reviewedBy": "software-architect"
+}
