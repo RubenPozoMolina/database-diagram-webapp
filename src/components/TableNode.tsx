@@ -61,6 +61,14 @@ export function TableNode({
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<string | null>(null);
 
+  // If the column currently being edited is removed from the table (e.g. via
+  // Remove column), leave edit mode so the stale edit row does not keep rendering.
+  React.useEffect(() => {
+    if (editingColumn && !table.columns.some((c) => c.id === editingColumn)) {
+      setEditingColumn(null);
+    }
+  }, [editingColumn, table.columns]);
+
   // Drag / resize interaction state.
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{
@@ -337,8 +345,11 @@ export function TableNode({
   const removeColumn = useCallback(
     (columnId: string) => {
       onRemoveColumn(table.id, columnId);
+      if (editingColumn === columnId) {
+        setEditingColumn(null);
+      }
     },
-    [table.id, onRemoveColumn],
+    [table.id, onRemoveColumn, editingColumn],
   );
 
   const exitColumnEdit = () => {

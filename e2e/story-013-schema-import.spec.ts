@@ -140,10 +140,10 @@ test.describe('STORY-013: Import PostgreSQL Schema', () => {
     await expect(page.getByText(/price/)).toBeVisible();
     await expect(page.getByText(/sku/)).toBeVisible();
 
-    await expect(page.getByText(/integer/)).toBeVisible();
-    await expect(page.getByText(/text/)).toBeVisible();
-    await expect(page.getByText(/date/)).toBeVisible();
-    await expect(page.getByText(/numeric/)).toBeVisible();
+    await expect(page.getByText(/integer/).first()).toBeVisible();
+    await expect(page.getByText(/text/).first()).toBeVisible();
+    await expect(page.getByText(/date/).first()).toBeVisible();
+    await expect(page.getByText(/numeric/).first()).toBeVisible();
 
     // --- Tables rendered as canvas regions ---
     await expect(page.getByRole('region', { name: 'Table customers' })).toBeVisible();

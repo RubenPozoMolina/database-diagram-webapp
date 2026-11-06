@@ -304,11 +304,6 @@ export function App() {
             Connecting…
           </div>
         )}
-        {status === 'connected' && message && (
-          <div className="connection-status connection-status--success" role="status" aria-live="polite">
-            {message}
-          </div>
-        )}
         {status === 'error' && error && (
           <div className="connection-status connection-status--error" role="status" aria-live="polite">
             {error}
