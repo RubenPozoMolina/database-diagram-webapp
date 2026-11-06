@@ -5,6 +5,12 @@ services:
       dockerfile: Dockerfile
     networks:
       - qa-st001-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
 
   tests:
     image: mcr.microsoft.com/playwright:v1.49.1-noble
