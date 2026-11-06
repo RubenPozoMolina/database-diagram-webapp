@@ -1,0 +1,158 @@
+{
+  "id": "TASK-040",
+  "type": "task",
+  "title": "Implement schema import orchestration UI",
+  "description": "Create the UI for importing a PostgreSQL schema as a diagram, including schema selection and import trigger.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-013",
+  "acceptanceCriteria": [
+    "User can select a schema to import",
+    "Import trigger sends request to backend",
+    "Import progress/status is displayed to user"
+  ],
+  "dependencies": [],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.2"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-05T16:27:52.092159+00:00",
+      "reason": "Planned for sprint 62",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-05T17:08:50.672976+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Commit: e1d6762 (TASK-040: Implement schema import orchestration UI)",
+        "Created: src/components/SchemaImportSelector.tsx - Schema selection dropdown (public, information_schema, custom), import trigger button, import progress indicator, status/error display",
+        "Modified: src/connection/readSchemaApi.ts - Added configurable schema parameter to readSchema() (defaults to 'public')",
+        "Modified: src/App.tsx - Replaced inline import state/logic with SchemaImportSelector component",
+        "Modified: src/index.css - Added styles for schema-import-panel, schema-import-select, import-schema-button, schema-import-progress, schema-import-error, schema-import-info",
+        "Modified: src/components/App.schema-import.test.tsx - Tests for schema selection, import trigger, progress display, error handling",
+        "Modified: src/__tests__/readSchemaApi.test.ts - Test for custom schema parameter",
+        "Test report: npx vitest run in node:20-alpine container - 399 tests passed across 31 test files",
+        "Docker command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npx vitest run'"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-progress",
+      "actor": "software-architect",
+      "timestamp": "2026-11-05T17:29:19.596830+00:00",
+      "reason": "changes-requested",
+      "evidence": [
+        "Review performed by software-architect (reviewer) on ticket/TASK-040 branch, commit e1d6762",
+        "Tests: npx vitest run in node:20-alpine container - 399 tests passed across 31 test files (includes 4 App.schema-import tests + 10 readSchemaApi tests)",
+        "Docker command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npx vitest run'",
+        "TypeScript: npx tsc --noEmit - no new errors in changed files (SchemaImportSelector.tsx, readSchemaApi.ts, App.tsx, App.schema-import.test.tsx, readSchemaApi.test.ts); remaining TS errors are pre-existing in unrelated test files",
+        "Lint: npm run lint - no new errors in changed files; remaining errors are pre-existing in unrelated test files",
+        "Acceptance criteria review: (1) User can select a schema - PARTIAL BUG: public/information_schema work, but the custom 'Other…' input is broken; (2) Import trigger sends request to backend - PASS; (3) Import progress/status displayed - PASS (role=status progress, role=alert error, role=status info with dismiss)",
+        "BUG FOUND in src/components/SchemaImportSelector.tsx: handleCustomSchemaChange writes to `schema` instead of `customSchema`, and showCustomInput = (schema === ''). When a user selects 'Other…' (schema='') and types a custom name, the first keystroke sets schema to non-empty, unmounting the custom input immediately. The customSchema state is never updated or read (dead state). A user cannot enter a custom schema name.",
+        "Required fix: (a) handleCustomSchemaChange should call setCustomSchema(event.target.value) not setSchema; (b) keep showCustomInput = (schema === '') so the input stays visible while typing; (c) import should use effective schema = customSchema || schema || 'public'; (d) add a test covering custom schema entry via the 'Other…' input."
+      ]
+    },
+    {
+      "from": "in-progress",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-05T18:25:16.076727+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Review performed by software-architect (reviewer) on ticket/TASK-040 branch, commit e1d6762",
+        "Tests: npx vitest run in node:20-alpine container - 399 tests passed across 31 test files (includes 4 App.schema-import tests + 10 readSchemaApi tests)",
+        "Docker command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npx vitest run'",
+        "TypeScript: npx tsc --noEmit - no new errors in changed files (SchemaImportSelector.tsx, readSchemaApi.ts, App.tsx, App.schema-import.test.tsx, readSchemaApi.test.ts); remaining TS errors are pre-existing in unrelated test files",
+        "Lint: npm run lint - no new errors in changed files; remaining errors are pre-existing in unrelated test files",
+        "Acceptance criteria review: (1) User can select a schema - PARTIAL BUG: public/information_schema work, but the custom 'Other…' input is broken; (2) Import trigger sends request to backend - PASS; (3) Import progress/status displayed - PASS (role=status progress, role=alert error, role=status info with dismiss)",
+        "BUG FOUND in src/components/SchemaImportSelector.tsx: handleCustomSchemaChange writes to `schema` instead of `customSchema`, and showCustomInput = (schema === ''). When a user selects 'Other…' (schema='') and types a custom name, the first keystroke sets schema to non-empty, unmounting the custom input immediately. The customSchema state is never updated or read (dead state). A user cannot enter a custom schema name.",
+        "Required fix: (a) handleCustomSchemaChange should call setCustomSchema(event.target.value) not setSchema; (b) keep showCustomInput = (schema === '') so the input stays visible while typing; (c) import should use effective schema = customSchema || schema || 'public'; (d) add a test covering custom schema entry via the 'Other…' input.",
+        "Fix applied on ticket/TASK-040 branch: commit 7a2751b (TASK-040: fix custom schema entry in import UI)",
+        "Fixed: src/components/SchemaImportSelector.tsx - handleCustomSchemaChange now calls setCustomSchema; import uses effective schema = customSchema || schema || 'public'; showCustomInput stays (schema === '')",
+        "Added test: src/components/App.schema-import.test.tsx - 'sends a custom schema name entered via the Other… input to the backend'",
+        "Test report: npx vitest run in node:20-alpine container - 400 tests passed across 31 test files (includes 5 App.schema-import tests + 10 readSchemaApi tests)",
+        "Docker command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "TypeScript: npx tsc --noEmit - no new errors in changed files (SchemaImportSelector.tsx, App.schema-import.test.tsx); remaining TS errors are pre-existing in unrelated test files",
+        "Lint: npm run lint - no new errors in changed files; remaining errors are pre-existing in unrelated files"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-05T18:29:56.798267+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Review performed by software-architect (reviewer) on ticket/TASK-040 branch, commit 7a2751b",
+        "Verified fix in src/components/SchemaImportSelector.tsx: handleCustomSchemaChange now calls setCustomSchema(event.target.value) (not setSchema); import uses effective schema = customSchema || schema || 'public'; showCustomInput stays (schema === '') so the input remains visible while typing",
+        "Verified test in src/components/App.schema-import.test.tsx: 'sends a custom schema name entered via the Other… input to the backend'",
+        "Tests: npx vitest run in node:20-alpine container - 400 tests passed across 31 test files (includes 5 App.schema-import tests + 10 readSchemaApi tests)",
+        "Docker command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "TypeScript: npx tsc --noEmit - no new errors in changed files (SchemaImportSelector.tsx, App.tsx, App.schema-import.test.tsx, readSchemaApi.ts); remaining TS errors are pre-existing in unrelated test files",
+        "Lint: npm run lint - no new errors in changed files; remaining errors/warnings are pre-existing in unrelated files",
+        "Acceptance criteria review: (1) User can select a schema - PASS (public, information_schema, and custom 'Other…' input all work); (2) Import trigger sends request to backend - PASS; (3) Import progress/status displayed - PASS (role=status progress, role=alert error, role=status info with dismiss)"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-05T18:40:40.923896+00:00",
+      "reason": "passed",
+      "evidence": [
+        "Review performed by software-architect (reviewer) on ticket/TASK-040 branch, commit 7a2751b",
+        "Verified fix in src/components/SchemaImportSelector.tsx: handleCustomSchemaChange now calls setCustomSchema(event.target.value) (not setSchema); import uses effective schema = customSchema || schema || 'public'; showCustomInput stays (schema === '') so the input remains visible while typing",
+        "Verified test in src/components/App.schema-import.test.tsx: 'sends a custom schema name entered via the Other… input to the backend'",
+        "Tests: npx vitest run in node:20-alpine container - 400 tests passed across 31 test files (includes 5 App.schema-import tests + 10 readSchemaApi tests)",
+        "Docker command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+        "TypeScript: npx tsc --noEmit - no new errors in changed files (SchemaImportSelector.tsx, App.tsx, App.schema-import.test.tsx, readSchemaApi.ts); remaining TS errors are pre-existing in unrelated test files",
+        "Lint: npm run lint - no new errors in changed files; remaining errors/warnings are pre-existing in unrelated files",
+        "Acceptance criteria review: (1) User can select a schema - PASS (public, information_schema, and custom 'Other…' input all work); (2) Import trigger sends request to backend - PASS; (3) Import progress/status displayed - PASS (role=status progress, role=alert error, role=status info with dismiss)",
+        "QA manual verification - Unit tests: npx vitest run in node:20-alpine container - 400 tests passed across 31 test files (includes 5 App.schema-import tests + 10 readSchemaApi tests)",
+        "QA manual verification - Lint: npm run lint - no new errors in changed files (SchemaImportSelector.tsx, App.schema-import.test.tsx, readSchemaApi.ts, App.tsx, index.css); remaining errors/warnings are pre-existing in unrelated files",
+        "QA manual verification - TypeScript: npx tsc --noEmit - no new errors in changed files; remaining TS errors are pre-existing in unrelated test files",
+        "QA manual verification - Visual QA: 8 Playwright tests passed in Chromium (mcr.microsoft.com/playwright:v1.49.1-noble) against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-TASK-040",
+        "QA manual verification - Visual QA test file: e2e/schema-import-visual-qa.spec.ts (commit 13ec811)",
+        "QA manual verification - Screenshots captured in qa-artifacts/: TASK-040-schema-import-panel-visible.png, TASK-040-schema-select-dropdown.png, TASK-040-custom-schema-input.png, TASK-040-import-success.png, TASK-040-custom-schema-import.png, TASK-040-import-progress.png, TASK-040-import-error.png",
+        "QA manual verification - Docker commands: (unit tests) docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'; (lint) docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm run lint'; (TypeScript) npx tsc --noEmit; (visual QA) docker run --rm --network qa-TASK-040 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e BASE_URL=\"http://app-TASK-040:8080/\" -v $(pwd):/work -v $(pwd)/qa-artifacts:/artifacts -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"npx playwright@1.49.1 test e2e/schema-import-visual-qa.spec.ts --reporter=list\"",
+        "Acceptance criteria verified: (1) User can select a schema - PASS (public, information_schema, and custom 'Other…' input all verified visually); (2) Import trigger sends request to backend - PASS (verified request payload via Playwright route interception); (3) Import progress/status displayed - PASS (progress text 'Importing schema…', success message, error message with dismiss button all verified visually)"
+      ]
+    }
+  ],
+  "sprint": 66,
+  "requiresReview": true,
+  "updatedAt": "2026-11-05T18:40:40.923912+00:00",
+  "resultEvidence": [
+    "Review performed by software-architect (reviewer) on ticket/TASK-040 branch, commit 7a2751b",
+    "Verified fix in src/components/SchemaImportSelector.tsx: handleCustomSchemaChange now calls setCustomSchema(event.target.value) (not setSchema); import uses effective schema = customSchema || schema || 'public'; showCustomInput stays (schema === '') so the input remains visible while typing",
+    "Verified test in src/components/App.schema-import.test.tsx: 'sends a custom schema name entered via the Other… input to the backend'",
+    "Tests: npx vitest run in node:20-alpine container - 400 tests passed across 31 test files (includes 5 App.schema-import tests + 10 readSchemaApi tests)",
+    "Docker command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user 1000:1000 --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'",
+    "TypeScript: npx tsc --noEmit - no new errors in changed files (SchemaImportSelector.tsx, App.tsx, App.schema-import.test.tsx, readSchemaApi.ts); remaining TS errors are pre-existing in unrelated test files",
+    "Lint: npm run lint - no new errors in changed files; remaining errors/warnings are pre-existing in unrelated files",
+    "Acceptance criteria review: (1) User can select a schema - PASS (public, information_schema, and custom 'Other…' input all work); (2) Import trigger sends request to backend - PASS; (3) Import progress/status displayed - PASS (role=status progress, role=alert error, role=status info with dismiss)",
+    "QA manual verification - Unit tests: npx vitest run in node:20-alpine container - 400 tests passed across 31 test files (includes 5 App.schema-import tests + 10 readSchemaApi tests)",
+    "QA manual verification - Lint: npm run lint - no new errors in changed files (SchemaImportSelector.tsx, App.schema-import.test.tsx, readSchemaApi.ts, App.tsx, index.css); remaining errors/warnings are pre-existing in unrelated files",
+    "QA manual verification - TypeScript: npx tsc --noEmit - no new errors in changed files; remaining TS errors are pre-existing in unrelated test files",
+    "QA manual verification - Visual QA: 8 Playwright tests passed in Chromium (mcr.microsoft.com/playwright:v1.49.1-noble) against app served via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-TASK-040",
+    "QA manual verification - Visual QA test file: e2e/schema-import-visual-qa.spec.ts (commit 13ec811)",
+    "QA manual verification - Screenshots captured in qa-artifacts/: TASK-040-schema-import-panel-visible.png, TASK-040-schema-select-dropdown.png, TASK-040-custom-schema-input.png, TASK-040-import-success.png, TASK-040-custom-schema-import.png, TASK-040-import-progress.png, TASK-040-import-error.png",
+    "QA manual verification - Docker commands: (unit tests) docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm ci --ignore-scripts && npm test'; (lint) docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v $(pwd):/work -w /work node:20-alpine sh -c 'npm run lint'; (TypeScript) npx tsc --noEmit; (visual QA) docker run --rm --network qa-TASK-040 --init --cap-drop ALL --security-opt no-new-privileges --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e BASE_URL=\"http://app-TASK-040:8080/\" -v $(pwd):/work -v $(pwd)/qa-artifacts:/artifacts -w /work mcr.microsoft.com/playwright:v1.49.1-noble sh -c \"npx playwright@1.49.1 test e2e/schema-import-visual-qa.spec.ts --reporter=list\"",
+    "Acceptance criteria verified: (1) User can select a schema - PASS (public, information_schema, and custom 'Other…' input all verified visually); (2) Import trigger sends request to backend - PASS (verified request payload via Playwright route interception); (3) Import progress/status displayed - PASS (progress text 'Importing schema…', success message, error message with dismiss button all verified visually)"
+  ],
+  "implementedBy": "web-developer"
+}

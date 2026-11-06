@@ -1,0 +1,96 @@
+{
+  "id": "TASK-055",
+  "type": "task",
+  "title": "Design read-schema API endpoint specification",
+  "description": "Design the backend API endpoint specification for introspecting PostgreSQL schema, including request/response format for tables, columns, types, keys, constraints, and indexes.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-017",
+  "acceptanceCriteria": [
+    "API endpoint specification is documented",
+    "Response includes tables, columns, data types",
+    "Response includes primary keys, foreign keys",
+    "Response includes unique constraints, indexes",
+    "Error handling for connection failures is defined"
+  ],
+  "dependencies": [
+    "TASK-051"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-4.2"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T23:39:58.646408+00:00",
+      "reason": "Planned for sprint 8",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T00:01:57.930488+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:0d1a67c873806240144ade43f6e5c216fee268b0",
+        "file:docs/api/read-schema.md",
+        "docker: node:20-alpine backend unit tests (vitest run) - 69 passed, 2 pre-existing integration failures requiring live PostgreSQL",
+        "docker: node:20-alpine backend typecheck (tsc --noEmit) - passed",
+        "docker: node:20-alpine root lint - 1 pre-existing warning in frontend test code (unrelated)"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T00:48:56.086079+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:0d1a67c873806240144ade43f6e5c216fee268b0",
+        "file:docs/api/read-schema.md",
+        "docker: node:20-alpine backend unit tests (vitest run) - 69 passed, 2 pre-existing integration failures requiring live PostgreSQL",
+        "docker: node:20-alpine backend typecheck (tsc --noEmit) - passed",
+        "docker: node:20-alpine root lint - 1 pre-existing warning in frontend test code (unrelated)"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-02T01:55:49.963757+00:00",
+      "reason": "passed",
+      "evidence": [
+        "commit:0d1a67c873806240144ade43f6e5c216fee268b0",
+        "file:docs/api/read-schema.md",
+        "docker: node:20-alpine backend unit tests (vitest run) - 69 passed, 2 pre-existing integration failures requiring live PostgreSQL, 7 skipped",
+        "docker: node:20-alpine backend typecheck (tsc --noEmit) - passed",
+        "docker: node:20-alpine root unit tests (vitest run) - 52 passed across 8 files",
+        "docker: node:20-alpine root lint - 1 pre-existing warning in frontend test code (unrelated), 0 errors",
+        "qa: all 5 acceptance criteria verified against docs/api/read-schema.md - passed"
+      ]
+    }
+  ],
+  "sprint": 10,
+  "requiresReview": true,
+  "updatedAt": "2026-11-02T01:55:49.963777+00:00",
+  "resultEvidence": [
+    "commit:0d1a67c873806240144ade43f6e5c216fee268b0",
+    "file:docs/api/read-schema.md",
+    "docker: node:20-alpine backend unit tests (vitest run) - 69 passed, 2 pre-existing integration failures requiring live PostgreSQL, 7 skipped",
+    "docker: node:20-alpine backend typecheck (tsc --noEmit) - passed",
+    "docker: node:20-alpine root unit tests (vitest run) - 52 passed across 8 files",
+    "docker: node:20-alpine root lint - 1 pre-existing warning in frontend test code (unrelated), 0 errors",
+    "qa: all 5 acceptance criteria verified against docs/api/read-schema.md - passed"
+  ],
+  "implementedBy": "software-architect"
+}

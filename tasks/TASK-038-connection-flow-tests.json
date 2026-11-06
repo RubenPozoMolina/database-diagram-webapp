@@ -1,0 +1,101 @@
+{
+  "id": "TASK-038",
+  "type": "task",
+  "title": "Unit tests for connection flow",
+  "description": "Write automated unit tests to verify the PostgreSQL connection form and state management work correctly.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-012",
+  "acceptanceCriteria": [
+    "Unit tests verify connection form submission",
+    "Unit tests verify connection state management",
+    "Unit tests verify success/failure indication",
+    "All tests pass"
+  ],
+  "dependencies": [
+    "TASK-036",
+    "TASK-037"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.1"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T01:36:16.027583+00:00",
+      "reason": "Planned for sprint 28",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-04T02:52:05.062601+00:00",
+      "reason": "passed",
+      "evidence": [
+        "commit:aff6f79 (TASK-038: add unit tests for connection flow integration)",
+        "file:src/__tests__/connectionFlow.test.ts (9 new connection flow unit tests)",
+        "docker: node:20-alpine, docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work -w /work node:20-alpine sh -c \"npx vitest run --reporter=verbose\"",
+        "test-report: 227 tests passed, 23 test files, 0 failures (including 9 new connectionFlow tests)",
+        "acceptance-criteria: 1) connection form submission verified (ConnectionForm.test.ts + connectionFlow.test.ts), 2) connection state management verified (useConnection.test.ts + connectionFlow.test.ts), 3) success/failure indication verified (ConnectionForm.test.ts + useConnection.test.ts + connectionFlow.test.ts), 4) all tests pass"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T03:17:11.228073+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:aff6f79 (TASK-038: add unit tests for connection flow integration)",
+        "file:src/__tests__/connectionFlow.test.ts (9 new connection flow unit tests)",
+        "docker: node:20-alpine, docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work -w /work node:20-alpine sh -c \"npx vitest run --reporter=verbose\"",
+        "test-report: 227 tests passed, 23 test files, 0 failures (including 9 new connectionFlow tests)",
+        "acceptance-criteria: 1) connection form submission verified (ConnectionForm.test.ts + connectionFlow.test.ts), 2) connection state management verified (useConnection.test.ts + connectionFlow.test.ts), 3) success/failure indication verified (ConnectionForm.test.ts + useConnection.test.ts + connectionFlow.test.ts), 4) all tests pass",
+        "review: software-architect independently re-ran all tests in Docker (node:20-alpine, no host execution); 227 tests passed, 23 test files, 0 failures; all 9 connectionFlow tests pass; all acceptance criteria met; git status clean on ticket/TASK-038 (commit aff6f79)"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-04T04:15:30.788026+00:00",
+      "reason": "passed",
+      "evidence": [
+        "commit:aff6f79 (TASK-038: add unit tests for connection flow integration)",
+        "file:src/__tests__/connectionFlow.test.ts (9 new connection flow unit tests)",
+        "file:src/__tests__/ConnectionForm.test.ts (connection form submission tests)",
+        "file:src/__tests__/useConnection.test.ts (connection state management tests)",
+        "docker: node:20-alpine, docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work -w /work node:20-alpine sh -c \"npx vitest run --reporter=verbose\"",
+        "test-report: 227 tests passed, 23 test files, 0 failures (including 9 new connectionFlow tests)",
+        "acceptance-criteria: 1) connection form submission verified (ConnectionForm.test.ts + connectionFlow.test.ts), 2) connection state management verified (useConnection.test.ts + connectionFlow.test.ts), 3) success/failure indication verified (ConnectionForm.test.ts + useConnection.test.ts + connectionFlow.test.ts), 4) all tests pass",
+        "qa-verification: qa-automation independently re-ran all tests in Docker (node:20-alpine, no host execution); 227 tests passed, 23 test files, 0 failures; all 9 connectionFlow tests pass; all acceptance criteria met; git status clean on ticket/TASK-038 (commit aff6f79)",
+        "skipped-unsupported-platform: none (all tests run in Node.js/jsdom, no browser or platform-specific tooling required)"
+      ]
+    }
+  ],
+  "sprint": 30,
+  "requiresReview": true,
+  "updatedAt": "2026-11-04T04:15:30.788037+00:00",
+  "resultEvidence": [
+    "commit:aff6f79 (TASK-038: add unit tests for connection flow integration)",
+    "file:src/__tests__/connectionFlow.test.ts (9 new connection flow unit tests)",
+    "file:src/__tests__/ConnectionForm.test.ts (connection form submission tests)",
+    "file:src/__tests__/useConnection.test.ts (connection state management tests)",
+    "docker: node:20-alpine, docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work -w /work node:20-alpine sh -c \"npx vitest run --reporter=verbose\"",
+    "test-report: 227 tests passed, 23 test files, 0 failures (including 9 new connectionFlow tests)",
+    "acceptance-criteria: 1) connection form submission verified (ConnectionForm.test.ts + connectionFlow.test.ts), 2) connection state management verified (useConnection.test.ts + connectionFlow.test.ts), 3) success/failure indication verified (ConnectionForm.test.ts + useConnection.test.ts + connectionFlow.test.ts), 4) all tests pass",
+    "qa-verification: qa-automation independently re-ran all tests in Docker (node:20-alpine, no host execution); 227 tests passed, 23 test files, 0 failures; all 9 connectionFlow tests pass; all acceptance criteria met; git status clean on ticket/TASK-038 (commit aff6f79)",
+    "skipped-unsupported-platform: none (all tests run in Node.js/jsdom, no browser or platform-specific tooling required)"
+  ],
+  "implementedBy": "qa-automation"
+}

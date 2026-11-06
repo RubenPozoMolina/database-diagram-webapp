@@ -1,0 +1,108 @@
+{
+  "id": "TASK-066",
+  "type": "task",
+  "title": "Define JSON schema for diagram serialization",
+  "description": "Define the exact JSON schema for diagram model serialization, including tables, columns, data types, primary keys, foreign keys, unique constraints, indexes, and relationships.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": null,
+  "acceptanceCriteria": [
+    "JSON schema defines table structure",
+    "JSON schema defines column structure (name, type, nullable, default)",
+    "JSON schema defines primary key, foreign key, unique constraint, index",
+    "JSON schema defines relationship structure",
+    "Schema is documented and versioned"
+  ],
+  "dependencies": [
+    "TASK-065"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Infrastructure task derived from PRD Open Question #4"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-02T00:07:05.887583+00:00",
+      "reason": "Planned for sprint 9",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T00:55:04.601466+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:ec281ce on branch ticket/TASK-066 (pushed to origin/ticket/TASK-066)",
+        "Files created: src/schema/diagram.schema.json (JSON Schema Draft 7 for diagram serialization, version 1.0.0), src/schema/diagram.example.json (schema-valid example with tables, columns, foreign key relationship, unique constraint, index), docs/api/diagram-json-schema.md (documentation with versioning, field reference, security notes, acceptance criteria coverage)",
+        "Docker test run: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work/frontend node:20-alpine sh -c \"npm ci --ignore-scripts && npm test\"",
+        "Test result: 3 passed suites (App.test.tsx, id.test.ts, diagram-serializer.test.ts), 6 passed tests, 0 failed",
+        "Acceptance criteria met: JSON schema defines table structure; column structure (name, type, nullable, default); primary key, foreign key, unique constraint, index; relationship structure; schema is documented and versioned"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-02T02:00:19.324161+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:ec281ce on branch ticket/TASK-066 (pushed to origin/ticket/TASK-066); branch in sync with origin, working tree clean",
+        "Files reviewed: src/schema/diagram.schema.json (JSON Schema Draft 7, version 1.0.0), src/schema/diagram.example.json (schema-valid example), docs/api/diagram-json-schema.md (versioning, field reference, security notes, acceptance criteria coverage), frontend/src/services/diagram-serializer.ts (DIAGRAM_JSON_VERSION 1.0.0 matches schema), frontend/src/types/diagram.ts",
+        "Docker test run: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx --no-install vitest run --config vitest.frontend.config.ts\" (temporary frontend-focused vitest config removed after run)",
+        "Test result: 3 passed suites (diagram-serializer.test.ts, id.test.ts, App.test.tsx), 6 passed tests, 0 failed",
+        "Schema validation: diagram.example.json validates against src/schema/diagram.schema.json (Draft 7, $schema http://json-schema.org/draft-07/schema#, version 1.0.0)",
+        "Acceptance criteria met: table structure; column structure (name, type, nullable, default); primary key, foreign key, unique constraint, index; relationship structure; schema documented and versioned",
+        "Review decision: approve (all acceptance criteria satisfied, no blocking findings)"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-02T02:59:21.408167+00:00",
+      "reason": "passed",
+      "evidence": [
+        "commit:ec281ce on branch ticket/TASK-066 (pushed to origin/ticket/TASK-066); branch in sync with origin, working tree clean",
+        "Files reviewed: src/schema/diagram.schema.json (JSON Schema Draft 7, version 1.0.0), src/schema/diagram.example.json (schema-valid example), docs/api/diagram-json-schema.md (versioning, field reference, security notes, acceptance criteria coverage), frontend/src/services/diagram-serializer.ts (DIAGRAM_JSON_VERSION 1.0.0 matches schema), frontend/src/types/diagram.ts",
+        "Docker test run (prior): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx --no-install vitest run --config vitest.frontend.config.ts\" (temporary frontend-focused vitest config removed after run)",
+        "Test result (prior): 3 passed suites (diagram-serializer.test.ts, id.test.ts, App.test.tsx), 6 passed tests, 0 failed",
+        "Schema validation (prior): diagram.example.json validates against src/schema/diagram.schema.json (Draft 7, $schema http://json-schema.org/draft-07/schema#, version 1.0.0)",
+        "Acceptance criteria met (prior): table structure; column structure (name, type, nullable, default); primary key, foreign key, unique constraint, index; relationship structure; schema documented and versioned",
+        "Review decision (prior): approve (all acceptance criteria satisfied, no blocking findings)",
+        "QA verification (TASK-066, sprint 11): Docker test run: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work/frontend node:20-alpine sh -c \"npm install --ignore-scripts && npm test\" -> Test result: 3 passed suites (src/utils/id.test.ts, src/services/diagram-serializer.test.ts, src/App.test.tsx), 6 passed tests, 0 failed",
+        "Schema validation: diagram.example.json validates against src/schema/diagram.schema.json (JSON Schema Draft 7, $schema http://json-schema.org/draft-07/schema#, version 1.0.0) - verified with AJV validator in Docker container",
+        "Version match: frontend/src/services/diagram-serializer.ts DIAGRAM_JSON_VERSION \"1.0.0\" matches schema version \"1.0.0\"",
+        "Acceptance criteria verified: (1) table structure - Table def with id, name, x, y, width, height, columns; (2) column structure - Column def with name, type, nullable, defaultValue; (3) primary key/foreign key/unique constraint/index - Column.primaryKey, Relationship, UniqueConstraint, Index; (4) relationship structure - Relationship def with source/target table and column IDs, onDelete/onUpdate; (5) documented and versioned - schema version 1.0.0, docs/api/diagram-json-schema.md with field reference, versioning table, acceptance criteria coverage",
+        "No host platform or OS limitations encountered - all criteria executable on Linux"
+      ]
+    }
+  ],
+  "sprint": 11,
+  "requiresReview": true,
+  "updatedAt": "2026-11-02T02:59:21.408186+00:00",
+  "implementedBy": "software-architect",
+  "resultEvidence": [
+    "commit:ec281ce on branch ticket/TASK-066 (pushed to origin/ticket/TASK-066); branch in sync with origin, working tree clean",
+    "Files reviewed: src/schema/diagram.schema.json (JSON Schema Draft 7, version 1.0.0), src/schema/diagram.example.json (schema-valid example), docs/api/diagram-json-schema.md (versioning, field reference, security notes, acceptance criteria coverage), frontend/src/services/diagram-serializer.ts (DIAGRAM_JSON_VERSION 1.0.0 matches schema), frontend/src/types/diagram.ts",
+    "Docker test run (prior): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"npx --no-install vitest run --config vitest.frontend.config.ts\" (temporary frontend-focused vitest config removed after run)",
+    "Test result (prior): 3 passed suites (diagram-serializer.test.ts, id.test.ts, App.test.tsx), 6 passed tests, 0 failed",
+    "Schema validation (prior): diagram.example.json validates against src/schema/diagram.schema.json (Draft 7, $schema http://json-schema.org/draft-07/schema#, version 1.0.0)",
+    "Acceptance criteria met (prior): table structure; column structure (name, type, nullable, default); primary key, foreign key, unique constraint, index; relationship structure; schema documented and versioned",
+    "Review decision (prior): approve (all acceptance criteria satisfied, no blocking findings)",
+    "QA verification (TASK-066, sprint 11): Docker test run: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work/frontend node:20-alpine sh -c \"npm install --ignore-scripts && npm test\" -> Test result: 3 passed suites (src/utils/id.test.ts, src/services/diagram-serializer.test.ts, src/App.test.tsx), 6 passed tests, 0 failed",
+    "Schema validation: diagram.example.json validates against src/schema/diagram.schema.json (JSON Schema Draft 7, $schema http://json-schema.org/draft-07/schema#, version 1.0.0) - verified with AJV validator in Docker container",
+    "Version match: frontend/src/services/diagram-serializer.ts DIAGRAM_JSON_VERSION \"1.0.0\" matches schema version \"1.0.0\"",
+    "Acceptance criteria verified: (1) table structure - Table def with id, name, x, y, width, height, columns; (2) column structure - Column def with name, type, nullable, defaultValue; (3) primary key/foreign key/unique constraint/index - Column.primaryKey, Relationship, UniqueConstraint, Index; (4) relationship structure - Relationship def with source/target table and column IDs, onDelete/onUpdate; (5) documented and versioned - schema version 1.0.0, docs/api/diagram-json-schema.md with field reference, versioning table, acceptance criteria coverage",
+    "No host platform or OS limitations encountered - all criteria executable on Linux"
+  ]
+}

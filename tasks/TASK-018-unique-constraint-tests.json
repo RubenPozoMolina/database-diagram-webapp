@@ -1,0 +1,114 @@
+{
+  "id": "TASK-018",
+  "type": "task",
+  "title": "Unit tests for unique constraints",
+  "description": "Write automated unit tests to verify unique constraints can be added to columns and column groups correctly.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-006",
+  "acceptanceCriteria": [
+    "Unit tests verify unique constraint on single column",
+    "Unit tests verify unique constraint on column group",
+    "Unit tests verify constraint association with table",
+    "All tests pass"
+  ],
+  "dependencies": [
+    "TASK-016",
+    "TASK-017"
+  ],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.6"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-04T20:27:58.282013+00:00",
+      "reason": "Planned for sprint 44",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-04T20:34:37.422269+00:00",
+      "reason": "passed",
+      "evidence": [
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -v \"$(pwd)/test-results\":/results -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run --reporter=verbose --reporter=junit --outputFile=/results/vitest-junit.xml\" (image: node:20-alpine)",
+        "Test results: 328 tests passed, 0 failed, across 26 test files; exit code 0; duration ~2.05s",
+        "Test report: test-results/vitest-junit.xml (JUnit XML)",
+        "AC1 'unique constraint on single column' verified: createUniqueConstraint factory > creates a unique constraint tracking a single column; useDiagram > adds a unique constraint to a table (columnIds ['c2']); TableNode > adds a unique constraint to a single column",
+        "AC2 'unique constraint on column group' verified: createUniqueConstraint factory > creates a composite unique constraint tracking multiple columns; useDiagram > supports composite unique constraints on column groups (columnIds ['c2','c3']); TableNode > adds a unique constraint to a group of columns",
+        "AC3 'constraint association with table' verified: findUniqueConstraintsByTable > returns all unique constraints defined on a given table / only returns constraints whose tableId matches exactly; useDiagram > adds a unique constraint to a table (tableId asserted) / findUniqueConstraintsByTable returns constraints for a specific table",
+        "AC4 'All tests pass' verified: 328 passed / 0 failed",
+        "No new commits required: git status clean -- unique constraint unit tests already existed (added in dependencies TASK-016 and TASK-017) and all pass in container"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-04T20:53:49.464651+00:00",
+      "reason": "completed",
+      "evidence": [
+        "Reviewer: software-architect (TASK-018 sprint 45) - review of in-review ticket",
+        "Reviewed unique constraint unit test coverage across: src/__tests__/diagram-model.test.ts (createUniqueConstraint factory single column + composite + findUniqueConstraintsByTable), src/hooks/useDiagram.test.ts (add unique constraint to table, composite column groups, findUniqueConstraintsByTable, removal, table removal cleanup), src/components/TableNode.test.tsx (single column and group constraints UI), src/components/CreateTableModal.test.tsx (unique constraints in modal), src/serialization/diagramSerializer.test.ts + diagramDeserializer.test.ts (serialize/deserialize unique constraints), src/__tests__/schemaToDiagram.test.ts (converts unique constraints at diagram level)",
+        "docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -v \"$(pwd)/test-results\":/results -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run --reporter=verbose --reporter=junit --outputFile=/results/vitest-junit.xml\" (image: node:20-alpine)",
+        "Test results: 328 tests passed, 0 failed, across 26 test files; exit code 0; duration ~2.02s",
+        "Test report: test-results/vitest-junit.xml (JUnit XML) - tests='328' failures='0' errors='0'",
+        "AC1 'unique constraint on single column' APPROVED: createUniqueConstraint factory > creates a unique constraint tracking a single column; useDiagram > adds a unique constraint to a table (columnIds ['c2']); TableNode > adds a unique constraint to a single column",
+        "AC2 'unique constraint on column group' APPROVED: createUniqueConstraint factory > creates a composite unique constraint tracking multiple columns; useDiagram > supports composite unique constraints on column groups (columnIds ['c2','c3']); TableNode > adds a unique constraint to a group of columns",
+        "AC3 'constraint association with table' APPROVED: findUniqueConstraintsByTable > returns all unique constraints defined on a given table / only returns constraints whose tableId matches exactly; useDiagram > adds a unique constraint to a table (tableId asserted) / findUniqueConstraintsByTable returns constraints for a specific table",
+        "AC4 'All tests pass' APPROVED: 328 passed / 0 failed",
+        "No new commits required: git status clean -- unique constraint unit tests already exist (added in dependencies TASK-016 and TASK-017) and all pass in container. Reviewer approves: no changes requested."
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-04T21:31:44.324938+00:00",
+      "reason": "passed",
+      "evidence": [
+        "Reviewer: software-architect (TASK-018 sprint 45) - review of in-review ticket",
+        "Reviewed unique constraint unit test coverage across: src/__tests__/diagram-model.test.ts (createUniqueConstraint factory single column + composite + findUniqueConstraintsByTable), src/hooks/useDiagram.test.ts (add unique constraint to table, composite column groups, findUniqueConstraintsByTable, removal, table removal cleanup), src/components/TableNode.test.tsx (single column and group constraints UI), src/components/CreateTableModal.test.tsx (unique constraints in modal), src/serialization/diagramSerializer.test.ts + diagramDeserializer.test.ts (serialize/deserialize unique constraints), src/__tests__/schemaToDiagram.test.ts (converts unique constraints at diagram level)",
+        "QA re-verification (sprint 46): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -v \"$(pwd)/test-results\":/results -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run --reporter=verbose --reporter=junit --outputFile=/results/vitest-junit.xml\" (image: node:20-alpine)",
+        "Test results: 328 tests passed, 0 failed, across 26 test files; exit code 0; duration ~2.06s",
+        "Test report: test-results/vitest-junit.xml (JUnit XML) - tests='328' failures='0' errors='0'",
+        "AC1 'unique constraint on single column' VERIFIED: createUniqueConstraint factory > creates a unique constraint tracking a single column; useDiagram > adds a unique constraint to a table; TableNode > adds a unique constraint to a single column",
+        "AC2 'unique constraint on column group' VERIFIED: createUniqueConstraint factory > creates a composite unique constraint tracking multiple columns; useDiagram > supports composite unique constraints on column groups; TableNode > adds a unique constraint to a group of columns",
+        "AC3 'constraint association with table' VERIFIED: findUniqueConstraintsByTable > returns all unique constraints defined on a given table / only returns constraints whose tableId matches exactly; useDiagram > adds a unique constraint to a table / findUniqueConstraintsByTable returns constraints for a specific table",
+        "AC4 'All tests pass' VERIFIED: 328 passed / 0 failed across 26 test files",
+        "No platform/OS limitations: all tests are Node.js unit tests running in node:20-alpine Linux container; no skipped-unsupported-platform criteria",
+        "No new commits required: git status clean -- unique constraint unit tests already exist (added in dependencies TASK-016 and TASK-017) and all pass in container",
+        "Branch: ticket/TASK-018 (trunk-based development; main not touched)"
+      ]
+    }
+  ],
+  "sprint": 46,
+  "requiresReview": true,
+  "updatedAt": "2026-11-04T21:31:44.324949+00:00",
+  "resultEvidence": [
+    "Reviewer: software-architect (TASK-018 sprint 45) - review of in-review ticket",
+    "Reviewed unique constraint unit test coverage across: src/__tests__/diagram-model.test.ts (createUniqueConstraint factory single column + composite + findUniqueConstraintsByTable), src/hooks/useDiagram.test.ts (add unique constraint to table, composite column groups, findUniqueConstraintsByTable, removal, table removal cleanup), src/components/TableNode.test.tsx (single column and group constraints UI), src/components/CreateTableModal.test.tsx (unique constraints in modal), src/serialization/diagramSerializer.test.ts + diagramDeserializer.test.ts (serialize/deserialize unique constraints), src/__tests__/schemaToDiagram.test.ts (converts unique constraints at diagram level)",
+    "QA re-verification (sprint 46): docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -v \"$(pwd)/qa-artifacts\":/artifacts -v \"$(pwd)/test-results\":/results -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run --reporter=verbose --reporter=junit --outputFile=/results/vitest-junit.xml\" (image: node:20-alpine)",
+    "Test results: 328 tests passed, 0 failed, across 26 test files; exit code 0; duration ~2.06s",
+    "Test report: test-results/vitest-junit.xml (JUnit XML) - tests='328' failures='0' errors='0'",
+    "AC1 'unique constraint on single column' VERIFIED: createUniqueConstraint factory > creates a unique constraint tracking a single column; useDiagram > adds a unique constraint to a table; TableNode > adds a unique constraint to a single column",
+    "AC2 'unique constraint on column group' VERIFIED: createUniqueConstraint factory > creates a composite unique constraint tracking multiple columns; useDiagram > supports composite unique constraints on column groups; TableNode > adds a unique constraint to a group of columns",
+    "AC3 'constraint association with table' VERIFIED: findUniqueConstraintsByTable > returns all unique constraints defined on a given table / only returns constraints whose tableId matches exactly; useDiagram > adds a unique constraint to a table / findUniqueConstraintsByTable returns constraints for a specific table",
+    "AC4 'All tests pass' VERIFIED: 328 passed / 0 failed across 26 test files",
+    "No platform/OS limitations: all tests are Node.js unit tests running in node:20-alpine Linux container; no skipped-unsupported-platform criteria",
+    "No new commits required: git status clean -- unique constraint unit tests already exist (added in dependencies TASK-016 and TASK-017) and all pass in container",
+    "Branch: ticket/TASK-018 (trunk-based development; main not touched)"
+  ],
+  "implementedBy": "qa-automation"
+}

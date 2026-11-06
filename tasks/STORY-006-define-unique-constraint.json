@@ -1,0 +1,129 @@
+{
+  "id": "STORY-006",
+  "type": "story",
+  "title": "Define Unique Constraint",
+  "description": "As a database designer, I want to add unique constraints to columns or column groups so that data uniqueness rules are captured.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "EPIC-001",
+  "acceptanceCriteria": [
+    "Given a table with columns exists, when the user adds a unique constraint, then the constraint is recorded and visually associated with the table"
+  ],
+  "dependencies": [
+    "STORY-003"
+  ],
+  "storyPoints": 3,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-1.6"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-03T20:42:20.613000+00:00",
+      "reason": "Planned for sprint 24",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "project-manager",
+      "timestamp": "2026-11-03T21:36:16.618774+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit: STORY-006 implementation",
+        "files: src/types/diagram.ts, src/hooks/useDiagram.ts, src/components/TableNode.tsx, src/components/DiagramCanvas.tsx, src/components/CreateTableModal.tsx, src/components/App.tsx, src/index.css",
+        "test-files: src/components/TableNode.test.tsx, src/components/CreateTableModal.test.tsx, src/hooks/useDiagram.test.ts",
+        "tests: 171 passed across 19 test files (vitest run, jsdom environment, inside node:20-alpine Docker container)",
+        "test-report: All acceptance criteria verified - unique constraints can be added to single columns and column groups, constraints are recorded in the diagram model and visually associated with tables via UQ badges",
+        "typescript: No new type errors introduced by this change (4 pre-existing unused-import errors in unrelated files)",
+        "lint: No new lint issues introduced by this change (5 pre-existing issues in unrelated files)",
+        "build: vite build blocked by pre-existing TypeScript errors in unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts)"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-03T22:36:16.297223+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit: STORY-006 implementation",
+        "files: src/types/diagram.ts, src/hooks/useDiagram.ts, src/components/TableNode.tsx, src/components/DiagramCanvas.tsx, src/components/CreateTableModal.tsx, src/components/App.tsx, src/index.css",
+        "test-files: src/components/TableNode.test.tsx, src/components/CreateTableModal.test.tsx, src/hooks/useDiagram.test.ts",
+        "tests: 171 passed across 19 test files (vitest run, jsdom environment, inside node:20-alpine Docker container)",
+        "test-report: All acceptance criteria verified - unique constraints can be added to single columns and column groups, constraints are recorded in the diagram model and visually associated with tables via UQ badges",
+        "typescript: No new type errors introduced by this change (4 pre-existing unused-import errors in unrelated files)",
+        "lint: No new lint issues introduced by this change (5 pre-existing issues in unrelated files)",
+        "build: vite build blocked by pre-existing TypeScript errors in unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts)",
+        "review: software-architect review approved - implementation fully satisfies acceptance criteria",
+        "reviewer: software-architect",
+        "docker-test: node:20-alpine, vitest run --config vitest.forceexit.config.ts, 171 passed / 19 test files (TableNode.test.tsx 18, CreateTableModal.test.tsx 13, useDiagram.test.ts 13 plus 16 other files)",
+        "typescript: 4 pre-existing TS6133/TS6196 errors in unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts), zero new errors in STORY-006 files",
+        "lint: 2 pre-existing warnings (App.tsx handleConnect exhaustive-deps, index.css ignored), zero new issues in STORY-006 code",
+        "review-finding: Unique constraint model (UniqueConstraint type, uniqueConstraints array on Diagram, createUniqueConstraint/findUniqueConstraintsByTable helpers), useDiagram addUniqueConstraint/removeUniqueConstraint with table-removal cleanup, TableNode UQ badges, DiagramCanvas wiring, CreateTableModal constraint builder, App.tsx integration, CSS badge styles — all complete and correct",
+        "acceptance-criteria: Met - constraint recorded in diagram.uniqueConstraints and visually associated via UQ badges on TableNode; single-column and composite column-group constraints both supported"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-automation",
+      "timestamp": "2026-11-03T23:12:51.579043+00:00",
+      "reason": "passed",
+      "evidence": [
+        "commit: STORY-006 implementation",
+        "files: src/types/diagram.ts, src/hooks/useDiagram.ts, src/components/TableNode.tsx, src/components/DiagramCanvas.tsx, src/components/CreateTableModal.tsx, src/components/App.tsx, src/index.css",
+        "test-files: src/components/TableNode.test.tsx, src/components/CreateTableModal.test.tsx, src/hooks/useDiagram.test.ts",
+        "tests: 171 passed across 19 test files (vitest run, jsdom environment, inside node:20-alpine Docker container)",
+        "test-report: All acceptance criteria verified - unique constraints can be added to single columns and column groups, constraints are recorded in the diagram model and visually associated with tables via UQ badges",
+        "typescript: No new type errors introduced by this change (4 pre-existing unused-import errors in unrelated files)",
+        "lint: No new lint issues introduced by this change (5 pre-existing issues in unrelated files)",
+        "build: vite build blocked by pre-existing TypeScript errors in unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts)",
+        "review: software-architect review approved - implementation fully satisfies acceptance criteria",
+        "reviewer: software-architect",
+        "docker-test: node:20-alpine, vitest run --config vitest.forceexit.config.ts, 171 passed / 19 test files (TableNode.test.tsx 18, CreateTableModal.test.tsx 13, useDiagram.test.ts 13 plus 16 other files)",
+        "typescript: 4 pre-existing TS6133/TS6196 errors in unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts), zero new errors in STORY-006 files",
+        "lint: 2 pre-existing warnings (App.tsx handleConnect exhaustive-deps, index.css ignored), zero new issues in STORY-006 code",
+        "review-finding: Unique constraint model (UniqueConstraint type, uniqueConstraints array on Diagram, createUniqueConstraint/findUniqueConstraintsByTable helpers), useDiagram addUniqueConstraint/removeUniqueConstraint with table-removal cleanup, TableNode UQ badges, DiagramCanvas wiring, CreateTableModal constraint builder, App.tsx integration, CSS badge styles — all complete and correct",
+        "acceptance-criteria: Met - constraint recorded in diagram.uniqueConstraints and visually associated via UQ badges on TableNode; single-column and composite column-group constraints both supported",
+        "qa-automation-verification: docker run --rm --name story-006-qa --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work node:20-alpine sh -c 'npx vitest run --config vitest.forceexit.config.ts src/hooks/useDiagram.test.ts src/components/TableNode.test.tsx src/components/CreateTableModal.test.tsx --reporter=verbose'",
+        "qa-test-result: EXIT_CODE=0, 44 tests passed across 3 STORY-006 test files (useDiagram.test.ts 13, TableNode.test.tsx 18, CreateTableModal.test.tsx 13)",
+        "qa-acceptance-criteria: MET - 'Given a table with columns exists, when the user adds a unique constraint, then the constraint is recorded and visually associated with the table': constraint recorded in diagram.uniqueConstraints (useDiagram.test.ts 'adds a unique constraint to a table', 'supports composite unique constraints on column groups'), visually associated via UQ badges on TableNode (TableNode.test.tsx single-column and composite badge tests), constraint builder in CreateTableModal (CreateTableModal.test.tsx unique constraint checkbox/remove tests)",
+        "skipped-unsupported-platform: none - all tests execute in jsdom environment inside node:20-alpine container, no host browser or platform-specific tool required"
+      ]
+    }
+  ],
+  "sprint": 26,
+  "updatedAt": "2026-11-03T23:12:51.579063+00:00",
+  "requiresReview": true,
+  "resultEvidence": [
+    "commit: STORY-006 implementation",
+    "files: src/types/diagram.ts, src/hooks/useDiagram.ts, src/components/TableNode.tsx, src/components/DiagramCanvas.tsx, src/components/CreateTableModal.tsx, src/components/App.tsx, src/index.css",
+    "test-files: src/components/TableNode.test.tsx, src/components/CreateTableModal.test.tsx, src/hooks/useDiagram.test.ts",
+    "tests: 171 passed across 19 test files (vitest run, jsdom environment, inside node:20-alpine Docker container)",
+    "test-report: All acceptance criteria verified - unique constraints can be added to single columns and column groups, constraints are recorded in the diagram model and visually associated with tables via UQ badges",
+    "typescript: No new type errors introduced by this change (4 pre-existing unused-import errors in unrelated files)",
+    "lint: No new lint issues introduced by this change (5 pre-existing issues in unrelated files)",
+    "build: vite build blocked by pre-existing TypeScript errors in unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts)",
+    "review: software-architect review approved - implementation fully satisfies acceptance criteria",
+    "reviewer: software-architect",
+    "docker-test: node:20-alpine, vitest run --config vitest.forceexit.config.ts, 171 passed / 19 test files (TableNode.test.tsx 18, CreateTableModal.test.tsx 13, useDiagram.test.ts 13 plus 16 other files)",
+    "typescript: 4 pre-existing TS6133/TS6196 errors in unrelated files (readSchemaApi.test.ts, DdlPreview.tsx, ddlGenerator.ts), zero new errors in STORY-006 files",
+    "lint: 2 pre-existing warnings (App.tsx handleConnect exhaustive-deps, index.css ignored), zero new issues in STORY-006 code",
+    "review-finding: Unique constraint model (UniqueConstraint type, uniqueConstraints array on Diagram, createUniqueConstraint/findUniqueConstraintsByTable helpers), useDiagram addUniqueConstraint/removeUniqueConstraint with table-removal cleanup, TableNode UQ badges, DiagramCanvas wiring, CreateTableModal constraint builder, App.tsx integration, CSS badge styles — all complete and correct",
+    "acceptance-criteria: Met - constraint recorded in diagram.uniqueConstraints and visually associated via UQ badges on TableNode; single-column and composite column-group constraints both supported",
+    "qa-automation-verification: docker run --rm --name story-006-qa --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user $(id -u):$(id -g) --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v /home/rpozo/workspace/automatic-solution-generator/build/database-diagram-webapp:/work:rw -w /work node:20-alpine sh -c 'npx vitest run --config vitest.forceexit.config.ts src/hooks/useDiagram.test.ts src/components/TableNode.test.tsx src/components/CreateTableModal.test.tsx --reporter=verbose'",
+    "qa-test-result: EXIT_CODE=0, 44 tests passed across 3 STORY-006 test files (useDiagram.test.ts 13, TableNode.test.tsx 18, CreateTableModal.test.tsx 13)",
+    "qa-acceptance-criteria: MET - 'Given a table with columns exists, when the user adds a unique constraint, then the constraint is recorded and visually associated with the table': constraint recorded in diagram.uniqueConstraints (useDiagram.test.ts 'adds a unique constraint to a table', 'supports composite unique constraints on column groups'), visually associated via UQ badges on TableNode (TableNode.test.tsx single-column and composite badge tests), constraint builder in CreateTableModal (CreateTableModal.test.tsx unique constraint checkbox/remove tests)",
+    "skipped-unsupported-platform: none - all tests execute in jsdom environment inside node:20-alpine container, no host browser or platform-specific tool required"
+  ],
+  "implementedBy": "project-manager"
+}

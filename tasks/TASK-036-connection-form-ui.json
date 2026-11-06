@@ -1,0 +1,128 @@
+{
+  "id": "TASK-036",
+  "type": "task",
+  "title": "Implement PostgreSQL connection form UI",
+  "description": "Create the UI form for entering PostgreSQL connection details: host, port, database, user, and password.",
+  "status": "done",
+  "priority": "P0",
+  "createdBy": "project-manager",
+  "assignee": null,
+  "parent": "STORY-012",
+  "acceptanceCriteria": [
+    "Connection form displays fields for host, port, database, user, and password",
+    "User can enter connection details",
+    "Form submits connection details to backend"
+  ],
+  "dependencies": [],
+  "storyPoints": null,
+  "statusHistory": [
+    {
+      "from": null,
+      "to": "backlog",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T00:00:00Z",
+      "reason": "Ticket created from PRD US-3.1"
+    },
+    {
+      "from": "backlog",
+      "to": "to-do",
+      "actor": "project-manager",
+      "timestamp": "2026-11-01T19:53:56.874898+00:00",
+      "reason": "Planned for sprint 3",
+      "evidence": []
+    },
+    {
+      "from": "to-do",
+      "to": "in-review",
+      "actor": "web-developer",
+      "timestamp": "2026-11-01T20:14:50.728314+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:6f01263 - TASK-036: add ConnectionConfig type and connection API client",
+        "commit:e94bd87 - TASK-036: implement ConnectionForm UI component with accessible fields",
+        "commit:fa8ad56 - TASK-036: wire connection form into the app entry point",
+        "commit:b33d670 - TASK-036: add unit tests for connection form and API",
+        "Branch: ticket/TASK-036 pushed to origin",
+        "Changed files: src/types.ts, src/connection/connectionApi.ts, src/connection/ConnectionForm.ts, src/styles.css, index.html, src/main.ts, src/__tests__/ConnectionForm.test.ts, src/__tests__/connectionApi.test.ts",
+        "Test command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+        "Test output: 38 passed (5 files), 0 failed",
+        "Build command: npm run build (tsc --noEmit + vite build) - succeeded",
+        "Acceptance criteria covered: form displays host/port/database/user/password fields; user can enter connection details; form submits connection details to backend via submitConnection API"
+      ]
+    },
+    {
+      "from": "in-review",
+      "to": "in-testing",
+      "actor": "software-architect",
+      "timestamp": "2026-11-01T20:51:28.466786+00:00",
+      "reason": "completed",
+      "evidence": [
+        "commit:6f01263 - TASK-036: add ConnectionConfig type and connection API client",
+        "commit:e94bd87 - TASK-036: implement ConnectionForm UI component with accessible fields",
+        "commit:fa8ad56 - TASK-036: wire connection form into the app entry point",
+        "commit:b33d670 - TASK-036: add unit tests for connection form and API",
+        "Branch: ticket/TASK-036 pushed to origin",
+        "Changed files: src/types.ts, src/connection/connectionApi.ts, src/connection/ConnectionForm.ts, src/styles.css, index.html, src/main.ts, src/__tests__/ConnectionForm.test.ts, src/__tests__/connectionApi.test.ts",
+        "Test command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+        "Test output: 38 passed (5 files), 0 failed",
+        "Build command: npm run build (tsc --noEmit + vite build) - succeeded",
+        "Acceptance criteria covered: form displays host/port/database/user/password fields; user can enter connection details; form submits connection details to backend via submitConnection API",
+        "Reviewer: software-architect - architectural review approved",
+        "Review findings: clean separation of concerns (types, API client, UI component); testable design with dependency injection and fetch mocking; good accessibility (semantic HTML, for/id label associations, role=status, aria-live, aria-busy, disabled state); proper error handling for HTTP and network failures; well-documented with JSDoc; all 3 acceptance criteria met",
+        "Reviewer test command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+        "Reviewer test output: 38 passed (5 files), 0 failed",
+        "Reviewer build command: npm run build (tsc --noEmit + vite build) - succeeded",
+        "Reviewer decision: approved (result: completed)"
+      ]
+    },
+    {
+      "from": "in-testing",
+      "to": "done",
+      "actor": "qa-manual",
+      "timestamp": "2026-11-01T21:36:44.328715+00:00",
+      "reason": "passed",
+      "evidence": [
+        "commit:6f01263 - TASK-036: add ConnectionConfig type and connection API client",
+        "commit:e94bd87 - TASK-036: implement ConnectionForm UI component with accessible fields",
+        "commit:fa8ad56 - TASK-036: wire connection form into the app entry point",
+        "commit:b33d670 - TASK-036: add unit tests for connection form and API",
+        "Branch: ticket/TASK-036 pushed to origin",
+        "Changed files: src/types.ts, src/connection/connectionApi.ts, src/connection/ConnectionForm.ts, src/styles.css, index.html, src/main.ts, src/__tests__/ConnectionForm.test.ts, src/__tests__/connectionApi.test.ts",
+        "QA test command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+        "QA test output: 38 passed (5 files), 0 failed",
+        "QA build command: npm run build (tsc --noEmit + vite build) - succeeded",
+        "Visual QA: served app via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-TASK-036, checked with asg-visual-qa:1.49.1 (mcr.microsoft.com/playwright/python:v1.49.1-noble)",
+        "Visual QA layout report: 1280x720 - 0 defects, 0 console errors; 1920x1080 - 0 defects, 0 console errors; 768x1024 - 1 page-horizontal-scroll defect (contentPx: 1208, visiblePx: 768), 0 console errors",
+        "Visual QA screenshots: qa-artifacts/TASK-036/screenshot-1280x720.png, screenshot-1920x1080.png, screenshot-768x1024.png, step1-initial.png, step2-fields-visible.png, step3-fields-filled.png, step4-after-submit.png",
+        "Acceptance criterion 1 (form displays host/port/database/user/password fields): VERIFIED - all 5 inputs visible, correct types (host=text, port=number min=1 max=65535, password=password), labels associated via for/id, all fields required",
+        "Acceptance criterion 2 (user can enter connection details): VERIFIED - typed db.example.com/5433/mydb/app_user/s3cret into all fields, values retained correctly",
+        "Acceptance criterion 3 (form submits connection details to backend): VERIFIED - POST to /api/connections with content-type application/json intercepted, success response received, 'Connection saved' status displayed",
+        "No host platform or OS limitations encountered; all criteria executable in containerized environment",
+        "Secondary finding: page-horizontal-scroll at 768x1024 viewport (does not affect any acceptance criterion; form remains fully visible and usable)"
+      ]
+    }
+  ],
+  "sprint": 5,
+  "requiresReview": true,
+  "updatedAt": "2026-11-01T21:36:44.328728+00:00",
+  "resultEvidence": [
+    "commit:6f01263 - TASK-036: add ConnectionConfig type and connection API client",
+    "commit:e94bd87 - TASK-036: implement ConnectionForm UI component with accessible fields",
+    "commit:fa8ad56 - TASK-036: wire connection form into the app entry point",
+    "commit:b33d670 - TASK-036: add unit tests for connection form and API",
+    "Branch: ticket/TASK-036 pushed to origin",
+    "Changed files: src/types.ts, src/connection/connectionApi.ts, src/connection/ConnectionForm.ts, src/styles.css, index.html, src/main.ts, src/__tests__/ConnectionForm.test.ts, src/__tests__/connectionApi.test.ts",
+    "QA test command: docker run --rm --init --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 --memory 2g --shm-size 1g --user \"$(id -u):$(id -g)\" --tmpfs /tmp -e HOME=/tmp -e npm_config_cache=/tmp/.npm -v \"$(pwd)\":/work:rw -w /work node:20-alpine sh -c \"./node_modules/.bin/vitest run\"",
+    "QA test output: 38 passed (5 files), 0 failed",
+    "QA build command: npm run build (tsc --noEmit + vite build) - succeeded",
+    "Visual QA: served app via nginxinc/nginx-unprivileged:1.27-alpine on private Docker network qa-TASK-036, checked with asg-visual-qa:1.49.1 (mcr.microsoft.com/playwright/python:v1.49.1-noble)",
+    "Visual QA layout report: 1280x720 - 0 defects, 0 console errors; 1920x1080 - 0 defects, 0 console errors; 768x1024 - 1 page-horizontal-scroll defect (contentPx: 1208, visiblePx: 768), 0 console errors",
+    "Visual QA screenshots: qa-artifacts/TASK-036/screenshot-1280x720.png, screenshot-1920x1080.png, screenshot-768x1024.png, step1-initial.png, step2-fields-visible.png, step3-fields-filled.png, step4-after-submit.png",
+    "Acceptance criterion 1 (form displays host/port/database/user/password fields): VERIFIED - all 5 inputs visible, correct types (host=text, port=number min=1 max=65535, password=password), labels associated via for/id, all fields required",
+    "Acceptance criterion 2 (user can enter connection details): VERIFIED - typed db.example.com/5433/mydb/app_user/s3cret into all fields, values retained correctly",
+    "Acceptance criterion 3 (form submits connection details to backend): VERIFIED - POST to /api/connections with content-type application/json intercepted, success response received, 'Connection saved' status displayed",
+    "No host platform or OS limitations encountered; all criteria executable in containerized environment",
+    "Secondary finding: page-horizontal-scroll at 768x1024 viewport (does not affect any acceptance criterion; form remains fully visible and usable)"
+  ],
+  "implementedBy": "web-developer"
+}
