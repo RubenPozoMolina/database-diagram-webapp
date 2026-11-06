@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page, type Locator } from '@playwright/test';
 
 test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
   test.beforeEach(async ({ page }) => {
@@ -6,7 +6,7 @@ test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(`CONSOLE: ${msg.text()}`);
     });
-    page.on('pageerror', (err) => errors.push(`PAGE ERROR: ${err.message}`));
+    page.on('pageerror', (err) => errors.push(`PAGE ERROR: ${err.message}`);
     await page.goto('/', { waitUntil: 'networkidle' });
     (page as any)._t022Errors = errors;
   });
@@ -18,6 +18,64 @@ test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
     return page.getByRole('region', { name: `Table ${tableName}` });
   }
 
+  /* React's TableNode listens for native pointer events
+   * (onPointerDown on header/resize-handle, window pointermove/up).
+   * Playwright's page.mouse dispatches mouse events, so we drive the drag
+   * with pointer events dispatched directly on the elements.
+   */
+  async function dragByPointer(
+    page: Page,
+    locator: Locator,
+    dx: number,
+    dy: number,
+    steps = 8,
+  ) {
+    const el = locator.first();
+    const box = await el.boundingBox();
+    expect(box).toBeTruthy();
+    const startX = box!.x + box!.width / 2;
+    const startY = box!.y + box!.height / 2;
+    const pointerId = 9;
+
+    await el.dispatchEvent('pointerdown', {
+      button: 0,
+      buttons: 1,
+      detail: 1,
+      clientX: startX,
+      clientY: startY,
+      pointerId,
+      pointerType: 'mouse',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      await page.locator('body').dispatchEvent('pointermove', {
+        button: 0,
+        buttons: 1,
+        detail: 1,
+        clientX: startX + dx * t,
+        clientY: startY + dy * t,
+        pointerId,
+        pointerType: 'mouse',
+        bubbles: true,
+        cancelable: true,
+      });
+      await page.waitForTimeout(8);
+    }
+
+    await page.locator('body').dispatchEvent('pointerup', {
+      button: 0,
+      buttons: 0,
+      detail: 1,
+      pointerId,
+      pointerType: 'mouse',
+      bubbles: true,
+      cancelable: true,
+    });
+  }
+
   test('AC1: User can drag a table to reposition on the canvas', async ({
     page,
   }) => {
@@ -26,12 +84,10 @@ test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
     const initialBox = await table.boundingBox();
     expect(initialBox).toBeTruthy();
 
-    await page.mouse.move(initialBox!.x + 60, initialBox!.y + 20);
-    await page.mouse.down();
-    await page.mouse.move(initialBox!.x + 220, initialBox!.y + 140);
-    await page.mouse.up();
+    const header = table.locator('.table-header');
+    await dragByPointer(page, header, 160, 110);
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
 
     const movedBox = await table.boundingBox();
     expect(movedBox).toBeTruthy();
@@ -54,16 +110,10 @@ test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
 
     const handle = page.getByTestId('table-resize-handle');
     await expect(handle).toBeVisible();
-    const handleBox = await handle.boundingBox();
-    expect(handleBox).toBeTruthy();
 
-    await page.mouse.move(handleBox!.x + 6, handleBox!.y + 6);
-    await page.mouse.down();
+    await dragByPointer(page, handle, 120, 100);
+
     await page.waitForTimeout(300);
-    await page.mouse.move(handleBox!.x + 120, handleBox!.y + 100);
-    await page.mouse.up();
-
-    await page.waitForTimeout(500);
 
     const resizedBox = await table.boundingBox();
     expect(resizedBox).toBeTruthy();
@@ -84,11 +134,10 @@ test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
     const initialBox = await table.boundingBox();
     expect(initialBox).toBeTruthy();
 
-    await page.mouse.move(initialBox!.x + 60, initialBox!.y + 20);
-    await page.mouse.down();
-    await page.mouse.move(initialBox!.x + 250, initialBox!.y + 160);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
+    const header = table.locator('.table-header');
+    await dragByPointer(page, header, 250, 160);
+
+    await page.waitForTimeout(300);
 
     const movedBox = await table.boundingBox();
     expect(movedBox).toBeTruthy();
@@ -97,15 +146,10 @@ test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
 
     const handle = page.getByTestId('table-resize-handle');
     await expect(handle).toBeVisible();
-    const handleBox = await handle.boundingBox();
-    expect(handleBox).toBeTruthy();
 
-    await page.mouse.move(handleBox!.x + 6, handleBox!.y + 6);
-    await page.mouse.down();
+    await dragByPointer(page, handle, 100, 80);
+
     await page.waitForTimeout(300);
-    await page.mouse.move(handleBox!.x + 100, handleBox!.y + 80);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
 
     const resizedBox = await table.boundingBox();
     expect(resizedBox).toBeTruthy();

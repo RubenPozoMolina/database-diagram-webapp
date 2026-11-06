@@ -35,6 +35,7 @@ test.describe('Connection form - test-connection endpoint integration', () => {
       });
     });
 
+    await page.locator('#conn-host').fill('localhost');
     await page.locator('#conn-database').fill('mydb');
     await page.locator('#conn-user').fill('app_user');
     await page.locator('#conn-password').fill('s3cret');

@@ -33,8 +33,8 @@ test.describe('Visual QA - Index data model (TASK-020)', () => {
     await createTableWithColumns(page, 'users', ['id', 'email']);
 
     const table = page.getByRole('region', { name: 'Table users' });
-    await expect(page.getByText(/id: text/)).toBeVisible();
-    await expect(page.getByText(/email: text/)).toBeVisible();
+    await expect(table.locator('.column-text', { hasText: /id: text/ })).toBeVisible();
+    await expect(table.locator('.column-text', { hasText: /email: text/ })).toBeVisible();
 
     await addIndex(page, 'idx_email', 'email');
 
@@ -110,7 +110,7 @@ test.describe('Visual QA - Index data model (TASK-020)', () => {
     await expect(page.getByText('idx_email')).toBeVisible();
 
     // Double-click email column to edit, then remove it
-    await page.getByText(/email: text/).dblclick();
+    await table.locator('.column-text', { hasText: /email: text/ }).dblclick();
     // Wait for the edit row's Remove button to appear
     const removeButton = page.getByRole('button', { name: /Remove column email/i });
     await expect(removeButton).toBeVisible();
@@ -119,7 +119,7 @@ test.describe('Visual QA - Index data model (TASK-020)', () => {
     await page.waitForTimeout(1000);
 
     // Verify column and index are gone
-    await expect(page.getByText(/email: text/)).not.toBeVisible();
+    await expect(table.locator('.column-text', { hasText: /email: text/ })).not.toBeVisible();
     await expect(page.getByText('idx_email')).not.toBeVisible();
     await expect(page.getByTitle(/IX/)).not.toBeVisible();
 

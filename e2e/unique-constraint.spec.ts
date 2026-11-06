@@ -15,11 +15,17 @@ test.describe('Unique Constraint UI', () => {
   test('adds a unique constraint to a single column and shows UQ badge', async ({
     page,
   }) => {
-    // Double-click a column to open edit, then add unique constraint via the
-    // "+ Add unique constraint" button in the table node.
     const table = page.getByRole('region', { name: 'Table users' });
 
-    // Click "+ Add unique constraint" button on the table node
+    // Add a second column and rename it to 'email'
+    await page
+      .getByRole('button', { name: /add a new column to this table/i })
+      .click();
+    await table.locator('.column-text', { hasText: /new_column: text/ }).dblclick();
+    await page.locator('input.column-name-input').fill('email');
+    await page.keyboard.press('Enter');
+
+    // Open unique constraint dialog
     await table
       .getByRole('button', { name: /add a new unique constraint to this table/i })
       .click();
@@ -27,25 +33,6 @@ test.describe('Unique Constraint UI', () => {
     // Fill constraint name
     const nameInput = page.getByPlaceholder('Constraint name');
     await nameInput.fill('users_email_key');
-
-    // Select the email column - we need to add another column first
-    // Actually, let's add a second column via the table UI
-    // The table currently only has 'id' column. Let's add 'email' column.
-    // Double click on table to edit? No - columns are added via "+ Add column"
-    // But we already created the table. Let's add a column to it.
-
-    // Hmm, the table node only shows "+ Add column" at the bottom. Let me
-    // click that to add an email column.
-    await page
-      .getByRole('button', { name: /add a new column to this table/i })
-      .click();
-
-    // Now open unique constraint editor
-    await table
-      .getByRole('button', { name: /add a new unique constraint to this table/i })
-      .click();
-
-    await page.getByPlaceholder('Constraint name').fill('users_email_key');
 
     // Select email column checkbox
     const emailCheckbox = page.getByRole('checkbox', {
@@ -66,15 +53,22 @@ test.describe('Unique Constraint UI', () => {
   });
 
   test('adds a unique constraint to a group of columns', async ({ page }) => {
-    // Add more columns to the table first
-    await page
-      .getByRole('button', { name: /add a new column to this table/i })
-      .click();
-    await page
-      .getByRole('button', { name: /add a new column to this table/i })
-      .click();
-
     const table = page.getByRole('region', { name: 'Table users' });
+
+    // Add two columns and rename them to 'email' and 'name'
+    await page
+      .getByRole('button', { name: /add a new column to this table/i })
+      .click();
+    await table.locator('.column-text', { hasText: /new_column: text/ }).first().dblclick();
+    await page.locator('input.column-name-input').fill('email');
+    await page.keyboard.press('Enter');
+
+    await page
+      .getByRole('button', { name: /add a new column to this table/i })
+      .click();
+    await table.locator('.column-text', { hasText: /new_column: text/ }).last().dblclick();
+    await page.locator('input.column-name-input').fill('name');
+    await page.keyboard.press('Enter');
 
     // Open unique constraint editor
     await table
@@ -103,10 +97,13 @@ test.describe('Unique Constraint UI', () => {
   });
 
   test('removes a unique constraint', async ({ page }) => {
-    // Add a column and a unique constraint first
+    // Add a column and rename it to email, then add a unique constraint
     await page
       .getByRole('button', { name: /add a new column to this table/i })
       .click();
+    await table.locator('.column-text', { hasText: /new_column: text/ }).dblclick();
+    await page.locator('input.column-name-input').fill('email');
+    await page.keyboard.press('Enter');
 
     const table = page.getByRole('region', { name: 'Table users' });
 

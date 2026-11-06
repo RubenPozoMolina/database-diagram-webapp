@@ -130,7 +130,7 @@ test.describe('STORY-013: Import PostgreSQL Schema', () => {
     });
 
     // --- Columns and data types visible ---
-    await expect(page.getByText(/customer_id/)).toBeVisible();
+    await expect(page.getByText(/customer_id/).first()).toBeVisible();
     await expect(page.getByText(/first_name/)).toBeVisible();
     await expect(page.getByText(/order_id/)).toBeVisible();
     await expect(page.getByText(/order_date/)).toBeVisible();

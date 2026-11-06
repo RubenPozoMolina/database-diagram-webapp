@@ -66,14 +66,6 @@ test.describe('TASK-041: Imported schema as editable diagram (visual QA)', () =>
               comment: null,
             },
           ],
-          indexes: [
-            {
-              id: 't041-i1',
-              tableId: 't041-t1',
-              name: 'idx_customers_email',
-              columnIds: ['t041-c2'],
-            },
-          ],
         },
         {
           id: 't041-t2',
@@ -117,14 +109,6 @@ test.describe('TASK-041: Imported schema as editable diagram (visual QA)', () =>
               comment: null,
             },
           ],
-          indexes: [
-            {
-              id: 't041-i2',
-              tableId: 't041-t2',
-              name: 'idx_orders_customer_id',
-              columnIds: ['t041-c5'],
-            },
-          ],
         },
       ],
       relationships: [
@@ -146,7 +130,20 @@ test.describe('TASK-041: Imported schema as editable diagram (visual QA)', () =>
           name: 'customers_email_key',
         },
       ],
-      indexes: [],
+      indexes: [
+        {
+          id: 't041-i1',
+          tableId: 't041-t1',
+          name: 'idx_customers_email',
+          columnIds: ['t041-c2'],
+        },
+        {
+          id: 't041-i2',
+          tableId: 't041-t2',
+          name: 'idx_orders_customer_id',
+          columnIds: ['t041-c5'],
+        },
+      ],
       createdAt: '2026-11-01T00:00:00Z',
       updatedAt: '2026-11-01T00:00:00Z',
     },
