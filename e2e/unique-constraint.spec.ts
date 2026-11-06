@@ -25,7 +25,7 @@ test.describe('Unique Constraint UI', () => {
       .click();
 
     // Fill constraint name
-    const nameInput = page.getByPlaceholderText('Constraint name');
+    const nameInput = page.getByPlaceholder('Constraint name');
     await nameInput.fill('users_email_key');
 
     // Select the email column - we need to add another column first
@@ -45,7 +45,7 @@ test.describe('Unique Constraint UI', () => {
       .getByRole('button', { name: /add a new unique constraint to this table/i })
       .click();
 
-    await page.getByPlaceholderText('Constraint name').fill('users_email_key');
+    await page.getByPlaceholder('Constraint name').fill('users_email_key');
 
     // Select email column checkbox
     const emailCheckbox = page.getByRole('checkbox', {
@@ -114,7 +114,7 @@ test.describe('Unique Constraint UI', () => {
       .getByRole('button', { name: /add a new unique constraint to this table/i })
       .click();
 
-    await page.getByPlaceholderText('Constraint name').fill('users_email_key');
+    await page.getByPlaceholder('Constraint name').fill('users_email_key');
     await page
       .getByRole('checkbox', { name: 'Include email in unique constraint' })
       .click();

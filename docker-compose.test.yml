@@ -14,13 +14,17 @@ services:
         condition: service_healthy
     environment:
       - BASE_URL=http://app:8080
+      - HOME=/tmp
+      - npm_config_cache=/tmp/.npm
     networks:
       - qa-st001-network
     volumes:
       - .:/work:rw
-      - ./qa-artifacts:/artifacts
+    tmpfs:
+      - /tmp
+      - /artifacts
     working_dir: /work
-    command: sh -c "npm ci --ignore-scripts && npx playwright@1.49.1 test"
+    command: sh -c "npm ci --ignore-scripts && npx playwright test"
 
 networks:
   qa-st001-network:
