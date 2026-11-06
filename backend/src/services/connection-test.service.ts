@@ -13,13 +13,21 @@ import { Client } from 'pg';
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 /**
- * PostgreSQL error codes that indicate an authentication failure (invalid
- * credentials, unknown user, insufficient privileges, or unknown database).
- * These map to HTTP 401 per §4.1 of the API specification.
+ * Minimum PostgreSQL major version supported by this application (PRD D-04).
+ * `server_version_num` encodes the version as major * 10000 (e.g. 14 -> 140000).
+ */
+const MIN_POSTGRES_MAJOR_VERSION = 14;
+const MIN_POSTGRES_VERSION_NUM = MIN_POSTGRES_MAJOR_VERSION * 10_000;
+
+/**
+ * PostgreSQL error codes that indicate an authentication or authorization
+ * failure (invalid credentials, unknown user, insufficient privileges, or
+ * unknown database). These map to HTTP 401 per §4.1 of the API specification.
  */
 const AUTH_ERROR_CODES = new Set([
   '28P01', // invalid_password
   '28000', // invalid_authorization_specification
+  '42501', // insufficient_privilege (permissions)
   '3D000', // invalid_catalog_name (database does not exist)
   '53300', // too_many_connections
 ]);
@@ -148,6 +156,24 @@ export async function testConnection(
   try {
     await Promise.race([client.connect(), timeoutPromise]);
     connected = true;
+
+    // Enforce the minimum PostgreSQL version (PRD D-04: PostgreSQL 14+).
+    // `current_setting('server_version_num')` returns e.g. '160000' for PG 16.
+    const versionResult = await client.query<{ server_version_num: string }>(
+      "SELECT current_setting('server_version_num') AS server_version_num",
+    );
+    const versionRaw = versionResult.rows[0]?.server_version_num;
+    const versionNum = Number(versionRaw);
+    if (!Number.isFinite(versionNum) || versionNum < MIN_POSTGRES_VERSION_NUM) {
+      await client.end().catch(() => {
+        // Ignore errors during cleanup.
+      });
+      return {
+        success: false,
+        error: `Unsupported PostgreSQL version ${versionRaw ?? 'unknown'}. This application requires PostgreSQL ${MIN_POSTGRES_MAJOR_VERSION} or later.`,
+        statusCode: 400,
+      };
+    }
 
     await client.end();
     return {

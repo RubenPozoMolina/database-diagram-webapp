@@ -98,6 +98,26 @@ describe('submitConnection', () => {
     expect(result.error).toBe('Invalid credentials');
   });
 
+  it('returns the backend `error` field when the connection fails', async () => {
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized',
+      json: async () => ({
+        success: false,
+        error: 'Authentication failed: password authentication failed for user "app_user".',
+      }),
+    }) as unknown as Response);
+    setFetchForTesting(globalThis.fetch as typeof fetch);
+
+    const result = await submitConnection(config);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Authentication failed');
+    // The password must never be echoed back to the client.
+    expect(result.error).not.toContain(config.password);
+  });
+
   it('returns failure when the error response has no JSON body', async () => {
     globalThis.fetch = vi.fn(async () => ({
       ok: false,

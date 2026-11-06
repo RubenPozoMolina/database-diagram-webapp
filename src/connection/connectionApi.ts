@@ -46,8 +46,12 @@ export async function submitConnection(
     if (!response.ok) {
       let message = `HTTP ${response.status}`;
       try {
-        const body = (await response.json()) as { message?: string };
-        if (body.message) {
+        const body = (await response.json()) as { error?: string; message?: string };
+        // The backend surfaces descriptive failures in the `error` field; fall
+        // back to `message` for backward compatibility with other responses.
+        if (body.error) {
+          message = body.error;
+        } else if (body.message) {
           message = body.message;
         }
       } catch {

@@ -24,24 +24,28 @@ import { createApp } from '../app';
 vi.mock('pg', () => {
   const connectMock = vi.fn().mockResolvedValue(undefined);
   const endMock = vi.fn().mockResolvedValue(undefined);
+  const queryMock = vi.fn().mockResolvedValue({ rows: [{ server_version_num: '160000' }] });
   return {
     Client: vi.fn().mockImplementation(() => ({
       connect: connectMock,
+      query: queryMock,
       end: endMock,
     })),
     connectMock,
     endMock,
+    queryMock,
   };
 });
 
-// vi.mock adds connectMock and endMock as named exports of the 'pg' module.
-// TypeScript does not know about them, so we declare them here.
+// vi.mock adds connectMock, endMock and queryMock as named exports of the 'pg'
+// module. TypeScript does not know about them, so we declare them here.
 declare module 'pg' {
   export const connectMock: Mock;
   export const endMock: Mock;
+  export const queryMock: Mock;
 }
 
-import { connectMock, endMock } from 'pg';
+import { connectMock, endMock, queryMock } from 'pg';
 import { PostgresConnectionService } from '../services/postgres-connection.service';
 import { validateConnectionParams } from '../middleware/validate';
 
@@ -323,6 +327,7 @@ describe('POST /api/v1/connections/test', () => {
     vi.clearAllMocks();
     connectMock.mockResolvedValue(undefined);
     endMock.mockResolvedValue(undefined);
+    queryMock.mockResolvedValue({ rows: [{ server_version_num: '160000' }] });
   });
 
   it('returns 200 with success when connection succeeds', async () => {
