@@ -8,6 +8,7 @@ services:
 
   tests:
     image: mcr.microsoft.com/playwright:v1.49.1-noble
+    user: "1000:1000"
     depends_on:
       app:
         condition: service_healthy
@@ -16,10 +17,10 @@ services:
     networks:
       - qa-st001-network
     volumes:
-      - .:/work:ro
+      - .:/work:rw
       - ./qa-artifacts:/artifacts
     working_dir: /work
-    command: sh -c "npx playwright@1.49.1 test"
+    command: sh -c "npm ci --ignore-scripts && npx playwright@1.49.1 test"
 
 networks:
   qa-st001-network:
