@@ -6,7 +6,7 @@ test.describe('Drag, move, and resize canvas elements (TASK-022)', () => {
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(`CONSOLE: ${msg.text()}`);
     });
-    page.on('pageerror', (err) => errors.push(`PAGE ERROR: ${err.message}`);
+    page.on('pageerror', (err) => errors.push(`PAGE ERROR: ${err.message}`));
     await page.goto('/', { waitUntil: 'networkidle' });
     (page as any)._t022Errors = errors;
   });
