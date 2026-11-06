@@ -30,7 +30,7 @@ services:
       - /tmp
       - /artifacts
     working_dir: /work
-    command: sh -c "npm ci --ignore-scripts && npx playwright test"
+    command: sh -c "npm ci --ignore-scripts && npx playwright test --workers=3"
 
 networks:
   qa-st001-network:

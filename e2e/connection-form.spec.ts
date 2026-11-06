@@ -35,7 +35,7 @@ test.describe('Connection form - test-connection endpoint integration', () => {
   test('calls the test-connection endpoint and displays success on valid connection', async ({
     page,
   }) => {
-    await page.route(apiRoute, async (route) => {
+    await page.route(/.*api\/v1\/connections\/test/, async (route) => {
       const body = (await route.request().postDataJSON()) as Record<string, unknown>;
       void body;
       await route.fulfill({
@@ -60,7 +60,7 @@ test.describe('Connection form - test-connection endpoint integration', () => {
   });
 
   test('displays a descriptive error on invalid connection (401)', async ({ page }) => {
-    await page.route(apiRoute, async (route) => {
+    await page.route(/.*api\/v1\/connections\/test/, async (route) => {
       await route.fulfill({
         status: 401,
         contentType: 'application/json',
@@ -87,7 +87,7 @@ test.describe('Connection form - test-connection endpoint integration', () => {
   });
 
   test('displays a descriptive error on network failure', async ({ page }) => {
-    await page.route(apiRoute, async (route) => {
+    await page.route(/.*api\/v1\/connections\/test/, async (route) => {
       await route.abort();
     });
 

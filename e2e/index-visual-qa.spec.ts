@@ -114,7 +114,9 @@ test.describe('Visual QA - Index data model (TASK-020)', () => {
     // Wait for the edit row's Remove button to appear
     const removeButton = page.getByRole('button', { name: /Remove column email/i });
     await expect(removeButton).toBeVisible();
-    await removeButton.click({ force: true });
+    // Use dispatchEvent instead of click to avoid focus blur causing React to
+    // re-render and remove the button before the onClick handler fires.
+    await removeButton.dispatchEvent('click');
     // Wait for React to re-render after column removal
     await page.waitForTimeout(1000);
 

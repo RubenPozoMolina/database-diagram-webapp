@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Unique Constraint UI', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'networkidle' });
     // Add a table with columns
     await page.getByRole('button', { name: /add a new table/i }).click();
     await page.getByLabel('Table name').fill('users');
