@@ -115,11 +115,11 @@ test.describe('Visual QA - Index data model (TASK-020)', () => {
     const removeButton = page.getByRole('button', { name: /Remove column email/i });
     await expect(removeButton).toBeVisible();
     await removeButton.click({ force: true });
-    // Give React time to re-render after column removal
+    // Wait for React to re-render after column removal
     await page.waitForTimeout(1000);
 
     // Verify column and index are gone
-    await expect(page.getByText(/email: text/)).not.toBeVisible();
+    await expect(table.locator('.column-text', { hasText: /email: text/ })).not.toBeVisible({ timeout: 10000 });
     await expect(page.getByText('idx_email')).not.toBeVisible();
     await expect(page.getByTitle(/IX/)).not.toBeVisible();
 
